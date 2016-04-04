@@ -1,0 +1,19 @@
+<template>
+  <require from="components/authors"></require>
+  <section>
+    <ul class="list-group ebook-detail">
+      <li class="list-group-item">
+        <label class="ebook-detail-label">Title</label>
+        <span class="ebook-detail-value">${ebook.title}</span>
+      </li>
+      <li class="list-group-item">
+        <label class="ebook-detail-label">Authors</label>
+        <authors authors.bind="ebook.authors"></authors>
+      </li>
+      <li class="list-group-item" if.bind="ebook.series">
+        <label class="ebook-detail-label">Series</label>
+        <span class="ebook-detail-value">${ebook.series} #${ebook.series_index}</span>
+      </li>
+    </ul>
+  </section>
+</template>

@@ -1,0 +1,13 @@
+<template>
+  <nav>
+  <ul class="pager">
+    <li><a href="#" click.delegate="prevPage()" class="${isFirstPage ? 'disabled' : ''}"
+      title="Page ${prevPageNo}"><i class="fa fa-caret-left"></i> Previous</a></li>
+    <li><a href="#" click.delegate="nextPage()" class="${isLastPage ? 'disabled' : ''}"
+       title="Page ${nextPageNo}">Next <i class="fa fa-caret-right"></i> </a></li>
+  </ul>
+  <div style='width:100%'>
+    <span class="pager-spinner"  if.bind="loading"><i  class="fa fa-spinner fa-spin fa-2x"></i></span>
+  </div>
+</nav>
+</template>

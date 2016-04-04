@@ -1,0 +1,43 @@
+.ebook-authors {
+  font-style: italic;
+}
+
+.ebook-detail {
+  margin: 5px;
+  background-color:lightgrey;
+  padding: 5px;
+  height: 150px;
+}
+
+.ebook-title {
+  font-weight: bold;
+}
+
+.pager-spinner {
+   margin-left:auto;
+   margin-right:auto;
+   width:1em;
+   display:block;
+   margin-top: -3.5em;
+   
+}
+
+.pager i.fa {
+  font-size: 130%;
+}
+
+.sorter-label i{
+  font-size:150%;
+}
+
+.sorter {
+    display:inline;
+    font-size:70%;
+    margin-left: 1em;
+  }
+
+.sorter select {
+  position:relative;
+  top:-5px;
+}
+

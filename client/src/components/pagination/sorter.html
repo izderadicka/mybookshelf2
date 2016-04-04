@@ -1,0 +1,5 @@
+<template>
+  <select value.bind="sort">
+    <option repeat.for="sorting of sortings" value="${sorting.key}">${sorting.name}</option>
+  </select>
+</template>

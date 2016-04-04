@@ -1,0 +1,25 @@
+<template>
+  <require from="components/authors"></require>
+  <page-controller view-model.ref='paginator' loader.one-time="loader" sort.bind="sorter.sort" page-size="12"></page-controller>
+  <div class='container-fluid items-header'>
+    <h2>Ebooks (${paginator.page}/${paginator.lastPage})
+    <div class='sorter'>
+      <label class="sorter-label"><i class="fa fa-sort"></i></label>
+      <sorter sortings.one-time="sortings" view-model.ref="sorter"></sorter>
+    </div>
+    </h2>
+  </div>
+  <section>
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-6 col-md-4 col-lg-3" repeat.for="ebook of paginator.data">
+          <div class='ebook-detail'>
+            <authors authors.one-time="ebook.authors" compact.bind="true"></authors>
+            <div class="ebook-title"><a href="#/ebook/${ebook._id}">${ebook.title}</a></div>
+            <div class="ebook-series" if.bind="ebook.series">${ebook.series} #${ebook.series_index}</div>
+          </div>
+        </div>
+      </div>
+  </section>
+  <pager page.two-way="paginator.page" last-page.bind="paginator.lastPage" loading.bind="paginator.loading"></pager>
+</template>
