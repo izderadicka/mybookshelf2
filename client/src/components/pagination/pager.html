@@ -1,9 +1,9 @@
 <template>
   <nav>
   <ul class="pager">
-    <li><a href="#" click.delegate="prevPage()" class="${isFirstPage ? 'disabled' : ''}"
+    <li if.bind="!isFirstPage"><a href="#" click.delegate="prevPage()"
       title="Page ${prevPageNo}"><i class="fa fa-caret-left"></i> Previous</a></li>
-    <li><a href="#" click.delegate="nextPage()" class="${isLastPage ? 'disabled' : ''}"
+    <li if.bind="!isLastPage"><a href="#" click.delegate="nextPage()" 
        title="Page ${nextPageNo}">Next <i class="fa fa-caret-right"></i> </a></li>
   </ul>
   <div style='width:100%'>

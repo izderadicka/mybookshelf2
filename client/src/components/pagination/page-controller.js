@@ -1,4 +1,4 @@
-import {bindable, processContent, noView, inject, customElement} from 'aurelia-framework'
+import {bindable, processContent, noView, inject, customElement, computedFrom} from 'aurelia-framework'
 import {LogManager} from 'aurelia-framework';
 const logger = LogManager.getLogger('page-controller');
 
@@ -10,14 +10,14 @@ export class PageController {
   @bindable sort;
   lastPage;
   @bindable pageSize = 10;
-  @bindable loading=false;
+  loading=false;
   data=[];
   @bindable loader= () => Promise.reject(new Error('No loader specified!'));
-
-
+  @bindable noSort=false;
 
   loadPage(page, unbinded=false) {
     //if (this.loading) return Promise.resolve(null);
+    logger.debug(`Loading page ${page}, ${this.sort} by ${this.loader.name}`);
     this.loading=true;
     return this.loader(page, this.pageSize, this.sort)
       .then(({data,lastPage}) => { this.data=data;
@@ -35,6 +35,10 @@ export class PageController {
       if (state.page && state.page != this.page) {
         this.page=state.page;
       }
+      if (state.sort) {
+        this.sort=state.sort;
+        logger.debug(`sort2 is ${this.sort}`);
+      }
     }
     }
 
@@ -44,8 +48,11 @@ export class PageController {
   bind(ctx) {
     logger.debug(`Binding PageController`);
     // if status is restored from history change to page will not happen so we need to load page here
-    if (history.state && history.state.page) this.loadPage(this.page);
+    if (history.state && history.state.page || this.noSort) this.loadPage(this.page);
 
+  }
+  attached() {
+    logger.debug('PageController attached');
   }
 
   pageChanged(newPage) {
@@ -55,10 +62,14 @@ export class PageController {
   }
 
   sortChanged(newValue, old) {
-
     logger.debug(`sort changed ${this.sort}`);
     this.reset();
 
+  }
+
+  loaderChanged() {
+    logger.debug('Loader changed in PageController');
+    this.reset();
   }
 
   reset() {

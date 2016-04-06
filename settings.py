@@ -99,11 +99,7 @@ author={'type': 'dict',
                 },
             }
         }
-
-ebooks={
-        'item_title':'ebook',
-        #'allow_unknown': True,
-        'schema': {
+ebook_schema={
                    'title': {
                        'type':'string',
                        'minlength':1,
@@ -153,6 +149,20 @@ ebooks={
                         'maxlength':100
                         }
             }
+
+
+ebooks={
+        'item_title':'ebook',
+        #'allow_unknown': True,
+        'schema': ebook_schema
+        }
+
+search={'item_title':'ebook',
+        'allow_unknown': True,
+        'schema': ebook_schema,
+        'resource_methods':['GET'],
+        'item_methods': ['GET'],
+        'datasource': {'source': 'ebooks'},
         }
 
 authors={
@@ -175,4 +185,5 @@ series={
         
 DOMAIN={'ebooks': ebooks,
         'authors': authors,
-        'series': series}
+        'series': series,
+        'search': search}

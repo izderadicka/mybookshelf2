@@ -1,11 +1,11 @@
-import {inject} from 'aurelia-framework';
+import {inject, bindable} from 'aurelia-framework';
 import {ApiClient} from 'lib/api-client';
 import {LogManager} from 'aurelia-framework';
 let logger = LogManager.getLogger('ebooks');
 
 @inject(ApiClient)
 export class Ebooks {
-  sortings=[{name:'Title A-Z', key:'title'}, {name:'Title Z-A',key:'-title'}];
+  
   constructor(client) {
     this.client=client
   }

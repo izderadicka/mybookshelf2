@@ -1,19 +1,40 @@
 <template>
   <require from="components/authors"></require>
   <section>
-    <ul class="list-group ebook-detail">
+    <h2 class="page-title">${ebook.title}</h2>
+    <authors authors.bind="ebook.authors"></authors>
+    <ul class="list-group ebook-properties">
       <li class="list-group-item">
-        <label class="ebook-detail-label">Title</label>
-        <span class="ebook-detail-value">${ebook.title}</span>
-      </li>
-      <li class="list-group-item">
-        <label class="ebook-detail-label">Authors</label>
-        <authors authors.bind="ebook.authors"></authors>
+        <label class="ebook-detail-label">Language:</label>
+        <span class="ebook-language">${ebook.language}</span>
       </li>
       <li class="list-group-item" if.bind="ebook.series">
-        <label class="ebook-detail-label">Series</label>
+        <label class="ebook-detail-label">Series:</label>
         <span class="ebook-detail-value">${ebook.series} #${ebook.series_index}</span>
       </li>
+      <li class="list-group-item">
+        <label class="ebook-detail-label">Genres:</label>
+        <span class="ebook-detail-value">${ebook.genres}</span>
+      </li>
+      <li class="list-group-item">
+        <label class="ebook-detail-label">Rating:</label>
+        <span class="ebook-rating">${ebook.rating}</span>
+      </li>
+      <li class="list-group-item">
+        <label class="ebook-detail-label">Created:</label>
+        <span class="ebook-date">${ebook._created}</span>
+      </li>
+
     </ul>
+
+    <table class="table">
+      <tr><th>Format</th><th>Size></th><th>Quality</th><th>Action</th></tr>
+      <tr repeat.for="source of ebook.sources">
+        <td>${source.format}</td>
+        <td>${source.size}</td>
+        <td>${source.quality}</td>
+        <td><i class="fa fa-download source-action"><i class="fa fa-cog source-action"></i></td>
+      </tr>
+    </table>
   </section>
 </template>
