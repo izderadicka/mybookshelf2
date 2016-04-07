@@ -1,18 +1,52 @@
+
+import {FetchConfig, AuthorizeStep} from 'aurelia-auth';
+import {inject, LogManager} from 'aurelia-framework';
+import {HttpClient} from 'aurelia-fetch-client';
+
+const logger = LogManager.getLogger('app');
+@inject(FetchConfig, HttpClient)
 export class App {
+
+  constructor(fetchConfig, client) {
+  this.fetchConfig = fetchConfig;
+  this.fetchConfig.configure();
+  client.configure(conf => conf
+      .withBaseUrl(`http://${window.location.hostname}:6006`)
+
+      .withInterceptor({
+    response: response => {
+      if (response && response.status == 401) {
+        logger.warn('Not authenticated!');
+        this.router.navigateToRoute('login');
+        throw Error('Not autherticated!')
+
+      }
+      return response;
+    }
+  })
+
+)
+}
   configureRouter(config, router) {
     config.title = 'MyBookshelf2';
+    config.addPipelineStep('authorize', AuthorizeStep);
     config.map([
       { route: ['', 'welcome'], name: 'welcome',      moduleId: 'pages/welcome', nav: true, title: 'Welcome' },
-      {route: 'ebooks', name:'ebooks',  moduleId: 'pages/ebooks', nav:true, title:'Ebooks'},
-      { route: 'ebook/:id', name:'ebook', moduleId: 'pages/ebook', title:'Ebook'},
-      { route: 'search/:query', name: 'search', moduleId:'pages/search', title: 'Search Results'},
-      {route:['author/:lastname', 'author/:lastname/:firstname'], name:'author', moduleId:'pages/author', title:'Authors books'}
+      {route: 'ebooks', name:'ebooks',  moduleId: 'pages/ebooks', nav:true, title:'Ebooks', auth:true},
+      {route: 'login', name: 'login', moduleId:'pages/login', title:'Login'},
+      {route: 'ebook/:id', name:'ebook', moduleId: 'pages/ebook', title:'Ebook', auth:true},
+      {route: 'search/:query', name: 'search', moduleId:'pages/search', title: 'Search Results', auth:true},
+      {route:['author/:lastname', 'author/:lastname/:firstname'], name:'author', moduleId:'pages/author', title:'Authors books', auth:true}
       /*
       { route: 'users',         name: 'users',        moduleId: 'pages/users',        nav: true, title: 'Github Users' },
       { route: 'child-router',  name: 'child-router', moduleId: 'pages/child-router', nav: true, title: 'Child Router' } */
     ]);
 
     this.router = router;
+  }
+
+  activate() {
+    
   }
 
   doSearch(query) {

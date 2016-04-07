@@ -6,6 +6,8 @@ MONGO_USERNAME = os.environ.get('MONGO_USERNAME', 'ebooks')
 MONGO_PASSWORD = os.environ.get('MONGO_PASSWORD', 'ebooks')
 MONGO_DBNAME = os.environ.get('MONGO_DBNAME', 'ebooks')
 
+MONGO_QUERY_BLACKLIST=['$where']
+
 RESOURCE_METHODS = ['GET', 'POST', 'DELETE']
 ITEM_METHODS = ['GET', 'PATCH', 'DELETE']
 
@@ -14,7 +16,7 @@ CACHE_EXPIRES = 20
 #CORS
 
 X_DOMAINS='*'
-X_HEADERS=['Authorization']
+X_HEADERS=['Authorization', 'Content-type']
 
 LANGUAGES={'cs':'Czech',
            'en': 'English',
