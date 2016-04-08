@@ -83,6 +83,7 @@
       "bootstrap": "github:twbs/bootstrap@^3.3.5",
       "fetch": "github:github/fetch@^0.11.0",
       "font-awesome": "npm:font-awesome@^4.5.0",
+      "jquery": "github:components/jquery@^2.2.1",
       "text": "github:systemjs/plugin-text@^0.0.3"
     },
     "devDependencies": {

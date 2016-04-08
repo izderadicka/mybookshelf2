@@ -1,6 +1,6 @@
 import  'bootstrap';
 import {ApplicationState} from 'lib/application-state'
-import authConfig from './authConfig';
+import authConfig from 'auth-config';
 
 export function configure(aurelia) {
   aurelia.use

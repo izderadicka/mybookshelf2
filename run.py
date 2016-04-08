@@ -52,7 +52,7 @@ app = Eve(auth=TokenAuth)
 cors_headers={
               'Access-Control-Allow-Headers':'Authorization, Content-type',
               'Access-Control-Allow-Methods':'OPTIONS, HEAD, POST, DELETE, GET',
-              'Access-Control-Allow-Origin':'http://localhost:9000',
+              'Access-Control-Allow-Origin':'*',
               'Access-Control-Expose-Headers':'',
               'Access-Control-Max-Age':'21600',
               }

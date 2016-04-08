@@ -3,7 +3,9 @@ module.exports = {
     "dist/app-build": {
       "includes": [
         "[*.js]",
+        "[**/*.js]",
         "*.html!text",
+        "**/*.html!text",
         "*.css!text"
       ],
       "options": {
@@ -27,8 +29,7 @@ module.exports = {
         "aurelia-loader-default",
         "aurelia-history-browser",
         "aurelia-logging-console",
-        "bootstrap",
-        "bootstrap/css/bootstrap.css!text"
+        "aurelia-auth",
       ],
       "options": {
         "inject": true,
@@ -36,6 +37,21 @@ module.exports = {
         "depCache": false,
         "rev": false
       }
+    },
+
+    "dist/bootstrap": {
+      "includes": [
+        "bootstrap",
+        "bootstrap/css/bootstrap.css!text",
+        "jquery"
+      ],
+      "options": {
+        "inject": true,
+        "minify": false,
+        "depCache": false,
+        "rev": false
+      }
     }
+
   }
 };

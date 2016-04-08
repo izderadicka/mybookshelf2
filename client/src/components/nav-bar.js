@@ -1,5 +1,8 @@
-import {bindable, inject} from 'aurelia-framework'
+import {bindable, inject, LogManager} from 'aurelia-framework'
 import {AuthService} from 'aurelia-auth';
+import $ from 'jquery';
+
+const logger=LogManager.getLogger('nav-bar');
 
 @inject(AuthService)
 export class NavBar {
@@ -14,5 +17,12 @@ export class NavBar {
     return this.auth.isAuthenticated();
   }
 
-  
+  searchSubmitted(query) {
+    logger.debug('navbar.compo'+ $('#skeleton-navigation-navbar-collapse'));
+    $('#skeleton-navigation-navbar-collapse').collapse('hide');
+    this.doSearch(query);
+
+  }
+
+
 }

@@ -23,13 +23,15 @@
         </ul>
 
         <ul class="nav navbar-nav navbar-right">
-          <li if.bind="!isAuthenticated"><a href='/#/login'>Login</a></li>
-          <li if.bind="isAuthenticated" click.delegate="auth.logout()"><a href='#'>Logout</a></li>
+          <li if.bind="!isAuthenticated"><a data-toggle="collapse" data-target="#skeleton-navigation-navbar-collapse.in"
+            href='/#/login'>Login</a></li>
+          <li if.bind="isAuthenticated" click.delegate="auth.logout()"><a data-toggle="collapse" data-target="#skeleton-navigation-navbar-collapse.in"
+            href='#'>Logout</a></li>
         </ul>
 
 
         <div if.bind="isAuthenticated" class="col-sm-3 col-md-3 pull-right">
-          <search execute.call="doSearch(query)"></search>
+          <search execute.call="searchSubmitted(query)"></search>
         </div>
 
 

@@ -1,8 +1,8 @@
 <template>
   <require from="components/authors"></require>
-
-  <div class='container-fluid items-header'>
-    <h3 class="page-title">Ebooks (${paginator.page}/${paginator.lastPage})
+  <section>
+    <div class='container-fluid items-header'>
+      <h3 class="page-title">Ebooks (${paginator.page}/${paginator.lastPage})
     <div class='sorter' if.bind="sortings.length">
       <label class="sorter-label"><i class="fa fa-sort"></i></label>
       <sorter  sortings.one-time="sortings" view-model.ref="sorter"></sorter>
@@ -10,7 +10,7 @@
     </h2>
   </div>
   <page-controller view-model.ref='paginator' loader.bind="loader" sort.bind="sorter.sort" page-size="12" no-sort.bind="!sortings.length"></page-controller>
-  <section>
+
     <div class="container-fluid">
       <div class="row">
         <div class="col-sm-6 col-md-4 col-lg-3" repeat.for="ebook of paginator.data">
@@ -21,6 +21,8 @@
           </div>
         </div>
       </div>
-  </section>
+    </div>
+
   <pager page.two-way="paginator.page" last-page.bind="paginator.lastPage" loading.bind="paginator.loading"></pager>
+    </section>
 </template>
