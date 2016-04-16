@@ -16,7 +16,6 @@ export class Pager{
     logger.debug('Pager activated');
   }
 
-
   nextPage() {
     if (this.page < this.lastPage && ! this.loading) this.page++;
   }
@@ -38,6 +37,6 @@ export class Pager{
   }
 
   get isLastPage() {
-    return this.page === this.lastPage
+    return this.page === this.lastPage || ! this.lastPage
   }
 }

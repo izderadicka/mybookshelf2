@@ -12,19 +12,8 @@ export class PageController {
   @bindable pageSize = 10;
   loading=false;
   data=[];
-  @bindable loader= () => Promise.reject(new Error('No loader specified!'));
+  @bindable loader = () => Promise.reject(new Error('No loader specified!'));
   @bindable noSort=false;
-
-  loadPage(page, unbinded=false) {
-    //if (this.loading) return Promise.resolve(null);
-    logger.debug(`Loading page ${page}, ${this.sort} by ${this.loader.name}`);
-    this.loading=true;
-    return this.loader(page, this.pageSize, this.sort)
-      .then(({data,lastPage}) => { this.data=data;
-                                this.lastPage=lastPage },
-            err => logger.error(`Page load error: ${err}`))
-      .then(() => this.loading=false);
-  }
 
   constructor() {
     logger.debug('Constructing PageContoller');
@@ -55,6 +44,17 @@ export class PageController {
     logger.debug('PageController attached');
   }
 
+  loadPage(page, unbinded=false) {
+    //if (this.loading) return Promise.resolve(null);
+    logger.debug(`Loading page ${page}, ${this.sort} by ${this.loader.name}`);
+    this.loading=true;
+    return this.loader(page, this.pageSize, this.sort)
+      .then(({data,lastPage}) => { this.data=data;
+                                this.lastPage=lastPage },
+            err => logger.error(`Page load error: ${err}`))
+      .then(() => this.loading=false);
+  }
+
   pageChanged(newPage) {
     logger.debug('page changed '+newPage);
     this.loadPage(this.page)
@@ -76,6 +76,11 @@ export class PageController {
     const oldPage=this.page;
     this.page=1;
     if (oldPage==1) this.pageChanged(1,1);
+  }
+
+  @computedFrom('data', 'loader')
+  get empty() {
+    return ! this.data || this.data.length==0;
   }
 
 }
