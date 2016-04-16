@@ -58,7 +58,7 @@ def export_data(args):
     
     model.Base.metadata.drop_all(bind=engine)  # @UndefinedVariable
     model.Base.metadata.create_all(bind=engine)  # @UndefinedVariable
-    
+    return
     session=Session()
     load_model(c, session,'select id,name from ebook_subject', model.Genre, {'name':'name'})
     load_model(c, session,'select id, code, name from ebook_language', 

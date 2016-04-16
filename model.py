@@ -4,14 +4,12 @@ from sqlalchemy import Column, Date, DateTime, Float, Index, Integer, SmallInteg
 from sqlalchemy.ext.declarative import declarative_base,declared_attr
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
+from flask_sqlalchemy import SQLAlchemy
 
+db=SQLAlchemy()
 
-class Base(object):
-    @declared_attr
-    def __tablename__(cls):  # @NoSelf
-        return cls.__name__.lower()
-
-#    __table_args__ = {'mysql_engine': 'InnoDB'}
+class Base(db.Model):
+    __abstract__=True
 
     id =  Column(BigInteger, primary_key=True)
     
@@ -21,7 +19,7 @@ class Base(object):
             base+=' '+' '.join(['%s="%s"'%(a, getattr(self,a)) for a in attrs])
         return base +'>'
 
-Base = declarative_base(cls=Base)
+#Base = declarative_base(cls=Base)
 
 ebook_genres = Table('ebook_genres', Base.metadata,
                       Column('ebook_id', ForeignKey('ebook.id'), primary_key=True, index=True),
@@ -111,7 +109,7 @@ class BookshelfItem(Base, Auditable):
 
 class Conversion(Base, Auditable):
     
-    batch_id = Column(BigInteger, ForeignKey('conversionbatch.id'))
+    batch_id = Column(BigInteger, ForeignKey('conversion_batch.id'))
     source_id = Column(BigInteger, ForeignKey('source.id'), nullable=False)
     source=relationship('Source')
     location = Column(String(512), nullable=False)
