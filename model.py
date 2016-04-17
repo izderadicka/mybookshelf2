@@ -139,7 +139,8 @@ class Ebook(Base, Auditable):
     rating = Column(Float(asdecimal=True))
     sources = relationship('Source', back_populates='ebook')
     genres = relationship('Genre', secondary=ebook_genres)
-    authors= relationship('Author', secondary=ebook_authors, order_by='Author.id', lazy='subquery')
+    #for lazy="subquery limited queries must be always ! ordered
+    authors= relationship('Author', secondary=ebook_authors, order_by='Author.id', lazy='joined')
     cover= Column(String(512))
     
     def __repr__(self):
