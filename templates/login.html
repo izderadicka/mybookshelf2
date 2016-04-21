@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{%block title%}Login{%endblock%}
+{% block content %}
+<h1>Please Login</h1>
+<div class="login-form">
+{% for message in get_flashed_messages() %}
+    <div class="flash">{{ message }}</div>
+  {% endfor %}
+ {% if current_user.is_authenticated %}
+ <p> You are already logged in, <a href="{{url_for('logoff')}}">log off</a>.</p>
+ {%else%}
+ <form action="{{ url_for('login')}}" method="POST" enctype="multipart/form-data">
+ <div>
+ <label for="username_id">User Name:</label><input type="text" name="username" id="username_id"
+ value="{{username}}"/>
+ </div>
+ <div>
+ <label for="password_id">Password:</label><input type="password" name="password" id="password_id"/>
+ </div>
+ <div>
+ <input type="submit" value="Log In"/>
+ </div>
+ </form>
+ {%endif%}
+ </div>
+ {%endblock%}

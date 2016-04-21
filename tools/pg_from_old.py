@@ -13,6 +13,7 @@ import sys
 
 
 
+
 lmap = lambda func, *iterable: list(map(func, *iterable))
 flat=  lambda l: lmap(lambda r:r[0], l)
                                     
@@ -68,7 +69,7 @@ def export_data(args):
                model.Format, {'mime_type':'mime_type', 'name':'name', 'extension':'extension'})
     
     now=datetime.now()
-    admin = model.User(user_name="admin", password="admin", email="admin@example.com", created=now, modified=now)
+    admin = model.User(user_name="admin", password="admin", email="admin@example.com", created=now, active=True)
     session.add(admin)
     admin.roles.append(model.Role(name='admin'))
     session.commit()

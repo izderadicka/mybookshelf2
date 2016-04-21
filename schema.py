@@ -1,5 +1,5 @@
 from marshmallow_sqlalchemy import ModelSchema as BaseModelSchema
-from marshmallow import fields, post_dump
+from marshmallow import fields, post_dump, validate
 import model
 from sqlalchemy import desc
 
@@ -38,6 +38,15 @@ class FormatSchema(ModelSchema):
     class Meta:
         model=model.Format
         
+class UserSchema(ModelSchema):
+    email=fields.Email(validate=validate.Length(max=256))
+    class Meta:
+        model=model.User
+        
+class RoleSchema(ModelSchema):
+    class Meta:
+        model=model.Role
+        
 class SourceSchema(ModelSchema):
     format=fields.Function(serialize=lambda o: o.format.extension)
     class Meta:
@@ -50,8 +59,10 @@ class EbookSchema(ModelSchema):
     language=fields.Function(serialize=lambda o: o.language.name)
     genres=fields.Nested(GenreSchema, many=True)
     sources=fields.Nested(SourceSchema, many=True, only=('id', 'format', 'location', 'quality','modified'))
+    full_text=None
     class Meta:
         model=model.Ebook
+        exclude=('full_text',)
         
     
         

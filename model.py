@@ -3,8 +3,10 @@ from sqlalchemy import Column, Date, DateTime, Float, Index, Integer, SmallInteg
     BigInteger, Boolean, ForeignKey, Text, Enum, Table
 from sqlalchemy.ext.declarative import declarative_base,declared_attr
 from sqlalchemy.sql import func
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, deferred
 from flask_sqlalchemy import SQLAlchemy
+from flask.ext.login import UserMixin
+from sqlalchemy_utils import TSVectorType
 
 db=SQLAlchemy()
 
@@ -40,7 +42,7 @@ user_roles = Table('user_roles', Base.metadata,
 
 class Auditable(object):
     created = Column(DateTime, nullable=False, default=func.now())
-    modified = Column(DateTime, nullable=False,index=True)
+    modified = Column(DateTime, nullable=False,index=True,  default=func.now(), onupdate=func.now())
     
     @declared_attr
     def created_by_id(cls):  # @NoSelf
@@ -58,11 +60,16 @@ class Auditable(object):
     def modified_by(cls):  # @NoSelf\
         return relationship('User', primaryjoin="User.id==%s.modified_by_id" % cls.__name__)
     
-class User(Base, Auditable):
-    user_name= Column(String(128), nullable=False)
-    email= Column(String(128), nullable=False)
+class User(Base, Auditable, UserMixin):
+    user_name= Column(String(128), nullable=False, unique=True)
+    email= Column(String(128), nullable=False, unique=True)
     password = Column(String(128), nullable=False)
+    active= Column(Boolean)
     roles=relationship('Role', secondary=user_roles)
+    
+    @property
+    def is_active(self):
+        return self.active
     
 class Role(Base):
     name=Column(String(64), nullable=False)
@@ -142,6 +149,7 @@ class Ebook(Base, Auditable):
     #for lazy="subquery limited queries must be always ! ordered
     authors= relationship('Author', secondary=ebook_authors, order_by='Author.id', lazy='joined')
     cover= Column(String(512))
+    full_text = deferred(Column(TSVectorType(regconfig='custom')))
     
     def __repr__(self):
         return super(Ebook,self).__repr__(['title'])
