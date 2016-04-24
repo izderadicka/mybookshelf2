@@ -14,6 +14,11 @@ class Base(db.Model):
     __abstract__=True
 
     id =  Column(BigInteger, primary_key=True)
+    version_id = Column("version_id", Integer, nullable=False)
+
+    __mapper_args__ = {
+        'version_id_col': version_id,
+    }
     
     def __repr__(self, attrs=None):
         base= '<%s id=%s' % (self.__class__.__name__, self.id)
@@ -24,15 +29,15 @@ class Base(db.Model):
 #Base = declarative_base(cls=Base)
 
 ebook_genres = Table('ebook_genres', Base.metadata,
-                      Column('ebook_id', ForeignKey('ebook.id'), primary_key=True, index=True),
-                      Column('genre_id', ForeignKey('genre.id'), primary_key=True, index=True))
+                      Column('ebook_id', ForeignKey('ebook.id',ondelete="CASCADE"), primary_key=True, index=True),
+                      Column('genre_id', ForeignKey('genre.id',ondelete="CASCADE"), primary_key=True, index=True))
 
 ebook_authors = Table('ebook_authors', Base.metadata, 
-                      Column('ebook_id', ForeignKey('ebook.id'), primary_key=True, index=True),
-                      Column('author_id', ForeignKey('author.id'), primary_key=True, index=True))
+                      Column('ebook_id', ForeignKey('ebook.id', ondelete="CASCADE"), primary_key=True, index=True),
+                      Column('author_id', ForeignKey('author.id',ondelete="CASCADE"), primary_key=True, index=True))
 
 user_roles = Table('user_roles', Base.metadata, 
-                      Column('user_id', ForeignKey('user.id'), primary_key=True, index=True),
+                      Column('user_id', ForeignKey('user.id', ondelete="CASCADE"), primary_key=True, index=True),
                       Column('role_id', ForeignKey('role.id'), primary_key=True, index=True))
 
 # series_authors = Table('series_authors', Base.metadata, 
@@ -186,7 +191,7 @@ class Series(Base, Auditable):
 
 
 class Source(Base, Auditable):
-    ebook_id = Column(BigInteger, ForeignKey('ebook.id'), nullable=False)
+    ebook_id = Column(BigInteger, ForeignKey('ebook.id', ondelete="CASCADE"), nullable=False)
     ebook= relationship('Ebook', back_populates='sources')
     location = Column(String(512), nullable=False)
     load_source = Column(String(256))
@@ -201,6 +206,7 @@ class Source(Base, Auditable):
     
 class Genre(Base):
     name = Column(String(64), nullable=False, unique=True)
+    
     
     def __repr__(self):
         return super(Genre,self).__repr__(['name'])

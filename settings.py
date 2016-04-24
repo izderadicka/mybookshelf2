@@ -14,3 +14,9 @@ X_DOMAINS='*'
 X_HEADERS=['Authorization', 'Content-type']
 
 
+class Testing:
+    SQLALCHEMY_DATABASE_URI='postgresql://ebooks_test:ebooks@localhost/ebooks_test' 
+    TESTING=True
+    DEBUG=True
+
+

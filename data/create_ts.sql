@@ -1,19 +1,16 @@
-﻿create extension if not exists  unaccent;
-DROP TEXT SEARCH CONFIGURATION  IF EXISTS custom CASCADE;
-CREATE TEXT SEARCH CONFIGURATION custom ( COPY = english );
-alter text search configuration custom alter mapping for hword, hword_part, word with unaccent, english_stem;
-drop index if exists full_text_search_idx;
+﻿drop index if exists full_text_search_idx;
 create index  full_text_search_idx on ebook using gin(full_text);
 
 create or replace function ebook_full_title(ebook_id bigint) returns varchar(2048) as $$ 
 select coalesce(string_agg(coalesce(first_name || ' ', '')|| a.last_name, ', '), '') ||': ' || b.title || 
-case when min(s.title) is not null then ' ('||min(s.title)|| ' ' || b.series_index ||')' else '' end as full_title 
+case when min(s.title) is not null then ' ('||min(s.title)|| ' ' || coalesce(b.series_index, 0) ||')' else '' end as full_title 
 from ebook b left outer join series s on b.series_id = s.id left outer join ebook_authors on ebook_authors.ebook_id = b.id  
 left outer join author a on ebook_authors.author_id= a.id where b.id=$1 group by b.id $$ language sql;
 
 -- ebook table
 create or replace function update_ebook_full_text() returns trigger as $$
 begin
+raise notice 'UPDATE FULLTEXT ID= %', NEW.id;
 update ebook set full_text=to_tsvector('custom', ebook_full_title(NEW.id)) where id = NEW.id;
 return null;
 end;
@@ -98,6 +95,14 @@ create trigger ebook_ts_update after update
 on author
 for each row
 execute procedure update_ebook_full_text4();
+
+
+-- enable triggers
+alter table ebook enable trigger ebook_ts_insert;
+alter table ebook enable trigger ebook_ts_update;
+alter table series enable trigger ebook_ts_update;
+alter table author enable trigger ebook_ts_update;
+alter table ebook_authors enable trigger ebook_ts_update;
 
 
 

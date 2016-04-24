@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker
 from datetime import datetime
 
 import model
-from IPython.core.release import description
+from utils import hash_pwd
 import sys
 
 
@@ -46,6 +46,9 @@ def load_model(c,session, q, cls, pmap):
         session.add(o)
     session.commit()
     print('Loaded %s: %d records' % (cls.__name__, session.query(cls).count()))
+    
+def update_seq(e,table_name):
+    e.execute("select setval('{0}_id_seq',(select max(id) from {0}), true);".format(table_name))
 
 def export_data(args):
     conn=mysql.connect(host=args.host, port=args.port, user=args.user, password=args.pwd, 
@@ -69,7 +72,7 @@ def export_data(args):
                model.Format, {'mime_type':'mime_type', 'name':'name', 'extension':'extension'})
     
     now=datetime.now()
-    admin = model.User(user_name="admin", password="admin", email="admin@example.com", created=now, active=True)
+    admin = model.User(user_name="admin", password=hash_pwd("admin"), email="admin@example.com", created=now, active=True)
     session.add(admin)
     admin.roles.append(model.Role(name='admin'))
     session.commit()
@@ -202,6 +205,11 @@ def export_data(args):
         
     session.commit()
     print('Loaded BookshelfItem: %d records' % session.query(model.BookshelfItem).count()) 
+    
+    
+    for t in ['author', 'bookshelf', 'bookshelf_item', 'ebook', 'format', 'genre', 'language', 'series', 'source']:
+        update_seq(engine, t)
+    
     
     session.close()
     c.close()

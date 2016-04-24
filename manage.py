@@ -1,4 +1,4 @@
-from flask.ext.script import Manager, prompt_pass
+from flask.ext.script import Manager, prompt_pass, prompt_bool
 from flask.ext.script.commands import InvalidCommand
 from server import app,db
 import model
@@ -56,11 +56,16 @@ def create_tables():
         script=open(os.path.join(os.path.dirname(__file__), 'data/create_ts.sql'), 'rt', encoding='utf-8-sig').read()
         
         #print(script)
-        c.execute(script)
+        res=c.execute(script)
+        connection.commit()
     finally:
         connection.close()
     
     # 
+@manager.command    
+def drop_tables():
+    if prompt_bool('Are you REALLY sure? You will loose all data!'):
+        db.drop_all()   
 
 if __name__ == "__main__":
     try:
