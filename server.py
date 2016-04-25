@@ -1,17 +1,8 @@
 #! /usr/bin/env python
 
-from flask import render_template
 import sys
 from app import app
-from app.access import lm
-from flask_login import login_required
 
-app.config.from_object('settings')
-
-@app.route('/')
-#@login_required
-def main():
-    return render_template('main.html')
 
 if __name__ == "__main__":
     dbg=True

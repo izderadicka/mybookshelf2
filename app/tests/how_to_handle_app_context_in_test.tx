@@ -4,10 +4,10 @@ Created on Apr 23, 2016
 @author: ivan
 '''
 import unittest
-from server import db, app
-import threading
-import model
+from app import db, app
+import app.model
 from flask import appcontext_pushed
+
 
 
 def debug(*args, **kwargs):

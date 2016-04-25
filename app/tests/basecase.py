@@ -5,7 +5,7 @@ Created on Apr 23, 2016
 '''
 import unittest
 from app import app,db
-from flask.ext.testing import TestCase as BaseTestCase
+from flask_testing import TestCase as BaseTestCase
 from settings import Testing
 import os.path
 

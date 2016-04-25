@@ -1,4 +1,5 @@
-from flask import Flask
+from flask import Flask, render_template
+from flask_login import login_required
 from flask_sqlalchemy import SQLAlchemy
 import decimal
 
@@ -13,6 +14,12 @@ def decimal_default(obj):
         return float(obj)
     raise TypeError
 app.config['RESTFUL_JSON']={'default': decimal_default }
+
+@app.route('/')
+#@login_required
+def main():
+    return render_template('main.html')
+
 
 
 #blueprints
