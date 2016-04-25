@@ -8,4 +8,4 @@ test=# grant all on database ebooks_test to ebooks_test;
 GRANT
 test=# \c ebooks_test
 You are now connected to database "ebooks_test" as user "ivan".
-ebooks_test=# create extension unaccent;
+\i data/init_db.sql

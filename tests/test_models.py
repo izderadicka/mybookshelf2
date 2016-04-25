@@ -4,11 +4,11 @@ Created on Apr 23, 2016
 @author: ivan
 '''
 import unittest
-from basecase import BaseTest 
+from basecase import TestCase 
 from server import db,app
 import model
 
-class Test(BaseTest):
+class Test(TestCase):
 
     def test_trigger_exists(self):
         connection = db.engine.raw_connection()

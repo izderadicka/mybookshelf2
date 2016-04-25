@@ -60,6 +60,18 @@ def create_tables():
         connection.commit()
     finally:
         connection.close()
+        
+@manager.command
+def update_fulltext():
+    
+    connection = db.engine.raw_connection()
+    
+    try:
+        c=connection.cursor()
+        res=c.execute("update ebook set full_text=to_tsvector('custom', ebook_full_title(id))")
+        connection.commit()
+    finally:
+        connection.close()
     
     # 
 @manager.command    

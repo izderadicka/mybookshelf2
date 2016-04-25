@@ -1,5 +1,6 @@
 from flask import Flask, request, redirect, flash, render_template, url_for, jsonify
 from model import db
+from schema import schema
 import sys
 import decimal
 from api import bp as api_bp
@@ -13,6 +14,7 @@ from sqlalchemy.orm.exc import NoResultFound
 app = Flask(__name__)
 app.config.from_object('settings')
 db.init_app(app)
+schema.init_app(app)
 lm=LoginManager(app)
 
 @lm.user_loader

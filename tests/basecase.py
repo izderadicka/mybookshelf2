@@ -5,7 +5,7 @@ Created on Apr 23, 2016
 '''
 import unittest
 from server import app,db
-from flask.ext.testing import TestCase
+from flask.ext.testing import TestCase as BaseTestCase
 from settings import Testing
 import os.path
 import time
@@ -13,7 +13,7 @@ import time
 
 
 
-class BaseTest(TestCase):
+class TestCase(BaseTestCase):
     
     INIT_FILES=['../data/create_ts.sql', # text search config
                 '../data/dump/basic.sql', # basic stuff
