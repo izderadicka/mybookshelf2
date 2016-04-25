@@ -4,11 +4,10 @@ Created on Apr 23, 2016
 @author: ivan
 '''
 import unittest
-from server import app,db
+from app import app,db
 from flask.ext.testing import TestCase as BaseTestCase
 from settings import Testing
 import os.path
-import time
 
 
 

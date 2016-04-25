@@ -4,9 +4,9 @@ Created on Apr 23, 2016
 @author: ivan
 '''
 import unittest
-from basecase import TestCase 
-from server import db,app
-import model
+from app.tests.basecase import TestCase 
+from app import db,app
+import app.model as model
 
 class Test(TestCase):
 
@@ -65,6 +65,9 @@ class Test(TestCase):
             ft=str(b.full_text)
             self.assertTrue(b.full_text )
             self.assertTrue('gemmel' in ft and 'krav' in ft and 'kulisak' in ft)
+            
+        u=model.User.query.filter_by(user_name='admin').one()
+        self.assertTrue(u.has_role('admin'))
 
 
 if __name__ == "__main__":

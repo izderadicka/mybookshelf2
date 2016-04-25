@@ -7,9 +7,9 @@
     <div class="flash">{{ message }}</div>
   {% endfor %}
  {% if current_user.is_authenticated %}
- <p> You are already logged in, <a href="{{url_for('logoff')}}">log off</a>.</p>
+ <p> You are already logged in, <a href="{{url_for('access.logoff')}}">log off</a>.</p>
  {%else%}
- <form action="{{ url_for('login')}}" method="POST" enctype="multipart/form-data">
+ <form action="{{ url_for('access.login')}}" method="POST" enctype="multipart/form-data">
  <div>
  <label for="username_id">User Name:</label><input type="text" name="username" id="username_id"
  value="{{username}}"/>

@@ -1,13 +1,13 @@
 from flask import Blueprint, request,g, abort, current_app
 from flask_restful import Resource as BaseResource, Api
-import model
-import schema
-from utils import paginated, paginate, verify_token
+import app.model as model
+import app.schema as schema
+from app.utils import paginated, paginate, verify_token
 
 
 bp=Blueprint('api', __name__)
 api=Api(bp)
-
+schema
 
 
 @bp.before_request
@@ -17,7 +17,7 @@ def token_authetication():
         token=token[7:].strip()
         claim=verify_token(token, current_app.config['SECRET_KEY'])
         if claim:
-            user=model.User.query.get(claim.id)
+            user=model.User.query.get(claim.id)  # @UndefinedVariable
             if user and user.is_active:
                 g.authenticated=True
                 g.user=user
@@ -35,14 +35,14 @@ class Resource(BaseResource):
 
     
 class Ebooks(Resource): 
-    @paginated(sortings=schema.sortings['ebook'])
+    @paginated(sortings=model.sortings['ebook'])
     def get(self,page=1, page_size=20, sort=None, **kwargs):
         q=model.Ebook.query
         return paginate(q, page, page_size, sort, schema.ebooks_list_serializer)
     
 class Ebook(Resource):
     def get(self, id):
-        return schema.ebook_serializer.dump(model.Ebook.query.get(id)).data
+        return schema.ebook_serializer.dump(model.Ebook.query.get(id)).data  # @UndefinedVariable
         
     
 api.add_resource(Ebooks, '/ebooks')

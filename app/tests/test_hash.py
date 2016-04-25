@@ -4,7 +4,7 @@ Created on Apr 18, 2016
 @author: ivan
 '''
 import unittest
-from utils import hash_pwd, check_pwd
+from app.utils import hash_pwd, check_pwd
 
 class Test(unittest.TestCase):
 

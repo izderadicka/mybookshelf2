@@ -1,19 +1,13 @@
+import app
 from marshmallow_sqlalchemy import ModelSchema as BaseModelSchema
 from flask_marshmallow import Marshmallow
 from marshmallow import fields, post_dump, validate
-import model
+import app.model as model
 from sqlalchemy import desc
 
-schema=Marshmallow()
+schema=Marshmallow(app.app)
 
 BaseModelSchema=schema.ModelSchema
-
-sortings={'ebook':{'title': [model.Ebook.title],
-                   '-title':[desc(model.Ebook.title)],
-                   'created':[model.Ebook.created],
-                   '-created':[desc(model.Ebook.created)],
-                   }}
-
 
 class ModelSchema(BaseModelSchema):
     @post_dump
@@ -24,7 +18,7 @@ class ModelSchema(BaseModelSchema):
         }
         
     class Meta:
-        sqla_session=model.db.session
+        sqla_session=app.db.session
         
            
 
@@ -67,11 +61,12 @@ class SourceSchema(ModelSchema):
         model=model.Source
         
 
-
+def lang_from_code(c):
+        return model.Language.query.filter_by(code=c).one()
 class EbookSchema(ModelSchema):
     authors=fields.Nested(AuthorSchema, many=True, only=('id', 'first_name', 'last_name'))
     series=fields.Nested(SeriesSchema, only=('id', 'title'))
-    language=fields.Function(serialize=lambda o: o.language.name, deserialize=lambda x: model.Language())
+    language=fields.Function(serialize=lambda o: o.language.name, deserialize=lang_from_code)
     genres=fields.Nested(GenreSchema, many=True)
     sources=fields.Nested(SourceSchema, many=True, only=('id', 'format', 'location', 'quality','modified'))
     full_text=None

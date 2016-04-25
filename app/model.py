@@ -1,16 +1,16 @@
 # coding: utf-8
+import app
 from sqlalchemy import Column, Date, DateTime, Float, Index, Integer, SmallInteger, String, \
-    BigInteger, Boolean, ForeignKey, Text, Enum, Table
+    BigInteger, Boolean, ForeignKey, Text, Enum, Table, desc
 from sqlalchemy.ext.declarative import declarative_base,declared_attr
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship, deferred
-from flask_sqlalchemy import SQLAlchemy
 from flask.ext.login import UserMixin
 from sqlalchemy_utils import TSVectorType
 
-db=SQLAlchemy()
 
-class Base(db.Model):
+
+class Base(app.db.Model):
     __abstract__=True
 
     id =  Column(BigInteger, primary_key=True)
@@ -75,6 +75,14 @@ class User(Base, Auditable, UserMixin):
     @property
     def is_active(self):
         return self.active
+    
+    def has_role(self, role):
+        if not self.active:
+            return False
+        for r in self.roles:
+            if r.name.lower()==role.lower():
+                return True
+        return False
     
 class Role(Base):
     name=Column(String(64), nullable=False)
@@ -213,4 +221,8 @@ class Genre(Base):
     
     
     
-    
+sortings={'ebook':{'title': [Ebook.title],
+                   '-title':[desc(Ebook.title)],
+                   'created':[Ebook.created],
+                   '-created':[desc(Ebook.created)],
+                   }}    

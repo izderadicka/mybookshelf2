@@ -5,10 +5,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime
 
-import model
-from utils import hash_pwd
+import app.model as model
+from app.utils import hash_pwd
 import sys
-
+sys.path.append('..')
 
 
 
