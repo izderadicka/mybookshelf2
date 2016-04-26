@@ -17,7 +17,7 @@ def token_authetication():
         token=token[7:].strip()
         claim=verify_token(token, current_app.config['SECRET_KEY'])
         if claim:
-            user=model.User.query.get(claim.id)  # @UndefinedVariable
+            user=model.User.query.get(claim['id'])  # @UndefinedVariable
             if user and user.is_active:
                 g.authenticated=True
                 g.user=user

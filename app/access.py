@@ -4,15 +4,22 @@ from app.utils import check_pwd, create_token
 import app.model as model
 from sqlalchemy import or_
 from sqlalchemy.orm.exc import NoResultFound
+import logging
+logger=logging.getLogger('access')
 
 
 bp=Blueprint('access', __name__)
 lm=LoginManager()
 
+
+SECRET_KEY=''
+TOKEN_VALIDITY_HOURS=4
 @bp.record_once
 def on_load(state):
+    global SECRET_KEY, TOKEN_VALIDITY_HOURS
     lm.init_app(state.app)
-
+    SECRET_KEY=state.app.config.get('SECRET_KEY')
+    TOKEN_VALIDITY_HOURS=state.app.config.get('TOKEN_VALIDITY_HOURS')
 
 @lm.user_loader
 def load_user(user_id):
@@ -22,8 +29,8 @@ def load_user(user_id):
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
     def check_user(username, pwd):
-        user= model.User.query.filter(or_(model.User.user_name == username, model.User.email ==username))\
-                            .one_or_none()  
+        user= model.User.query.filter(or_(model.User.user_name == username,  # @UndefinedVariable
+                                model.User.email ==username)).one_or_none()  # @UndefinedVariable
         if user and check_pwd(pwd, user.password):
             return user
         
@@ -47,18 +54,18 @@ def login():
                     return jsonify(error= 'Invalid Login')
                 if not check_pwd(credentials['password'], user.password):
                     return jsonify(error= 'Invalid Login')
-                resp= jsonify(access_token=create_token(user, bp.config['SECRET_KEY'], bp.config.get('TOKEN_VALIDITY_HOURS') or 4))
+                resp= jsonify(access_token=create_token(user, SECRET_KEY, TOKEN_VALIDITY_HOURS or 4))
                 #resp.headers.extend(cors_headers)
                 return resp
             else:
-                print (credentials)
+                logger.info('Failed JSON login with %s', credentials)
                 abort(400,'Provide credentials')
         else:
             
             user=check_user(request.form['username'], request.form['password'] )
             
             if user:
-                print('Login user ', user)
+                logger.info('User logged in %s ', user.user_name)
                 login_user(user)
                 #request.args.get("next")
                 return redirect('/')

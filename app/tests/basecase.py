@@ -8,6 +8,8 @@ from app import app,db
 from flask_testing import TestCase as BaseTestCase
 from settings import Testing
 import os.path
+import logging
+logging.basicConfig(level=logging.DEBUG)
 
 
 

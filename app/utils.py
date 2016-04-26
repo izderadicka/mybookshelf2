@@ -1,23 +1,33 @@
-from flask import request
+from flask import request, abort
 from functools import wraps
 import bcrypt
 import jwt
 from datetime import datetime, timedelta
 
-def safe_int(v):
+def safe_int(v, for_=''):
     if v is None or v=='':
         return
     try:
-        return int(v)
+        v= int(v)
+        if v<=0:
+            abort(400,'Not positive number %s'%for_) 
+        return v
     except ValueError:
-        pass
+        abort(400,'Invalid number for %s'%for_)
 
 def paginated(default_page_size=10, max_page_size=100, sortings=None):
     def wrapper(fn):
         @wraps(fn)
         def inner(*args, **kwargs):
-            kwargs['page_size']=min(safe_int(request.args.get('page_size')) or default_page_size, max_page_size)
-            kwargs['page']=safe_int(request.args.get('page')) or 1
+            page_size=safe_int(request.args.get('page_size'),'page_size') or default_page_size
+            if page_size>max_page_size:
+                abort(400, 'Page size bigger then maximum')
+            kwargs['page_size']=page_size
+            kwargs['page']=safe_int(request.args.get('page'), 'page') or 1
+            sort_in=request.args.get('sort')
+            sort=sortings.get(sort_in)
+            if sort_in and not sort:
+                abort(400, 'Invalid sort key %s'%sort_in)
             kwargs['sort']=sortings.get(request.args.get('sort'))
             return fn(*args, **kwargs)
         return inner
