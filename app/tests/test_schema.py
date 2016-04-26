@@ -7,7 +7,7 @@ import unittest
 from app import app,db
 import app.schema as schema
 import app.model as model
-from basecase import TestCase
+from .basecase import TestCase
 
 #app.config['SQLALCHEMY_ECHO']=True
 class Test(TestCase):

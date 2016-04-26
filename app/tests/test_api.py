@@ -1,4 +1,4 @@
-from basecase import TestCase
+from .basecase import TestCase
 import flask
 
 class TestApi(TestCase):
@@ -73,8 +73,17 @@ class TestApi(TestCase):
         res=self.get('/api/ebooks', query_string={'page':1, 'page_size':-1, 'sort':'-title'},  failure=True)
         self.assert400(res)
         
+        res=self.get('/api/ebooks', query_string={'page':1, 'page_size':101, 'sort':'-title'},  failure=True)
+        self.assert400(res)
+        
         res=self.get('/api/ebooks', query_string={'page':10, 'page_size':12, 'sort':'title'},  failure=True)
         self.assert404(res)
+        
+        id=first_book['id']
+        
+        res=self.get('/api/ebooks/%s'%id)
+        self.assertEqual(res['id'],id)
+        self.assertEqual(res['title'], 'Alenka v říši kvant - Alegorie kvantové fyziky')
         
         
         

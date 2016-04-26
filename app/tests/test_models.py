@@ -4,7 +4,7 @@ Created on Apr 23, 2016
 @author: ivan
 '''
 import unittest
-from app.tests.basecase import TestCase 
+from .basecase import TestCase 
 from app import db,app
 import app.model as model
 
@@ -33,7 +33,7 @@ class Test(TestCase):
         self.assertEqual(n, 5)
         
         ebook=model.Ebook.query.filter(model.Ebook.title=='Legenda').one()
-        
+        self.assertEqual(str(ebook),'<Ebook id=34513 title="Legenda">')
         self.assertEqual(ebook.id, 34513)
         authors=ebook.authors
         print()

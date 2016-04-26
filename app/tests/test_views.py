@@ -1,6 +1,8 @@
-from basecase import TestCase
+from .basecase import TestCase
 from flask import current_app
 import app
+import app.model as model
+from app.utils import hash_pwd
 
 
 class TestViews(TestCase):
@@ -44,10 +46,22 @@ class TestViews(TestCase):
                     self.assert400(res)
                     
             test_login_json('admin', 'admin', success=True)
+            test_login_json('admin@example.com', 'admin', success=True)
             test_login_json('admin', 'xxx', success=False)
             test_login_json('pakomako', 'admin', success=False)
             test_login_json('admin', '', success=False, failure=True)
             test_login_json('', '', success=False, failure=True)
+            
+            new_user=model.User(user_name='test', email='test@example.com', password=hash_pwd('test'), active=True)
+            app.db.session.add(new_user)
+            app.db.session.commit()
+            
+            test_login_json('test@example.com', 'test', success=True)
+            new_user.active=False
+            app.db.session.commit()
+            test_login_json('test@example.com', 'test', success=False)
+            
+            
                     
                 
             
