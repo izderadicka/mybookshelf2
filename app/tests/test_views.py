@@ -33,8 +33,12 @@ class TestViews(TestCase):
             test_login('admin', 'wrong', 'Invalid user name or password')
             test_login('usak', 'wrong', 'Invalid user name or password')
             
-            def test_login_json(user, pwd, success=True, failure=False):
-                res=c.post('/login', data='{"username":"%s", "password":"%s"}'%(user,pwd), 
+            def test_login_json(user, pwd, success=True, failure=False, email=None):
+                if email:
+                    res=c.post('/login', data='{"email":"%s", "password":"%s"}'%(email,pwd), 
+                           content_type='application/json' )
+                else:
+                    res=c.post('/login', data='{"username":"%s", "password":"%s"}'%(user,pwd), 
                            content_type='application/json' )
                 if success:
                     self.assert200(res)
@@ -46,7 +50,7 @@ class TestViews(TestCase):
                     self.assert400(res)
                     
             test_login_json('admin', 'admin', success=True)
-            test_login_json('admin@example.com', 'admin', success=True)
+            test_login_json(None, 'admin', email='admin@example.com', success=True)
             test_login_json('admin', 'xxx', success=False)
             test_login_json('pakomako', 'admin', success=False)
             test_login_json('admin', '', success=False, failure=True)
@@ -56,10 +60,10 @@ class TestViews(TestCase):
             app.db.session.add(new_user)
             app.db.session.commit()
             
-            test_login_json('test@example.com', 'test', success=True)
+            test_login_json('test', 'test', success=True)
             new_user.active=False
             app.db.session.commit()
-            test_login_json('test@example.com', 'test', success=False)
+            test_login_json('test', 'test', success=False)
             
             
                     
