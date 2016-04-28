@@ -2,7 +2,11 @@ from flask import Blueprint, request,g, abort, current_app
 from flask_restful import Resource as BaseResource, Api
 import app.model as model
 import app.schema as schema
-from app.utils import paginated, paginate, verify_token, success_error
+import app.logic as logic
+from app.utils import verify_token, success_error
+from app import db
+from functools import wraps
+
 
 
 bp=Blueprint('api', __name__)
@@ -23,11 +27,22 @@ def token_authetication():
                 g.user=user
 
 def authenticated(fn):
+    @wraps(fn)
     def inner(*args, **kwargs):
         if not hasattr(g, 'authenticated') or not g.authenticated:
             abort(401, 'Access denied')
         return fn(*args, **kwargs)
-    return inner    
+    return inner  
+
+def has_role(role): 
+    def wrapper(fn):
+        @wraps(fn)
+        def inner(*args,**kwargs):
+            if not g.user.has_role(role):
+                abort(401, 'Access denied')
+            return fn(*args, **kwargs)
+        return inner
+    return wrapper
 
 class Resource(BaseResource):
     decorators=[authenticated]
@@ -35,32 +50,51 @@ class Resource(BaseResource):
 
     
 class Ebooks(Resource): 
-    @paginated(sortings=model.sortings['ebook'])
+    @logic.paginated(sortings=model.sortings['ebook'])
     def get(self,page=1, page_size=20, sort=None, **kwargs):
         q=model.Ebook.query
-        return paginate(q, page, page_size, sort, schema.ebooks_list_serializer())
+        return logic.paginate(q, page, page_size, sort, schema.ebooks_list_serializer())
     
     def post(self):
         pass
     
 class Authors(Resource):
-    @paginated(sortings=model.sortings['author'])
+    @logic.paginated(sortings=model.sortings['author'])
     def get(self,page=1, page_size=20, sort=None, **kwargs):
         q=model.Author.query
-        return paginate(q, page, page_size, sort, schema.authors_list_serializer())
+        return logic.paginate(q, page, page_size, sort, schema.authors_list_serializer())
+    
+class Series(Resource):
+    @logic.paginated(sortings=model.sortings['series'])
+    def get(self,page=1, page_size=20, sort=None, **kwargs):
+        q=model.Series.query
+        return logic.paginate(q, page, page_size, sort, schema.series_list_serializer())
     
 class Ebook(Resource):
     def get(self, id):
         return schema.ebook_serializer().dump(model.Ebook.query.get(id)).data  # @UndefinedVariable
     
+    @has_role('admin')
     @success_error
     def delete(self, id):
-        model.Ebook.delete(id)
+        db.session.delete(model.Ebook.query.get(id))  # @UndefinedVariable
         
     def put(self,id):
         pass
+    
+class Search(Resource):
+    @logic.paginated()
+    def get(self, search, page=1, page_size=20, **kwargs):
+        q=logic.search_query(model.Ebook.query, search)
+        return logic.paginate(q,page, page_size, None, schema.ebooks_list_serializer())
+        
+    
+
     
         
     
 api.add_resource(Ebooks, '/ebooks')
 api.add_resource(Ebook, '/ebooks/<int:id>')
+api.add_resource(Authors, '/authors')
+api.add_resource(Series, '/series')
+api.add_resource(Search, '/search/<string:search>')

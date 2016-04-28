@@ -1,4 +1,5 @@
 from .basecase import TestCase
+from urllib.parse import quote
 import flask
 
 class TestApi(TestCase):
@@ -84,6 +85,30 @@ class TestApi(TestCase):
         res=self.get('/api/ebooks/%s'%id)
         self.assertEqual(res['id'],id)
         self.assertEqual(res['title'], 'Alenka v říši kvant - Alegorie kvantové fyziky')
+        
+        
+        #------------
+        res=self.get('/api/authors', query_string={'page':1, 'page_size':50, 'sort':'name'})
+        self.assertEqual(len(res['items']),50)
+        self.assertEqual(res['total'], 102)
+        self.assertEqual(res['items'][0]['last_name'], 'Adornetto')
+        
+        res=self.get('/api/series', query_string={'page':2, 'page_size':14, 'sort':'title'} )
+        self.assertEqual(res['total'], 28)
+        self.assertEqual(res['items'][-1]['title'], 'Zář')
+        
+        
+        res=self.get('/api/search/%s'% quote('Zápas boh'))
+        self.assertEqual(res['total'], 1)
+        self.assertEqual(res['items'][0]['title'], 'Podobni bohům')
+        
+        res=self.get('/api/search/%s'% quote('prip'))
+        self.assertEqual(res['total'], 4)
+        
+        res=self.get('/api/search/%s'% quote('henry dome'))
+        self.assertEqual(res['total'], 1)
+        self.assertEqual(res['items'][0]['title'], 'Roky v Bílém domě')
+        
         
         
         
