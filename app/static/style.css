@@ -1,0 +1,13 @@
+.warning {
+    border-color: #e44;
+    background: #fdd;
+}
+
+label {
+    font-weight: bold;
+    display:block
+}
+
+input.narrow {
+    width: 260px;
+}

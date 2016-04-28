@@ -15,6 +15,16 @@ def safe_int(v, for_=''):
     except ValueError:
         abort(400,'Invalid number for %s'%for_)
 
+def success_error(fn):
+    @wraps(fn)
+    def inner(*args,**kwargs):
+        try:
+            fn(*args, **kwargs)
+            return {'success':True}
+        except Exception as e:
+            return {'error':str(e)}
+    return inner
+
 def paginated(default_page_size=10, max_page_size=100, sortings=None):
     def wrapper(fn):
         @wraps(fn)

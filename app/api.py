@@ -2,7 +2,7 @@ from flask import Blueprint, request,g, abort, current_app
 from flask_restful import Resource as BaseResource, Api
 import app.model as model
 import app.schema as schema
-from app.utils import paginated, paginate, verify_token
+from app.utils import paginated, paginate, verify_token, success_error
 
 
 bp=Blueprint('api', __name__)
@@ -38,11 +38,28 @@ class Ebooks(Resource):
     @paginated(sortings=model.sortings['ebook'])
     def get(self,page=1, page_size=20, sort=None, **kwargs):
         q=model.Ebook.query
-        return paginate(q, page, page_size, sort, schema.ebooks_list_serializer)
+        return paginate(q, page, page_size, sort, schema.ebooks_list_serializer())
+    
+    def post(self):
+        pass
+    
+class Authors(Resource):
+    @paginated(sortings=model.sortings['author'])
+    def get(self,page=1, page_size=20, sort=None, **kwargs):
+        q=model.Author.query
+        return paginate(q, page, page_size, sort, schema.authors_list_serializer())
     
 class Ebook(Resource):
     def get(self, id):
-        return schema.ebook_serializer.dump(model.Ebook.query.get(id)).data  # @UndefinedVariable
+        return schema.ebook_serializer().dump(model.Ebook.query.get(id)).data  # @UndefinedVariable
+    
+    @success_error
+    def delete(self, id):
+        model.Ebook.delete(id)
+        
+    def put(self,id):
+        pass
+    
         
     
 api.add_resource(Ebooks, '/ebooks')

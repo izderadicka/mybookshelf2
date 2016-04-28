@@ -16,9 +16,9 @@ class Test(TestCase):
     def test_schema_ebook(self):
         
         ebook_data={'title': 'Sedm lumpu slohlo pumpu'}
-        errors=schema.ebook_deserializer_insert.validate(ebook_data)
+        errors=schema.ebook_deserializer_insert().validate(ebook_data)
         self.assertFalse(errors)
-        errors=schema.ebook_deserializer_insert.validate({})
+        errors=schema.ebook_deserializer_insert().validate({})
         self.assertTrue(errors)
         
         
@@ -30,7 +30,7 @@ class Test(TestCase):
                     'genres':[ {'id':23,'name':'Romance'}, {'id':9, 'name':'Fantasy'}, {'id':13, 'name':'Horror'}],
                     'version_id':1
                     }
-        eb,errors=schema.ebook_deserializer_update.load(ebook_data)
+        eb,errors=schema.ebook_deserializer_update().load(ebook_data)
         print (errors)
         self.assertFalse(errors)
         

@@ -2,15 +2,25 @@
 <html>
   <head>
     {% block head %}
+    <meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link href="{{url_for('static', filename='entireframework.min.css')}}" rel="stylesheet" type="text/css">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     {%block extra_head%}{%endblock%}
     {% endblock %}
   </head>
   <body>
-    <div id="main">
-    <div id="content">
+  <nav class="nav" tabindex="-1" onclick="this.focus()">
+			<div class="container">
+				<a class="pagename current" href="#">MyBookshelf2</a>
+				<a href="#">One</a>
+				<a href="#">Two</a> 
+				<a href="#">Three</a>
+			</div>
+		</nav>
+		<button class="btn-close btn btn-sm">×</button>
+    <div class="container" id="main">
     {% block content %}{% endblock %}
-    </div>
     </div>
   </body>
 </html>

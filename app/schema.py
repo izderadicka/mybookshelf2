@@ -75,8 +75,10 @@ class EbookSchema(ModelSchema):
         exclude=('full_text',)
         
     
-        
-ebook_serializer=EbookSchema()  
-ebook_deserializer_update=EbookSchema()    
-ebook_deserializer_insert=EbookSchema(exclude=('version_id',))      
-ebooks_list_serializer=EbookSchema(many=True, only=('id', 'title', 'authors', 'series', 'series_index','language','genres'))
+#schemas are probably not thread safe, better to have new instance per each use        
+ebook_serializer=lambda: EbookSchema()  
+ebook_deserializer_update=lambda: EbookSchema()    
+ebook_deserializer_insert=lambda: EbookSchema(exclude=('version_id',))      
+ebooks_list_serializer=lambda: EbookSchema(many=True, only=('id', 'title', 'authors', 'series', 'series_index','language','genres'))
+
+authors_list_serializer=lambda: AuthorSchema(many=True)

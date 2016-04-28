@@ -4,9 +4,9 @@ Created on Apr 23, 2016
 @author: ivan
 '''
 import unittest
-from .basecase import TestCase 
 from app import db,app
 import app.model as model
+from .basecase import TestCase 
 
 class Test(TestCase):
 
