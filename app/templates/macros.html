@@ -1,0 +1,10 @@
+{% macro render_authors(authors, max=5) -%}
+{% if max and authors|length > max %}
+<span>Many authors</span>
+{%else%}
+{%for a in authors%}
+<span>{%if a.first_name%}{{a.first_name}} {%endif%}{{a.last_name}}</span>
+{%if not loop.last%}, {%endif%}
+{%endfor%}
+{%endif%}
+{%- endmacro%}

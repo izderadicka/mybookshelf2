@@ -1,0 +1,31 @@
+{% import 'macros.html' as m %}
+{% extends "base.html" %}
+{%block title%}MyBookshelf2{%endblock%}
+{% block content %}
+
+<div id="search_form">
+{% for message in get_flashed_messages() %}
+    <div class="msg warning">{{ message }}</div>
+ {% endfor %}
+
+<form action="{{url_for('minimal.search')}}" method="GET">
+<input type="submit" class="addon	" value="Search:"><input type="text" name="search" 
+class="smooth wide" value="{{search}}">
+</form>
+</div>
+{% if ebooks %}
+<div id="ebooks_list">
+{% for book in ebooks %}
+<div class="row">
+<div class="c12">
+<div class="title"><a href="#">{{book.title}}</a></div>
+{% if book.series %}
+<div class="series">{{book.series.title}} #{{book.series_index}}</div>
+{%endif%} 
+<div class="authors">{{m.render_authors(book.authors)}}</div>
+</div>
+</div>
+{% endfor %}
+</div>
+{%endif%}
+{%endblock%}

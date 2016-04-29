@@ -1,3 +1,7 @@
+#main {
+    margin-top:5px;
+}
+
 .warning {
     border-color: #e44;
     background: #fdd;
@@ -10,4 +14,42 @@ label {
 
 input.narrow {
     width: 260px;
+}
+
+input.wide { 
+   width:60%
+}
+
+input.addon {
+    font-weight: bold;
+    border: none;
+    color: white;
+    background:black;
+}
+
+#search_form input, #search_form span {
+    display: inline;
+} 
+
+.title {
+    font-weight: bold;
+    font-size:150%
+}
+
+.title a {
+    text-decoration: none;
+}
+
+.series {
+    font-weight: bold;
+    font-size: 125%
+}
+
+.authors {
+    font-style: italic;
+}
+
+#ebooks_list .row {
+    border-left: 10px solid grey !important;
+    padding-left: 1em;
 }

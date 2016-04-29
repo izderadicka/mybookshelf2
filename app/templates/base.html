@@ -12,10 +12,13 @@
   <body>
   <nav class="nav" tabindex="-1" onclick="this.focus()">
 			<div class="container">
-				<a class="pagename current" href="#">MyBookshelf2</a>
-				<a href="#">One</a>
-				<a href="#">Two</a> 
-				<a href="#">Three</a>
+				<a class="pagename current" href="/">MyBookshelf2</a>
+				 {% if current_user.is_authenticated %}
+				<a href="/search">Search</a>
+				<a href="/logoff">Log Out</a> 
+				 {% else %}
+				<a href="/login">Login</a>
+				{%endif%}
 			</div>
 		</nav>
 		<button class="btn-close btn btn-sm">×</button>

@@ -26,8 +26,10 @@ def main():
 def register_blueprints():
     from app.api import bp as api_bp
     from app.access import bp as access_bp
+    from app.minimal import bp as minimal_bp
     
     app.register_blueprint(api_bp, url_prefix='/api')
     app.register_blueprint(access_bp)
+    app.register_blueprint(minimal_bp)
     
 register_blueprints()
