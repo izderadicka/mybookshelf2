@@ -12,7 +12,7 @@ def check_cors(origin):
     host=hp[0]
     port=int(hp[1]) if len(hp)>1 else 443 if url.scheme == 'https' else 80
     
-    if host not in current_app.config.get('CORS_HOSTS', []):
+    if current_app.config.get('CORS_HOSTS') != '*' and host not in current_app.config.get('CORS_HOSTS', []):
         return False
     allowed_ports=current_app.config.get('CORS_PORTS')
     if allowed_ports and isinstance(allowed_ports, tuple) and (port < allowed_ports[0] or\

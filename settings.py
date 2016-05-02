@@ -8,7 +8,7 @@ CACHE_CONTROL = 'max-age=20'
 CACHE_EXPIRES = 20
 
 #CORS
-CORS_HOSTS=['localhost']
+CORS_HOSTS='*' # or list of hosts ['localhost']
 CORS_PORTS=None # or (lower, upper) or []
 CORS_SECURE=False # if cors is allowed only for https
 
