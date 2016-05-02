@@ -12,5 +12,5 @@ if __name__ == "__main__":
     if len(sys.argv)>1 and 'VISIBLE' in sys.argv[1:]:
         host='0.0.0.0'
         
-    app.run(debug=dbg, host=host)
+    app.run(debug=dbg, host=host, port=6006)
 

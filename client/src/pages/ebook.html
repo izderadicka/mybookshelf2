@@ -1,5 +1,6 @@
 <template>
   <require from="components/authors"></require>
+   <require from="components/genres-converter"></require>
   <section>
     <h2 class="page-title">${ebook.title}</h2>
     <authors authors.bind="ebook.authors"></authors>
@@ -10,11 +11,11 @@
       </li>
       <li class="list-group-item" if.bind="ebook.series">
         <label class="ebook-detail-label">Series:</label>
-        <span class="ebook-detail-value">${ebook.series} #${ebook.series_index}</span>
+        <span class="ebook-detail-value">${ebook.series.title} #${ebook.series_index}</span>
       </li>
       <li class="list-group-item">
         <label class="ebook-detail-label">Genres:</label>
-        <span class="ebook-detail-value">${ebook.genres}</span>
+        <span class="ebook-detail-value">${ebook.genres | genres}</span>
       </li>
       <li class="list-group-item">
         <label class="ebook-detail-label">Rating:</label>
@@ -22,7 +23,7 @@
       </li>
       <li class="list-group-item">
         <label class="ebook-detail-label">Created:</label>
-        <span class="ebook-date">${ebook._created}</span>
+        <span class="ebook-date">${ebook.created}</span>
       </li>
 
     </ul>

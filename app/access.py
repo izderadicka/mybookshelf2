@@ -6,6 +6,7 @@ from sqlalchemy import or_
 from sqlalchemy.orm.exc import NoResultFound
 import logging
 logger=logging.getLogger('access')
+from app.cors import cors_enabled
 
 
 bp=Blueprint('access', __name__)
@@ -27,6 +28,7 @@ def load_user(user_id):
 
 
 @bp.route('/login', methods=['GET', 'POST'])
+@cors_enabled
 def login():
     def check_user(username, pwd):
         user= model.User.query.filter(or_(model.User.user_name == username,  # @UndefinedVariable

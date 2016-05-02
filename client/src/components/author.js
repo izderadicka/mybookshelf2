@@ -8,11 +8,11 @@ export class Author {
   @computedFrom('author')
   get link(){
 
-    return '#/author/'+(this.author.firstname?`${this.author.lastname}/${this.author.firstname}`:this.author.lastname);
+    return '#/author/'+this.author.id;
   }
 
   @computedFrom('author')
   get fullName() {
-    return this.author.firstname?`${this.author.firstname} ${this.author.lastname}`:this.author.lastname;
+    return this.author.first_name?`${this.author.first_name} ${this.author.last_name}`:this.author.last_name;
   }
 }

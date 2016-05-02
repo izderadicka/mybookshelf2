@@ -13,8 +13,8 @@ export class Author {
 
   activate(params)  {
     logger.debug('Author activated with '+JSON.stringify(params));
-    this.lastname=decodeURIComponent(params.lastname);
-    this.firstname=params.firstname?decodeURIComponent(params.firstname):undefined
+    this.id=decodeURIComponent(params.id);
+
     this.updateLoader()
   }
 
@@ -24,7 +24,7 @@ export class Author {
   }
 
   updateLoader() {
-    this._loader = this.client.authorBooks.bind(this.client, this.lastname, this.firstname, this.filter);
+    this._loader = this.client.authorBooks.bind(this.client, this.id, this.filter);
   }
 
   @computedFrom('_loader')

@@ -109,6 +109,9 @@ class TestApi(TestCase):
         self.assertEqual(res['total'], 1)
         self.assertEqual(res['items'][0]['title'], 'Roky v Bílém domě')
         
+        res=self.get('/api/ebooks/author/8015')
+        self.assertEqual(res['total'], 4)
+        self.assertEqual(len(res['items']), 4)
         
         
         

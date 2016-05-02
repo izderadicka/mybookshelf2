@@ -68,7 +68,7 @@ class EbookSchema(ModelSchema):
     series=fields.Nested(SeriesSchema, only=('id', 'title'))
     language=fields.Function(serialize=lambda o: o.language.name, deserialize=lang_from_code)
     genres=fields.Nested(GenreSchema, many=True)
-    sources=fields.Nested(SourceSchema, many=True, only=('id', 'format', 'location', 'quality','modified'))
+    sources=fields.Nested(SourceSchema, many=True, only=('id', 'format', 'location', 'quality','modified', 'size'))
     full_text=None
     class Meta:
         model=model.Ebook

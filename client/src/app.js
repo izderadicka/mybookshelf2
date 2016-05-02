@@ -1,13 +1,13 @@
 
-import {FetchConfig, AuthorizeStep} from 'aurelia-auth';
+import {FetchConfig, AuthorizeStep, AuthService} from 'aurelia-auth';
 import {inject, LogManager} from 'aurelia-framework';
 import {HttpClient} from 'aurelia-fetch-client';
 
 const logger = LogManager.getLogger('app');
-@inject(FetchConfig, HttpClient)
+@inject(FetchConfig, HttpClient, AuthService)
 export class App {
 
-  constructor(fetchConfig, client) {
+  constructor(fetchConfig, client, auth) {
   this.fetchConfig = fetchConfig;
   this.fetchConfig.configure();
   client.configure(conf => conf
@@ -18,7 +18,7 @@ export class App {
       if (response && response.status == 401) {
         logger.warn('Not authenticated!');
         this.router.navigateToRoute('login');
-        throw Error('Not autherticated!')
+        throw new Error('Not autherticated!')
 
       }
       return response;
@@ -36,7 +36,7 @@ export class App {
       {route: 'login', name: 'login', moduleId:'pages/login', title:'Login'},
       {route: 'ebook/:id', name:'ebook', moduleId: 'pages/ebook', title:'Ebook', auth:true},
       {route: 'search/:query', name: 'search', moduleId:'pages/search', title: 'Search Results', auth:true},
-      {route:['author/:lastname', 'author/:lastname/:firstname'], name:'author', moduleId:'pages/author', title:'Authors books', auth:true}
+      {route:['author/:id'], name:'author', moduleId:'pages/author', title:'Authors books', auth:true}
       /*
       { route: 'users',         name: 'users',        moduleId: 'pages/users',        nav: true, title: 'Github Users' },
       { route: 'child-router',  name: 'child-router', moduleId: 'pages/child-router', nav: true, title: 'Child Router' } */
@@ -46,7 +46,7 @@ export class App {
   }
 
   activate() {
-    
+
   }
 
   doSearch(query) {

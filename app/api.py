@@ -5,13 +5,15 @@ import app.schema as schema
 import app.logic as logic
 from app.utils import verify_token, success_error
 from app import db
+from app.cors import add_cors_headers
 from functools import wraps
+
 
 
 
 bp=Blueprint('api', __name__)
 api=Api(bp)
-schema
+
 
 
 @bp.before_request
@@ -25,6 +27,10 @@ def token_authetication():
             if user and user.is_active:
                 g.authenticated=True
                 g.user=user
+                
+@bp.after_request
+def after_request(response):
+    return add_cors_headers(response)
 
 def authenticated(fn):
     @wraps(fn)
@@ -88,13 +94,22 @@ class Search(Resource):
         q=logic.search_query(model.Ebook.query, search)
         return logic.paginate(q,page, page_size, None, schema.ebooks_list_serializer())
         
-    
+        
+class AuthorEbooks(Resource): 
+    @logic.paginated(sortings=model.sortings['ebook'])
+    def get(self, id, page=1, page_size=20, sort=None ):
+        q=model.Ebook.query.join(model.Author, model.Ebook.authors).filter(model.Author.id ==id)
+        if request.args.get('filter'):
+            q=logic.filter_ebooks(q, request.args.get('filter'))
+        return logic.paginate(q,page,page_size,sort, schema.ebooks_list_serializer())
+        
 
     
         
     
 api.add_resource(Ebooks, '/ebooks')
 api.add_resource(Ebook, '/ebooks/<int:id>')
+api.add_resource(AuthorEbooks, '/ebooks/author/<int:id>')
 api.add_resource(Authors, '/authors')
 api.add_resource(Series, '/series')
 api.add_resource(Search, '/search/<string:search>')

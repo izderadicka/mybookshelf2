@@ -24,6 +24,9 @@ def search_query(q, search):
     return q.filter(model.Ebook.full_text.match(search))\
     .order_by(desc(func.ts_rank_cd(model.Ebook.full_text, func.to_tsquery(text("'custom'"), search))))
     
+def filter_ebooks(q, filter):
+    return q.filter(func.unaccent(model.Ebook.title).ilike(func.unaccent(text("'%%%s%%'"%filter))))
+    
 def paginated(default_page_size=10, max_page_size=100, sortings=None):
     def wrapper(fn):
         @wraps(fn)

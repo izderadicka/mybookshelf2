@@ -15,14 +15,21 @@ export class Login{
 
     login(){
 
-        return this.auth.login(this.email, this.password)
+        return this.auth.login({username:this.email, password:this.password})
         .then(response=>{
+          if (response.error) {
+            this.error=true;
+            throw new Error('Invalid login');
+          } else {
             this.error=false;
             logger.debug("success logged: " + JSON.stringify(response));
+          }
         })
         .catch(err=>{
             this.error=true;
             logger.error("login failure: "+err);
+            //todo: get it from auth config?
+            window.location.href='#/login';
         });
     };
 

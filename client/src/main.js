@@ -1,12 +1,10 @@
 import  'bootstrap';
-import {ApplicationState} from 'lib/application-state'
 import authConfig from 'auth-config';
 
 export function configure(aurelia) {
   aurelia.use
     .standardConfiguration()
     .developmentLogging()
-    .instance(ApplicationState, new ApplicationState())
     .feature('components/pagination')
     .plugin('aurelia-auth', baseConfig => baseConfig.configure(authConfig));
 

@@ -3,15 +3,15 @@ import os
 SQLALCHEMY_DATABASE_URI='postgresql://ebooks:ebooks@localhost/ebooks' 
 SQLALCHEMY_TRACK_MODIFICATIONS=False
 SECRET_KEY='Pjk5EzGOcCOG5Rf1deqpZAvz17uUdZmWxJa3X/izSns'
-RESOURCE_METHODS = ['GET', 'POST', 'DELETE']
-ITEM_METHODS = ['GET', 'PATCH', 'DELETE']
 
 CACHE_CONTROL = 'max-age=20'
 CACHE_EXPIRES = 20
-#CORS
 
-X_DOMAINS='*'
-X_HEADERS=['Authorization', 'Content-type']
+#CORS
+CORS_HOSTS=['localhost']
+CORS_PORTS=None # or (lower, upper) or []
+CORS_SECURE=False # if cors is allowed only for https
+
 
 
 class Testing:
