@@ -4,7 +4,7 @@ from sqlalchemy import Column, Date, DateTime, Float, Index, Integer, SmallInteg
     BigInteger, Boolean, ForeignKey, Text, Enum, Table, desc
 from sqlalchemy.ext.declarative import declarative_base,declared_attr
 from sqlalchemy.sql import func
-from sqlalchemy.orm import relationship, deferred
+from sqlalchemy.orm import relationship, deferred, backref
 from flask.ext.login import UserMixin
 from sqlalchemy_utils import TSVectorType
 from app.utils import initials
@@ -77,19 +77,21 @@ class User(Base, Auditable, UserMixin):
     def is_active(self):
         return self.active
     
-    def has_role(self, role):
+    def has_role(self, roles):
         if not self.active:
             return False
-        for r in self.roles:
-            if r.name.lower()==role.lower():
-                return True
-        return False
+        if isinstance(roles, str):
+            roles=[roles]
+        return bool(app.db.session.query(func.user_has_roles(1, roles)).one()[0])
     
 class Role(Base):
     name=Column(String(64), nullable=False)
+    parent_id=Column(BigInteger, ForeignKey('role.id'))
+    children = relationship("Role")
     
     def __repr__(self):
         return super(Role,self).__repr__(['name'])
+Role.parent=relationship("Role", remote_side=[Role.id])
     
 class Author(Base, Auditable):
     

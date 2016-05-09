@@ -58,10 +58,10 @@ def create_tables():
     connection = db.engine.raw_connection()  # @UndefinedVariable
     try:
         c=connection.cursor()
-        script=open(os.path.join(os.path.dirname(__file__), DATA_DIR, 'create_ts.sql'), 'rt', encoding='utf-8-sig').read()
-        
-        #print(script)
-        res=c.execute(script)
+        for fname in ('create_ts.sql', 'create_functions.sql'):
+            script=open(os.path.join(os.path.dirname(__file__), DATA_DIR, fname), 'rt', encoding='utf-8-sig').read()
+            #print(script)
+            res=c.execute(script)
         connection.commit()
     finally:
         connection.close()

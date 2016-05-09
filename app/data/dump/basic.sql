@@ -152,7 +152,11 @@ SELECT pg_catalog.setval('language_id_seq', 4, true);
 -- Data for Name: role; Type: TABLE DATA; Schema: public; Owner: ebooks
 --
 
-INSERT INTO role VALUES (1, 1, 'admin');
+INSERT INTO role VALUES (1, 1, 'guest', NULL);
+INSERT INTO role VALUES (2, 1, 'user', 1);
+INSERT INTO role VALUES (3, 1, 'trusted_user', 2);
+INSERT INTO role VALUES (4, 1, 'superuser', 3);
+INSERT INTO role VALUES (5, 1, 'admin', 4);
 
 
 --
@@ -161,7 +165,7 @@ INSERT INTO role VALUES (1, 1, 'admin');
 -- Name: role_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebooks
 --
 
-SELECT pg_catalog.setval('role_id_seq', 1, true);
+SELECT pg_catalog.setval('role_id_seq', 5, true);
 
 
 --
@@ -188,7 +192,7 @@ SELECT pg_catalog.setval('user_id_seq', 1, true);
 -- Data for Name: user_roles; Type: TABLE DATA; Schema: public; Owner: ebooks
 --
 
-INSERT INTO user_roles VALUES (1, 1);
+INSERT INTO user_roles VALUES (1, 5);
 
 
 -- Completed on 2016-04-23 18:08:41 CEST

@@ -17,6 +17,7 @@ logging.basicConfig(level=logging.DEBUG)
 class TestCase(BaseTestCase):
     
     INIT_FILES=['../data/create_ts.sql', # text search config
+                '../data/create_functions.sql',  #create other sql  procedures
                 '../data/dump/basic.sql', # basic stuff
                 '../data/dump/test_data.sql' # test data = random 100 ebooks
                 ]

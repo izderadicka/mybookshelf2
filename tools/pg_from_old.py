@@ -4,14 +4,11 @@ import os.path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__),'..'))
 
 import app.model as model
 from app.utils import hash_pwd
-import sys
-sys.path.append('..')
-
-
-
 
 
 lmap = lambda func, *iterable: list(map(func, *iterable))
@@ -72,11 +69,17 @@ def export_data(args):
                model.Format, {'mime_type':'mime_type', 'name':'name', 'extension':'extension'})
     
     now=datetime.now()
+    parent=None
+    for r in ['guest', 'user', 'trusted_user', 'superuser', 'admin']:
+        role=model.Role(name=r, parent=parent)
+        session.add(role)
+        session.flush()
+        parent=role
     admin = model.User(user_name="admin", password=hash_pwd("admin"), email="admin@example.com", created=now, active=True)
     session.add(admin)
-    admin.roles.append(model.Role(name='admin'))
+    admin.roles.append(role)
     session.commit()
-    print("Created user admin")
+    print("Created user roles")
     
     def auditable_attrs(data): 
         return {'created_by':admin, 'modified_by':admin, 
