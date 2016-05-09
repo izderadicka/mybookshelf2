@@ -87,6 +87,10 @@ class Ebook(Resource):
         
     def put(self,id):
         pass
+
+class Author(Resource):
+    def get(self, id):
+        return schema.author_serializer().dump(model.Author.query.get(id)).data
     
 class Search(Resource):
     @logic.paginated()
@@ -111,5 +115,6 @@ api.add_resource(Ebooks, '/ebooks')
 api.add_resource(Ebook, '/ebooks/<int:id>')
 api.add_resource(AuthorEbooks, '/ebooks/author/<int:id>')
 api.add_resource(Authors, '/authors')
+api.add_resource(Author, '/authors/<int:id>')
 api.add_resource(Series, '/series')
 api.add_resource(Search, '/search/<string:search>')

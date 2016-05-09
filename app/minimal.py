@@ -6,7 +6,7 @@ import app.logic as logic
 bp=Blueprint('minimal', __name__)
 
 @bp.route('/search', methods=['GET'])
-#@login_required
+@login_required
 def search():
     search=''
     ebooks=None
@@ -20,3 +20,14 @@ def search():
             
     
     return render_template('search.html', search=search, ebooks=ebooks)
+
+@bp.route('/ebooks/<int:id>')
+@login_required
+def ebook_detail(id):
+    ebook=model.Ebook.query.get(id)
+    return render_template('ebook.html', ebook=ebook)
+
+@bp.route('/download/<int:id>')
+@login_required
+def download(id):
+    return logic.download(id)

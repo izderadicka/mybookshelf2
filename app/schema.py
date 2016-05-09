@@ -82,4 +82,6 @@ ebook_deserializer_insert=lambda: EbookSchema(exclude=('version_id',))
 ebooks_list_serializer=lambda: EbookSchema(many=True, only=('id', 'title', 'authors', 'series', 'series_index','language','genres'))
 
 authors_list_serializer=lambda: AuthorSchema(many=True, only=('id', 'first_name', 'last_name'))
+author_serializer = lambda: AuthorSchema()
+
 series_list_serializer=lambda: SeriesSchema(many=True, only=('id', 'title'))

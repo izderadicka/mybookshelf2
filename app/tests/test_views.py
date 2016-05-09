@@ -66,6 +66,36 @@ class TestViews(TestCase):
             test_login_json('test', 'test', success=False)
             
             
+    def test_views(self):
+        with self.client as c:
+            res=c.post('/login', data={'username':'admin', 'password':'admin'}, 
+                       follow_redirects=True)
+            self.assert200(res)
+            
+            res=c.get('/')
+            self.assert200(res)
+            
+            res=c.get('/search')
+            self.assert200(res)
+            self.assertTrue('Search:' in str(res.data))
+            
+            res=c.get('/search?search=kissinger+bilem')
+            self.assert200(res)
+            self.assertTrue('Roky v Bílém domě' in str(res.data, encoding='utf-8'))
+            
+            res=c.get('/ebooks/61944')
+            self.assert200(res)
+            self.assertTrue('docx' in str(res.data))
+            
+            res=c.get('/download/86060')
+            self.assert200(res)
+            self.assertEqual(int (res.headers['Content-Length']), 3147900)
+            self.assertEqual(res.headers['Content-Type'], 'application/epub+zip')
+            self.assertEqual(len(res.data), 3147900)
+            
+        
+            
+            
                     
                 
             

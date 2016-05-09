@@ -6,6 +6,7 @@ const logger = LogManager.getLogger('search');
 export class Author {
   _loader;
   @bindable filter;
+  author;
 
   constructor(client) {
     this.client=client;
@@ -14,6 +15,7 @@ export class Author {
   activate(params)  {
     logger.debug('Author activated with '+JSON.stringify(params));
     this.id=decodeURIComponent(params.id);
+    this.client.getOne('authors', params.id). then(data => {this.author=data; logger.debug('Loaded author'+JSON.stringify(data))})
 
     this.updateLoader()
   }

@@ -34,7 +34,7 @@ export class ApiClient {
   }
 
   getOne(resource, id) {
-    const url=this.getUrl('ebooks/'+ id)
+    const url=this.getUrl(resource+'/'+ id)
     return this.http.fetch(url)
       .then(response => response.json());
   }

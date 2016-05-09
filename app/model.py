@@ -7,6 +7,7 @@ from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship, deferred
 from flask.ext.login import UserMixin
 from sqlalchemy_utils import TSVectorType
+from app.utils import initials
 
 
 
@@ -163,6 +164,24 @@ class Ebook(Base, Auditable):
     authors= relationship('Author', secondary=ebook_authors, order_by='Author.id', lazy='joined')
     cover= Column(String(512))
     full_text = deferred(Column(TSVectorType(regconfig='custom')))
+    
+    @property
+    def authors_str(self):
+        if not self.authors:
+            return 'No Authors'
+        if len(self.authors)==1:
+            return '{a.last_name} {a.first_name}'.format(a=self.authors[0])
+        else:
+            l=len(self.authors)
+            authors=[]
+            for i in range(min(3,l)):
+                authors.append('{a.last_name} {initials}'.format(a=self.authors[i], 
+                               initials=initials(self.authors[i].first_name)))
+            s=', '.join(authors)
+            if l>3:
+                s+=' and others'
+            return s
+                
     
     def __repr__(self):
         return super(Ebook,self).__repr__(['title'])

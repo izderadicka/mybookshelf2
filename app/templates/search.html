@@ -1,6 +1,6 @@
 {% import 'macros.html' as m %}
 {% extends "base.html" %}
-{%block title%}MyBookshelf2{%endblock%}
+{%block title%}Search for {{search}}{%endblock%}
 {% block content %}
 
 <div id="search_form">
@@ -18,7 +18,7 @@ class="smooth wide" value="{{search}}">
 {% for book in ebooks %}
 <div class="row">
 <div class="c12">
-<div class="title"><a href="#">{{book.title}}</a></div>
+<div class="title"><a href="{{url_for('minimal.ebook_detail', id=book.id)}}">{{book.title}}</a></div>
 {% if book.series %}
 <div class="series">{{book.series.title}} #{{book.series_index}}</div>
 {%endif%} 

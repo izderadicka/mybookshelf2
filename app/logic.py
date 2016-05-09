@@ -1,7 +1,13 @@
-from flask import abort, request
+from flask import abort, request, current_app, Response
 from sqlalchemy.sql import text,desc,func
 from functools import wraps
 import app.model as model
+from sqlalchemy.orm.exc import NoResultFound
+from app.utils import remove_diacritics
+import os.path
+
+import logging
+logger=logging.getLogger('logic')
 
 def safe_int(v, for_=''):
     if v is None or v=='':
@@ -57,3 +63,58 @@ def paginate(q, page, page_size, sort, serializer):
             'page_size':pager.per_page,
             'total':pager.total,
             'items': serializer.dump(pager.items).data}
+    
+    
+    
+def norm_file_name(source):
+    new_name_rel=norm_file_name_base(source.ebook)
+    for ch in [':', '*', '%', '|', '"', '<', '>', '?', '\\']:
+        new_name_rel=new_name_rel.replace(ch, '')
+    new_name_rel+='.'+source.format.extension
+    
+    return new_name_rel
+
+def norm_file_name_base(ebook):
+    config=current_app.config
+    if ebook.series and config.get('BOOKS_FILE_SCHEMA_SERIE'):
+        new_name_rel=config.get('BOOKS_FILE_SCHEMA_SERIE') % {'author':ebook.authors_str, 
+                                               'title':ebook.title,
+                                               'serie':ebook.series.title,
+                                               'serie_index':ebook.series_index or 0}
+        #TODO: might need to spplit base part
+    else:
+        new_name_rel=config.get('BOOKS_FILE_SCHEMA') % {'author':ebook.authors_str, 
+                                               'title':ebook.title}
+    new_name_rel= remove_diacritics(new_name_rel)
+    assert(len(new_name_rel)< 4096)
+    return new_name_rel
+    
+    
+def download(id):
+    try:
+        source=model.Source.query.get(id)
+    except NoResultFound:
+        abort(404, 'Source not found')
+    try:
+        fname=os.path.join(current_app.config['BOOKS_BASE_DIR'], source.location)
+        outfile=open(fname,'rb')
+    except IOError:
+        logger.exception('Source file %s error', fname)
+        abort(404, 'Source file not found')
+    size=os.stat(fname).st_size
+    def stream_file(f):
+        buf_size=8192
+        while True:
+            data=f.read(buf_size)
+            if not data:
+                break
+            yield data
+        f.close()
+        
+    fname=norm_file_name(source)
+    fname=os.path.split(fname)[-1]
+    response=Response(stream_file(outfile), mimetype=source.format.mime_type,
+                      headers={'Content-Disposition': 'attachment; filename="%s"' % fname,
+                               'Content-Length': size})
+    
+    return response

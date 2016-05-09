@@ -53,3 +53,7 @@ input.addon {
     border-left: 10px solid grey !important;
     padding-left: 1em;
 }
+
+table.sources {
+    margin-top:1em;
+}

@@ -1,0 +1,17 @@
+{% import 'macros.html' as m %}
+{% extends "base.html" %}
+{%block title%}{{ebook.title}}{%endblock%}
+{% block content %}
+<div class="title">{{ebook.title}}</div>
+<div class="authors">{{m.render_authors(ebook.authors,False)}}</div>
+{% if ebook.series %}
+<div class="series">{{ebook.series.title}} #{{ebook.series_index}}</div>
+{%endif %}
+<table class="table sources">
+<thead><tr><th>Format</th><th>Quality</th><th>Size</th><th>&nbsp;</th></tr></thead>
+{% for source in ebook.sources %}
+<tr><td><a href="{{url_for('minimal.download', id=source.id)}}">{{source.format.extension}}</a></td><td>{{source.quality}}</td><td>{{source.size}}</td>
+<td><span class="convert">Convert</span></td></tr>
+{% endfor %}
+</table>
+{% endblock %}
