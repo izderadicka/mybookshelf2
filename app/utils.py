@@ -30,7 +30,7 @@ def create_token(user, secret, valid_minutes=24*60):
     return jwt.encode({'id': user.id,
                        'user_name' : user.user_name,
                        'email': user.email,
-                       'roles': list(map(lambda r: r.name, user.roles)),
+                       'roles':  list(user.all_roles),
                        'exp': datetime.utcnow()+timedelta(hours=valid_minutes)}, secret, algorithm='HS256')
 
 def verify_token(token, secret):

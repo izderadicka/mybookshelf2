@@ -67,6 +67,7 @@ class Test(TestCase):
             self.assertTrue('gemmel' in ft and 'krav' in ft and 'kulisak' in ft)
             
         u=model.User.query.filter_by(user_name='admin').one()
+        self.assertEqual(len(u.all_roles), 5)
         self.assertTrue(u.has_role('admin'))
         self.assertTrue(u.has_role('user'))
         self.assertTrue(u.has_role('xxx', 'superuser'))

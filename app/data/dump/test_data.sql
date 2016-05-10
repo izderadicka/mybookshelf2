@@ -753,6 +753,21 @@ INSERT INTO source VALUES (98510, 1, '2016-03-20 15:16:41', '2016-03-20 15:16:41
 SELECT pg_catalog.setval('source_id_seq', 98599, true);
 
 
+-- test users
+
+INSERT INTO "user" VALUES (2, 1, '2016-05-10 15:10:11.615486', '2016-05-10 15:10:11.615486', 'user', 'user@example.com', '$2b$12$c5keCrAWjpt6C0RnnW8O/efKZW.3UJL3GT5XkHpFqM1IPf0szmlGm', true, NULL, NULL);
+INSERT INTO "user" VALUES (3, 1, '2016-05-10 15:10:53.09485', '2016-05-10 15:10:53.09485', 'superuser', 'superuser@example.com', '$2b$12$ZEB5wNYyQeTLFzL3R/Mj7uMDVzU1UHRDxQkd/WIC53iO9aJlHykP.', true, NULL, NULL);
+INSERT INTO "user" VALUES (4, 1, '2016-05-10 15:11:41.069144', '2016-05-10 15:11:41.069144', 'trusted_user', 'trusted@example.com', '$2b$12$FSgx6n6ZrTa1sDctpui..uGpMoehy4Pg3pawNBmcFYRQIl4syfu0.', true, NULL, NULL);
+INSERT INTO "user" VALUES (5, 1, '2016-05-10 15:12:53.166223', '2016-05-10 15:12:53.166223', 'guest', 'guest@example.com', '$2b$12$cZNvnRbo04q1dU.WjSBY6uEKpc5NJZ6FU8ZQU4fu.bszuZOChWL26', true, NULL, NULL);
+
+SELECT pg_catalog.setval('user_id_seq', 5, true);
+
+INSERT INTO user_roles VALUES (2, 2);
+INSERT INTO user_roles VALUES (3, 4);
+INSERT INTO user_roles VALUES (4, 3);
+INSERT INTO user_roles VALUES (5, 1);
+
+
 -- Completed on 2016-04-24 07:16:01 CEST
 
 --

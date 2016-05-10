@@ -1,4 +1,4 @@
-from flask import Blueprint, request
+from flask import Blueprint, request, abort
 from flask_restful import Resource as BaseResource, Api
 import app.model as model
 import app.schema as schema
@@ -45,19 +45,22 @@ class Series(Resource):
     
 class Ebook(Resource):
     def get(self, id):
-        return schema.ebook_serializer().dump(model.Ebook.query.get(id)).data  # @UndefinedVariable
+        b=model.Ebook.query.get_or_404(id)
+        return schema.ebook_serializer().dump(b).data  # @UndefinedVariable
     
-    @role_required('admin')
-    @success_error
+    @role_required('superuser')
     def delete(self, id):
-        db.session.delete(model.Ebook.query.get(id))  # @UndefinedVariable
-        
+        b=model.Ebook.query.get_or_404(id)
+        r=db.session.delete(b)  # @UndefinedVariable
+        db.session.commit()
+            
     def put(self,id):
         pass
 
 class Author(Resource):
     def get(self, id):
-        return schema.author_serializer().dump(model.Author.query.get(id)).data
+        a=model.Author.query.get_or_404(id)
+        return schema.author_serializer().dump(a).data
     
 class Search(Resource):
     @logic.paginated()

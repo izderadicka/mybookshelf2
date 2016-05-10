@@ -25,17 +25,18 @@ def read_pwd():
     return password
 
 @manager.command
-def create_user(user, email, password=None):
+def create_user(user, email, password=None, role='user'):
     if not password:
         password=read_pwd()
             
     data=dict(user_name=user, email=email, password=hash_pwd(password), active=True)    
-    errors=schema.UserSchema().validate(data, db.session)
+    errors=schema.UserSchema(exclude=('version_id',)).validate(data, db.session)
     if errors:
         raise InvalidCommand('Validation Error: %s'%errors)
     
-    
+    role=model.Role.query.filter_by(name=role).one()
     u=model.User(**data)
+    u.roles.append(role)
     db.session.add(u)  # @UndefinedVariable
     db.session.commit()  # @UndefinedVariable
 

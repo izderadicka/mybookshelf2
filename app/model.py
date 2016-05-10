@@ -77,12 +77,21 @@ class User(Base, Auditable, UserMixin):
     def is_active(self):
         return self.active
     
+    @property
+    def all_roles(self):
+        #all_roles are cached for efficiency 
+        if not hasattr(self, '_all_roles'):
+            self._all_roles=set(map(lambda x:x[0], app.db.session.query(func.user_roles(self.id)).all()))  # @UndefinedVariable
+        return self._all_roles
+    
     def has_role(self, *roles):
         if not self.active:
             return False
         if not roles:
             return True
-        return bool(app.db.session.query(func.user_has_roles(1, list(roles))).one()[0])  # @UndefinedVariable
+        for role in roles:
+            if role in self.all_roles:
+                return True
     
 class Role(Base):
     name=Column(String(64), nullable=False)
@@ -160,7 +169,7 @@ class Ebook(Base, Auditable):
     series=relationship('Series', back_populates='books', lazy='joined')
     series_index = Column(Integer)
     rating = Column(Float(asdecimal=True))
-    sources = relationship('Source', back_populates='ebook')
+    sources = relationship('Source', back_populates='ebook', cascade="all")
     genres = relationship('Genre', secondary=ebook_genres)
     #for lazy="subquery limited queries must be always ! ordered
     authors= relationship('Author', secondary=ebook_authors, order_by='Author.id', lazy='joined')

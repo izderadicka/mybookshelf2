@@ -2,6 +2,7 @@ from .basecase import TestCase
 from urllib.parse import quote
 import flask
 from flask_login import current_user
+import app
 
 class TestApi(TestCase):
     def __init__(self, *args, **kwargs):
@@ -113,6 +114,32 @@ class TestApi(TestCase):
         res=self.get('/api/ebooks/author/8015')
         self.assertEqual(res['total'], 4)
         self.assertEqual(len(res['items']), 4)
+    
+    def test_api2(self):    
+        #---------------
+        self.login('guest', 'guest')
+        res=self.get('/api/ebooks', failure=True)
+        self.assert401(res)
+        
+        self.login('user', 'user')
+        res=self.get('/api/ebooks')
+        
+        id=62241
+        res=self.delete('/api/ebooks/%d'%id, failure=True)
+        self.assert401(res)
+        
+        self.login('superuser', 'superuser')
+        
+        res=self.delete('/api/ebooks/%d'%id)
+        
+        res=self.get('/api/ebooks/%s'%id, failure=True)
+        print (res.json)
+        self.assert404(res)
+        
+        
+        
+         
+        
         
         
         
