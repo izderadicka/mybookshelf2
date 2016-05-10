@@ -1,6 +1,7 @@
 from .basecase import TestCase
 from urllib.parse import quote
 import flask
+from flask_login import current_user
 
 class TestApi(TestCase):
     def __init__(self, *args, **kwargs):
@@ -39,8 +40,8 @@ class TestApi(TestCase):
         
         self.assertTrue(len(res['items'])>5)
         self.assertEqual(res['page'], 1)
-        self.assertTrue(flask.g.authenticated)
-        self.assertEqual(flask.g.user.user_name, 'admin')
+        #current user is anonymous outside of request 
+        self.assertFalse(current_user.is_authenticated)
         
         for b in res['items']:
             self.assertTrue(b['title'] and b['id'], 'Invalid ebook %s'%b)

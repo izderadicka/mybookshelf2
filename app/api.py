@@ -1,57 +1,24 @@
-from flask import Blueprint, request,g, abort, current_app
+from flask import Blueprint, request
 from flask_restful import Resource as BaseResource, Api
 import app.model as model
 import app.schema as schema
 import app.logic as logic
-from app.utils import verify_token, success_error
+from app.utils import success_error
 from app import db
 from app.cors import add_cors_headers
-from functools import wraps
-
+from app.access import role_required
 
 
 
 bp=Blueprint('api', __name__)
 api=Api(bp)
 
-
-
-@bp.before_request
-def token_authetication():
-    token=request.headers.get('Authorization')
-    if token and token.lower().startswith('bearer '):
-        token=token[7:].strip()
-        claim=verify_token(token, current_app.config['SECRET_KEY'])
-        if claim:
-            user=model.User.query.get(claim['id'])  # @UndefinedVariable
-            if user and user.is_active:
-                g.authenticated=True
-                g.user=user
-                
 @bp.after_request
 def after_request(response):
     return add_cors_headers(response)
 
-def authenticated(fn):
-    @wraps(fn)
-    def inner(*args, **kwargs):
-        if not hasattr(g, 'authenticated') or not g.authenticated:
-            abort(401, 'Access denied')
-        return fn(*args, **kwargs)
-    return inner  
-
-def has_role(role): 
-    def wrapper(fn):
-        @wraps(fn)
-        def inner(*args,**kwargs):
-            if not g.user.has_role(role):
-                abort(401, 'Access denied')
-            return fn(*args, **kwargs)
-        return inner
-    return wrapper
-
 class Resource(BaseResource):
-    decorators=[authenticated]
+    decorators=[role_required('user')]
     pass
 
     
@@ -80,7 +47,7 @@ class Ebook(Resource):
     def get(self, id):
         return schema.ebook_serializer().dump(model.Ebook.query.get(id)).data  # @UndefinedVariable
     
-    @has_role('admin')
+    @role_required('admin')
     @success_error
     def delete(self, id):
         db.session.delete(model.Ebook.query.get(id))  # @UndefinedVariable

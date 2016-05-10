@@ -69,7 +69,7 @@ class Test(TestCase):
         u=model.User.query.filter_by(user_name='admin').one()
         self.assertTrue(u.has_role('admin'))
         self.assertTrue(u.has_role('user'))
-        self.assertTrue(u.has_role(['xxx', 'superuser']))
+        self.assertTrue(u.has_role('xxx', 'superuser'))
         self.assertFalse(u.has_role('xxx'))
 
 

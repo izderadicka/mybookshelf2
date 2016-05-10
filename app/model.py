@@ -77,12 +77,12 @@ class User(Base, Auditable, UserMixin):
     def is_active(self):
         return self.active
     
-    def has_role(self, roles):
+    def has_role(self, *roles):
         if not self.active:
             return False
-        if isinstance(roles, str):
-            roles=[roles]
-        return bool(app.db.session.query(func.user_has_roles(1, roles)).one()[0])
+        if not roles:
+            return True
+        return bool(app.db.session.query(func.user_has_roles(1, list(roles))).one()[0])  # @UndefinedVariable
     
 class Role(Base):
     name=Column(String(64), nullable=False)
