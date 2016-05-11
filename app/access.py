@@ -57,6 +57,14 @@ def role_required(*roles):
         return inner
     return wrapper
 
+def role_required_owning(*roles, if_own=None, owning_role=None):
+        assert roles or (if_own and owning_role)
+        user=current_user
+        if user.is_authenticated and user.has_role(*roles):
+            return
+        if if_own and if_own.created_by == user and user.is_authenticated and user.has_role(owning_role):
+            return
+        abort(401, 'Access denied')
 
 @bp.route('/login', methods=['GET', 'POST'])
 @cors_enabled

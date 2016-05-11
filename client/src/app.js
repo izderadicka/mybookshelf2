@@ -2,6 +2,7 @@
 import {FetchConfig, AuthorizeStep, AuthService} from 'aurelia-auth';
 import {inject, LogManager} from 'aurelia-framework';
 import {HttpClient} from 'aurelia-fetch-client';
+//import {Configure} from 'aurelia-configuration';
 
 const logger = LogManager.getLogger('app');
 @inject(FetchConfig, HttpClient, AuthService)

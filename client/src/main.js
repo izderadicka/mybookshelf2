@@ -1,5 +1,5 @@
 import  'bootstrap';
-import authConfig from 'auth-config';
+import authConfig from 'config/auth-config';
 
 export function configure(aurelia) {
   aurelia.use
@@ -7,6 +7,7 @@ export function configure(aurelia) {
     .developmentLogging()
     .feature('components/pagination')
     .plugin('aurelia-auth', baseConfig => baseConfig.configure(authConfig));
+
 
 
   //Uncomment the line below to enable animation.

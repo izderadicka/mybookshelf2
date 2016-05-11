@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, flash
 from flask_login import login_required
 import app.model as model
 import app.logic as logic
+import app.access as access
 
 bp=Blueprint('minimal', __name__)
 
@@ -28,6 +29,6 @@ def ebook_detail(id):
     return render_template('ebook.html', ebook=ebook)
 
 @bp.route('/download/<int:id>')
-@login_required
+@access.role_required('user')
 def download(id):
     return logic.download(id)

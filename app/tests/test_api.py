@@ -8,12 +8,14 @@ class TestApi(TestCase):
     def __init__(self, *args, **kwargs):
         super(TestApi, self).__init__(*args, **kwargs)
         self.headers=None
+        self.token=None
     def login(self, user='admin', pwd='admin'):
         res=self.client.post('/login', data='{"username":"%s", "password":"%s"}'%(user,pwd), 
                            content_type='application/json')
         token=res.json.get('access_token')
         self.assertTrue(token)
         self.headers={'Authorization': 'Bearer %s'%token}
+        self.token=token
     
     def __getattr__(self, name):  
         name=name.upper()
@@ -24,10 +26,12 @@ class TestApi(TestCase):
                     kwargs['headers'].update(self.headers)
                 else:
                     kwargs['headers']=self.headers
-                failure=kwargs.pop('failure') if 'failure' in kwargs else False  
+                failure=kwargs.pop('failure', False)
+                not_json=kwargs.pop('not_json', False)
                 resp= self.client.open(*args,**kwargs) 
                 if not failure:
                     self.assert200(resp)
+                if not not_json and not failure:
                     return resp.json
                 return resp
             return req
@@ -136,7 +140,10 @@ class TestApi(TestCase):
         print (res.json)
         self.assert404(res)
         
-        
+        res=self.get('/download/86060', query_string={'bearer_token':self.token}, not_json=True)
+        self.assertEqual(int (res.headers['Content-Length']), 3147900)
+        self.assertEqual(res.headers['Content-Type'], 'application/epub+zip')
+        self.assertEqual(len(res.data), 3147900)
         
          
         

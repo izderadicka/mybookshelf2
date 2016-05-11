@@ -1,6 +1,7 @@
 import {HttpClient} from 'aurelia-fetch-client';
 import {inject} from 'aurelia-framework';
 import $ from 'bootstrap';
+//import {Configure} from 'aurelia-configuration';
 
 @inject(HttpClient)
 export class ApiClient {
