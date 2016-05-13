@@ -1,13 +1,19 @@
 import {inject} from 'aurelia-framework';
 import {ApiClient} from 'lib/api-client';
 import {LogManager} from 'aurelia-framework';
+import {Access} from 'lib/access';
+
 let logger = LogManager.getLogger('ebooks');
 
-@inject(ApiClient)
+@inject(ApiClient, Access)
 export class Ebook {
   ebook
-  constructor(client) {
+  constructor(client, access, ) {
     this.client=client;
+    this.access=access;
+    this.token=access.token;
+    this.canDownload=access.has_role('user');
+    this.canConvert=access.has_role('user');
   }
 
   activate(params) {

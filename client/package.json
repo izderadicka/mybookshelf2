@@ -69,6 +69,7 @@
       "aurelia-animator-css": "npm:aurelia-animator-css@^1.0.0-beta.1.2.1",
       "aurelia-auth": "npm:aurelia-auth@^2.1.3",
       "aurelia-bootstrapper": "npm:aurelia-bootstrapper@^1.0.0-beta.1.2.1",
+      "aurelia-configuration": "github:vheissu/aurelia-configuration@^1.0.8",
       "aurelia-fetch-client": "npm:aurelia-fetch-client@^1.0.0-beta.1.2.5",
       "aurelia-framework": "npm:aurelia-framework@^1.0.0-beta.1.2.3",
       "aurelia-history-browser": "npm:aurelia-history-browser@^1.0.0-beta.1.2.1",

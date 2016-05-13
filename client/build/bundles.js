@@ -6,6 +6,8 @@ module.exports = {
         "[**/*.js]",
         "*.html!text",
         "**/*.html!text",
+        "*.json!text",
+        "**/*.json!text",
         "*.css!text"
       ],
       "options": {

@@ -1,18 +1,21 @@
 import {HttpClient} from 'aurelia-fetch-client';
 import {inject} from 'aurelia-framework';
 import $ from 'bootstrap';
-//import {Configure} from 'aurelia-configuration';
+import {Configure} from 'lib/config/index';
 
-@inject(HttpClient)
+@inject(Configure, HttpClient)
 export class ApiClient {
-  constructor(http) {
+  constructor(config, http) {
     this.http=http;
-    this.apiPath='/api';
+    this.apiPath=config.get('api.path');
+    this.baseUrl=http.baseUrl;
   }
 
   getUrl(r, query=null) {
     return this.apiPath+'/'+r+(query?'?'+$.param(query):'');
   }
+
+  get
   getMany(resource, page=1, pageSize=25, sort, extra) {
     let query={page:page, page_size:pageSize,sort:sort};
     if (extra) {

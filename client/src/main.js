@@ -6,7 +6,9 @@ export function configure(aurelia) {
     .standardConfiguration()
     .developmentLogging()
     .feature('components/pagination')
-    .plugin('aurelia-auth', baseConfig => baseConfig.configure(authConfig));
+    .plugin('aurelia-auth', baseConfig => baseConfig.configure(authConfig))
+    .feature('lib/config')
+    //.plugin('aurelia-configuration');
 
 
 

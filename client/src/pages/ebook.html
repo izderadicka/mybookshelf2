@@ -34,7 +34,8 @@
         <td>${source.format}</td>
         <td>${source.size}</td>
         <td>${source.quality}</td>
-        <td><i class="fa fa-download source-action"><i class="fa fa-cog source-action"></i></td>
+        <td><a if.bind="canDownload" href="${client.baseUrl}/download/${source.id}?bearer_token=${token}"><i class="fa fa-download source-action"></i></a>
+          <a if.bind="canConvert" href="#"><i class="fa fa-cog source-action"></i></a></td>
       </tr>
     </table>
   </section>

@@ -2,24 +2,24 @@
 import {FetchConfig, AuthorizeStep, AuthService} from 'aurelia-auth';
 import {inject, LogManager} from 'aurelia-framework';
 import {HttpClient} from 'aurelia-fetch-client';
-//import {Configure} from 'aurelia-configuration';
+import {Configure} from 'lib/config/index';
 
 const logger = LogManager.getLogger('app');
-@inject(FetchConfig, HttpClient, AuthService)
+@inject(Configure, FetchConfig, HttpClient, AuthService)
 export class App {
 
-  constructor(fetchConfig, client, auth) {
-  this.fetchConfig = fetchConfig;
-  this.fetchConfig.configure();
+  constructor(config,fetchConfig, client, auth) {
+  this.config=config;
+  fetchConfig.configure();
   client.configure(conf => conf
-      .withBaseUrl(`http://${window.location.hostname}:6006`)
+      .withBaseUrl(`http://${this.config.get('api.hostname',window.location.hostname)}:${this.config.get('api.port')}`)
 
       .withInterceptor({
     response: response => {
       if (response && response.status == 401) {
         logger.warn('Not authenticated!');
         this.router.navigateToRoute('login');
-        throw new Error('Not autherticated!')
+        throw new Error('Not autherticated!');
 
       }
       return response;
