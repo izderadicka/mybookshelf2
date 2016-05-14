@@ -1,4 +1,5 @@
 import  'bootstrap';
+import 'bootstrap-drawer/dist/js/drawer';
 import authConfig from 'config/auth-config';
 
 export function configure(aurelia) {

@@ -104,3 +104,8 @@ section {
   margin-left:10px;
   font-size:1.3em;
 }
+
+.notifications-btn {
+  font-size: 3em;
+  margin-top: 38px;
+}
