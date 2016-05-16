@@ -17,13 +17,11 @@
             </div>
 
             <ul class="drawer-nav">
-                <li role="presentation"><a data-toggle="drawer" data-target="#drawer-notifications" href="#">Notification 1</a></li>
-                <li role="presentation"><a data-toggle="drawer" data-target="#drawer-notifications" href="#">Notification 2</a></li>
-                <li role="presentation"><a data-toggle="drawer" data-target="#drawer-notifications" href="#">Notification 3</a></li>
+                <li repeat.for="n of notif.items" role="presentation">
+                <a data-toggle="drawer" data-target="#drawer-notifications" href="#">${n.text} ${n.args[0]}</a></li>
+
             </ul>
-            <div class="drawer-footer">
-                <small>&copy; Caroline Amaba</small>
-            </div>
+
         </div>
     </div>
     <router-view></router-view>

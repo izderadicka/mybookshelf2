@@ -47,6 +47,14 @@ gulp.task('build-json', function() {
     .pipe(browserSync.stream());
 });
 
+// copies changed js libraries to the output directory
+gulp.task('copy-mins', function() {
+  return gulp.src(paths.mins)
+    .pipe(changed(paths.output, {extension: '.js'}))
+    .pipe(gulp.dest(paths.output))
+    .pipe(browserSync.stream());
+});
+
 
 // this task calls the clean task (located
 // in ./clean.js), then runs the build-system
@@ -55,7 +63,7 @@ gulp.task('build-json', function() {
 gulp.task('build', function(callback) {
   return runSequence(
     'clean',
-    ['build-system', 'build-html', 'build-css', 'build-json'],
+    ['build-system', 'build-html', 'build-css', 'build-json', 'copy-mins'],
     callback
   );
 });

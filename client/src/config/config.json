@@ -4,5 +4,11 @@
     "host":"localhost",
     "port": 6006,
     "path": "/api"
+  },
+  "wamp": {
+    "host":"localhost",
+    "port": 8080,
+    "path": "/ws",
+    "realm": "realm1"
   }
 }
