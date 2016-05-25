@@ -35,10 +35,16 @@ def create_token(user, secret, valid_minutes=24*60):
 
 def verify_token(token, secret):
     try:
-        claim=jwt.decode(token, secret)
+        claim=jwt.decode(token, secret )
     except jwt.InvalidTokenError:
         return None
     return claim
+
+def extract_token(token):
+    try:
+        return jwt.decode(token, verify=False)
+    except jwt.InvalidTokenError as e:
+        raise ValueError('Invalid token %s'%e)
 
 def initials(name):
     names=name.split()

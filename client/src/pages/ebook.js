@@ -12,8 +12,8 @@ export class Ebook {
     this.client=client;
     this.access=access;
     this.token=access.token;
-    this.canDownload=access.has_role('user');
-    this.canConvert=access.has_role('user');
+    this.canDownload=access.hasRole('user');
+    this.canConvert=access.hasRole('user');
   }
 
   activate(params) {

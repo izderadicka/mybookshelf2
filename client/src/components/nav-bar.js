@@ -1,20 +1,20 @@
 import {bindable, inject, LogManager} from 'aurelia-framework'
-import {AuthService} from 'aurelia-auth';
+import {Access} from 'lib/access';
 import $ from 'jquery';
 
 const logger=LogManager.getLogger('nav-bar');
 
-@inject(AuthService)
+@inject(Access)
 export class NavBar {
   @bindable router;
   @bindable doSearch;
 
-  constructor(auth) {
-    this.auth=auth;
+  constructor(access) {
+    this.access=access;
   }
 
   get isAuthenticated() {
-    return this.auth.isAuthenticated();
+    return this.access.authenticated;
   }
 
   searchSubmitted(query) {

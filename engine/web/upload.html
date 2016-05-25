@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+   <meta charset="UTF-8">
+   <script src="bower_components/resumablejs/resumable.js"></script>
+   <script src="bower_components/autobahn/autobahn.min.js"></script>
+</head>
+
+<body>
+   <a href="#" id="browseButton">Select files to upload</a><br><br>
+   <div id="dropFiles" style="background-color: #aaf; width: 200px; height: 200px" >Drop files here to upload</div>
+
+   <script>
+      // the URL of the WAMP Router (Crossbar.io)
+      //
+      var wsuri;
+      if (document.location.origin === "null" || document.location.origin === "file://") {
+         wsuri = "ws://127.0.0.1:9080/ws";
+
+      } else {
+         wsuri = (document.location.protocol === "http:" ? "ws:" : "wss:") + "//" +
+                     document.location.host + "/ws";
+      }
+
+      var connection = new autobahn.Connection({
+         url: wsuri,
+         realm: 'realm1'
+      });
+
+      connection.onopen = function (session, details) {
+         console.log("Connected", details);
+
+         session.subscribe('com.example.upload.on_progress', function (args) {
+            var pinfo = args[0];
+            console.log('upload event received', pinfo);
+         });
+
+         var r = new Resumable({
+            target: 'upload',
+            chunkSize: 1 * 1024 * 1024,
+            forceChunkSize: true, // https://github.com/23/resumable.js/issues/51
+            simultaneousUploads: 4,
+            testChunks: true,
+            query: {
+               on_progress: 'com.example.upload.on_progress',
+               session: session.id,
+               chunk_extra: JSON.stringify({
+                  test: 'lala',
+                  test2: 23
+               }),
+               finish_extra: JSON.stringify({
+                  test: 'fifi',
+                  test2: 52
+               })
+            }
+         });
+
+         if (!r.support) {
+            console.log("Fatal: ResumableJS not supported!");
+         } else {
+
+            r.assignBrowse(document.getElementById('browseButton'));
+            r.assignDrop(document.getElementById('dropFiles'));
+
+            r.on('fileAdded', function (file) {
+               console.log('fileAdded', file);
+               r.upload();
+            });
+
+            r.on('fileSuccess', function (file, message) {
+               console.log('fileSuccess', file, message);
+               console.log(r.files);
+
+               // enable repeated upload since other user can delete the file on the server
+               // and this user might want to reupload the file
+               r.removeFile(file)
+            });
+
+            r.on('fileError', function (file, message) {
+               console.log('fileError', file, message);
+            });
+         }
+      };
+
+      connection.open();
+   </script>
+</body>
+
+</html>

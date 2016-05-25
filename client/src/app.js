@@ -1,28 +1,18 @@
-import {
-  FetchConfig,
-  AuthorizeStep,
-} from 'aurelia-auth';
-import {
-  inject,
-  LogManager,
-  bindable
-} from 'aurelia-framework';
-import {
-  HttpClient
-} from 'aurelia-fetch-client';
-import {
-  Configure
-} from 'lib/config/index';
-
+import { FetchConfig, AuthorizeStep} from 'aurelia-auth';
+import {inject,LogManager,bindable} from 'aurelia-framework';
+import { HttpClient} from 'aurelia-fetch-client';
+import {Configure} from 'lib/config/index';
 import {Notification} from 'lib/notification';
 import {WSClient} from 'lib/ws-client';
+import {Access} from 'lib/access';
 
 const logger = LogManager.getLogger('app');
-@inject(Configure, FetchConfig, HttpClient, WSClient, Notification)
+@inject(Configure, FetchConfig, HttpClient, WSClient, Notification, Access)
 export class App {
-  constructor(config, fetchConfig, client, wsClient, notif) {
+  constructor(config, fetchConfig, client, wsClient, notif, access) {
     this.config = config;
     this.notif=notif;
+    this.access=access;
     fetchConfig.configure();
     client.configure(conf => conf
       .withBaseUrl(`http://${this.config.get('api.hostname',window.location.hostname)}:${this.config.get('api.port')}`)
@@ -82,16 +72,18 @@ export class App {
         title: 'Authors books',
         auth: true
       }
-      /*
-      { route: 'users',         name: 'users',        moduleId: 'pages/users',        nav: true, title: 'Github Users' },
-      { route: 'child-router',  name: 'child-router', moduleId: 'pages/child-router', nav: true, title: 'Child Router' } */
+      
     ]);
 
     this.router = router;
   }
 
   activate() {
+    this.access.signalState();
+  }
 
+  isAuthenticated() {
+    return this.access.authenticated;
   }
 
   doSearch(query) {

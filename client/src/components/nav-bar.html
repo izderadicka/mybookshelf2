@@ -25,7 +25,7 @@
         <ul class="nav navbar-nav navbar-right">
           <li if.bind="!isAuthenticated"><a data-toggle="collapse" data-target="#skeleton-navigation-navbar-collapse.in"
             href='/#/login'>Login</a></li>
-          <li if.bind="isAuthenticated" click.delegate="auth.logout()"><a data-toggle="collapse" data-target="#skeleton-navigation-navbar-collapse.in"
+          <li if.bind="isAuthenticated" click.delegate="access.logout()"><a data-toggle="collapse" data-target="#skeleton-navigation-navbar-collapse.in"
             href='#'>Logout</a></li>
         </ul>
 

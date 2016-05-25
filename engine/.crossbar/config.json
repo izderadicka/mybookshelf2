@@ -14,6 +14,47 @@
                                     "uri": "",
                                     "match": "prefix",
                                     "allow": {
+                                        "call": false,
+                                        "register": false,
+                                        "publish": false,
+                                        "subscribe": false
+                                    },
+                                    "disclose": {
+                                        "caller": false,
+                                        "publisher": false
+                                    },
+                                    "cache": true
+                                }
+                            ]
+                        },
+                        
+                        {
+                            "name": "user",
+                            "permissions": [
+                                {
+                                    "uri": "",
+                                    "match": "prefix",
+                                    "allow": {
+                                        "call": true,
+                                        "register": false,
+                                        "publish": true,
+                                        "subscribe": true
+                                    },
+                                    "disclose": {
+                                        "caller": false,
+                                        "publisher": false
+                                    },
+                                    "cache": true
+                                }
+                            ]
+                        },
+                        {
+                            "name": "backend",
+                            "permissions": [
+                                {
+                                    "uri": "",
+                                    "match": "prefix",
+                                    "allow": {
                                         "call": true,
                                         "register": true,
                                         "publish": true,
@@ -43,18 +84,34 @@
                             "directory": "../web"
                         },
                         "ws": {
-                            "type": "websocket"
+                            "type": "websocket",
+                            "auth": {
+                                "ticket": {
+                                    "type": "dynamic",
+                                    "authenticator": "eu.zderadicka.mybookshelf.authenticate"
+                                }
+                            }
                         }
-                    }
+                    }   
+                       
+                },
+                
+                {
+                	"type":"rawsocket",
+                	"endpoint": {
+                		"type":"unix",
+                		"path":"socket1"
+                	},
+                	"max_message_size": 1048576,
+                	"auth":{
+        				"anonymous": {
+        					"type":"static",
+        					"role":"backend"
+        					}
+                	
+                	}
                 }
             ]
-        },
-        {"type":"guest",
-        "executable":"python",
-        "arguments": ["hello.py"],
-        "options": {
-        	"workdir":".."
-        	}
         }
         
     ]

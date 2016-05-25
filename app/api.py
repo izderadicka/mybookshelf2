@@ -1,4 +1,4 @@
-from flask import Blueprint, request, abort
+from flask import Blueprint, request, abort, current_app
 from flask_restful import Resource as BaseResource, Api
 import app.model as model
 import app.schema as schema
@@ -7,6 +7,8 @@ from app.utils import success_error
 from app import db
 from app.cors import add_cors_headers
 from app.access import role_required
+from werkzeug import secure_filename
+import os.path
 
 
 
@@ -76,11 +78,19 @@ class AuthorEbooks(Resource):
         if request.args.get('filter'):
             q=logic.filter_ebooks(q, request.args.get('filter'))
         return logic.paginate(q,page,page_size,sort, schema.ebooks_list_serializer())
-        
 
+
+@bp.route('/upload', methods=['POST'])
+@role_required('user')
+def upload(self):
+    file = request.files['file']
+    if file:
+        filename = secure_filename(file.filename)
+        file.save(os.path.join(current_app.config['UPLOAD_DIR'], filename))
+        return {'result':'ok'}
     
         
-    
+        
 api.add_resource(Ebooks, '/ebooks')
 api.add_resource(Ebook, '/ebooks/<int:id>')
 api.add_resource(AuthorEbooks, '/ebooks/author/<int:id>')

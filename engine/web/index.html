@@ -47,12 +47,23 @@
                         document.location.host + "/ws";
          }
 
-
+				 var onchallenge= function (session, method, extra) {
+					 console.log('Challenge '+ JSON.stringify(extra));
+					 if (method==='ticket') {
+						 return 'Hey How';
+					 } else {
+						 throw new Error('invalid auth method');
+					 }
+					 
+					 
+				 }
          // the WAMP connection to the Router
-         //
          var connection = new autobahn.Connection({
             url: wsuri,
-            realm: "realm1"
+            realm: "realm1",
+            authmethods: ["ticket"],
+            authid: 'test',
+            onchallenge: onchallenge
          });
 
 
@@ -65,7 +76,7 @@
          //
          connection.onopen = function (session, details) {
 
-            console.log("Connected");
+            console.log("Connected "+ JSON.stringify(details));
 
             // SUBSCRIBE to a topic and receive events
             //
