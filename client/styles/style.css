@@ -109,3 +109,7 @@ section {
   font-size: 3em;
   margin-top: 38px;
 }
+
+.uploading-progress {
+  font-size: 2em;
+}

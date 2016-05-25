@@ -1,4 +1,4 @@
-import {HttpClient} from 'aurelia-fetch-client';
+import {HttpClient, json} from 'aurelia-fetch-client';
 import {inject} from 'aurelia-framework';
 import $ from 'bootstrap';
 import {Configure} from 'lib/config/index';
@@ -15,7 +15,15 @@ export class ApiClient {
     return this.apiPath+'/'+r+(query?'?'+$.param(query):'');
   }
 
-  get
+  post(resource, data) {
+    return this.http.fetch(this.getUrl(resource),
+    {method:'post',
+    body:json(data)
+
+    })
+    .then(resp => resp.json())
+  }
+
   getMany(resource, page=1, pageSize=25, sort, extra) {
     let query={page:page, page_size:pageSize,sort:sort};
     if (extra) {
@@ -41,5 +49,12 @@ export class ApiClient {
     const url=this.getUrl(resource+'/'+ id)
     return this.http.fetch(url)
       .then(response => response.json());
+  }
+
+  checkUpload(fileInfo) {
+    return this.post('upload/check', fileInfo)
+      .then(data => {
+        if (data.error) throw new Error(data.error);
+      });
   }
 }

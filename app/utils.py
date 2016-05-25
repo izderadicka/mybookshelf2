@@ -3,21 +3,39 @@ import bcrypt
 import jwt
 from datetime import datetime, timedelta
 import unicodedata
+import hashlib
+
 
 def success_error(fn):
     @wraps(fn)
-    def inner(*args,**kwargs):
+    def inner(*args, **kwargs):
         try:
             fn(*args, **kwargs)
-            return {'success':True}
+            return {'success': True}
         except Exception as e:
-            return {'error':str(e)}
+            return {'error': str(e)}
     return inner
+
+READ_BLOCK=8192
+
+
+def file_hash(fname):
+    h = hashlib.sha1()
+    with open(fname,'r') as f:
+        s = f.read(READ_BLOCK)
+        if not s:
+            raise ValueError("Empty file!")
+        while s:
+            h.update(s)
+            s = f.read(READ_BLOCK)
+    return h.hexdigest()
+
 
 def hash_pwd(p):
     if isinstance(p, str):
-        p=p.encode('utf-8')
+        p = p.encode('utf-8')
     return bcrypt.hashpw(p, bcrypt.gensalt()).decode('ascii')
+
 
 def check_pwd(p, hash):
     if isinstance(p, str):

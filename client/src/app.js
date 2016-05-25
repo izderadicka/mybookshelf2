@@ -71,8 +71,14 @@ export class App {
         moduleId: 'pages/author',
         title: 'Authors books',
         auth: true
+      }, {
+        route: 'upload',
+        name: 'upload',
+        moduleId: 'pages/upload',
+        title: 'Upload Ebook',
+        nav: true,
+        auth: true
       }
-      
     ]);
 
     this.router = router;

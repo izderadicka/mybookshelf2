@@ -1,21 +1,23 @@
-from flask import abort, request, current_app, Response
+from flask import abort, request, current_app, Response, jsonify
 from sqlalchemy.sql import text,desc,func
 from functools import wraps
 import app.model as model
+import app.schema as schema
 from sqlalchemy.orm.exc import NoResultFound
 from app.utils import remove_diacritics
 import os.path
 
 import logging
-logger=logging.getLogger('logic')
+logger = logging.getLogger('logic')
+
 
 def safe_int(v, for_=''):
-    if v is None or v=='':
+    if v is None or v == ' ':
         return
     try:
-        v= int(v)
-        if v<=0:
-            abort(400,'Not positive number %s'%for_) 
+        v = int(v)
+        if v <= 0:
+            abort(400, 'Not positive number %s' % for_)
         return v
     except ValueError:
         abort(400,'Invalid number for %s'%for_)
@@ -118,3 +120,14 @@ def download(id):
                                'Content-Length': size})
     
     return response
+
+
+def check_file(mime_type, size, hash):
+    if size > current_app.config['MAX_CONTENT_LENGTH']:
+        logger.warn('File too big %d (limit is %d)', size, current_app.config['MAX_CONTENT_LENGTH'])
+        return jsonify(error='file too big')
+
+    t = model.Format.query.filter_by(mime_type=mime_type.lower()).all()
+    if not t:
+        logger.warn('Unsupported mime type %s', mime_type)
+        return jsonify(error='unsupported file type')
