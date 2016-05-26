@@ -1,0 +1,21 @@
+<template>
+  
+    <div id="drawer-notifications" class="drawer drawer-right dw-xs-10 dw-sm-6 dw-md-4 fold" aria-labelledby="drawer-notifications">
+        <div class="drawer-controls notifications-btn">
+            <a href="#drawer-notifications" data-toggle="drawer" aria-foldedopen="false"
+            aria-controls="drawer-notifications"><i class="fa fa-comment" aria-hidden="true"></i></a>
+        </div>
+        <div class="drawer-contents">
+            <div class="drawer-heading">
+                <h2 class="drawer-title">Notifications</h2>
+            </div>
+
+            <ul class="drawer-nav">
+                <li repeat.for="n of notif.items" role="presentation">
+                <a data-toggle="drawer" data-target="#drawer-notifications" href="#">${n.text} ${n.args[0]}</a></li>
+
+            </ul>
+
+        </div>
+    </div>
+</template>

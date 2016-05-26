@@ -24,7 +24,7 @@ body {
 }
 
 .page-host {
-  position: absolute;
+  position: relative;
   left: 0;
   right: 0;
   top: 50px;
@@ -113,3 +113,4 @@ section {
 .uploading-progress {
   font-size: 2em;
 }
+

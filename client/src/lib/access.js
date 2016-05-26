@@ -19,6 +19,8 @@ export class Access {
   }
 
   hasRole(...requiredRoles) {
+    let token = this.auth.getTokenPayload();
+    if (! token) return false;
     let roles=this.auth.getTokenPayload().roles
     return requiredRoles.reduce((prev, curr) => prev || roles.includes(curr), false);
   }

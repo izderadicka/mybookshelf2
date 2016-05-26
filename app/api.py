@@ -87,17 +87,18 @@ class AuthorEbooks(Resource):
 
 
 @bp.route('/upload', methods=['POST'])
-#@role_required('user')
+@role_required('user')
 def upload():
     file = request.files['file']
     if file:
         filename = secure_filename(file.filename)
         file.save(os.path.join(current_app.config['UPLOAD_DIR'], filename))
         return jsonify(result='ok')
+    return jsonify(error='no file')
 
 
 @bp.route('/upload/check', methods=['POST'])
-#@role_required('user')
+@role_required('user')
 def check_upload():
     file_info = request.json
     logger.debug('File info %s' % file_info)
@@ -110,6 +111,11 @@ def check_upload():
     if r:
         return r
     return jsonify(result='ok')
+
+@bp.route('/download/<int:id>')
+@role_required('user')
+def download(id):
+    return logic.download(id)
 
 api.add_resource(Ebooks, '/ebooks')
 api.add_resource(Ebook, '/ebooks/<int:id>')

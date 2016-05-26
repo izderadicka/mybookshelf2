@@ -10,7 +10,7 @@
 <table class="table sources">
 <thead><tr><th>Format</th><th>Quality</th><th>Size</th><th>&nbsp;</th></tr></thead>
 {% for source in ebook.sources %}
-<tr><td><a href="{{url_for('minimal.download', id=source.id)}}">{{source.format.extension}}</a></td><td>{{source.quality}}</td><td>{{source.size}}</td>
+<tr><td><a href="{{url_for('api.download', id=source.id)}}">{{source.format.extension}}</a></td><td>{{source.quality}}</td><td>{{source.size}}</td>
 <td><span class="convert">Convert</span></td></tr>
 {% endfor %}
 </table>

@@ -57,4 +57,9 @@ export class ApiClient {
         if (data.error) throw new Error(data.error);
       });
   }
+
+  upload(formData) {
+    return this.http.fetch(this.getUrl('upload'), {method:'post', body: formData})
+      .then( resp => resp.json())
+  }
 }

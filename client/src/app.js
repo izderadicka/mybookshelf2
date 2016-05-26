@@ -2,16 +2,14 @@ import { FetchConfig, AuthorizeStep} from 'aurelia-auth';
 import {inject,LogManager,bindable} from 'aurelia-framework';
 import { HttpClient} from 'aurelia-fetch-client';
 import {Configure} from 'lib/config/index';
-import {Notification} from 'lib/notification';
 import {WSClient} from 'lib/ws-client';
 import {Access} from 'lib/access';
 
 const logger = LogManager.getLogger('app');
-@inject(Configure, FetchConfig, HttpClient, WSClient, Notification, Access)
+@inject(Configure, FetchConfig, HttpClient, WSClient, Access)
 export class App {
-  constructor(config, fetchConfig, client, wsClient, notif, access) {
+  constructor(config, fetchConfig, client, wsClient, access) {
     this.config = config;
-    this.notif=notif;
     this.access=access;
     fetchConfig.configure();
     client.configure(conf => conf

@@ -1,0 +1,35 @@
+<template>
+  <div class="container">
+  <h2 class="page-title">Upload Ebook</h2>
+  <p>Upload ebook file - it'll be analyzed and you'll be notified when it'll be
+    ready be included into collection </p>
+<form id="file-upload-form" enctype="multipart/form-data">
+  <div class='form-group'>
+  <input type="file" name="file" id="file-input" change.trigger="checkFile()">
+</div>
+<div class='form-group' if.bind="fileOK">
+  <button class="btn btn-primary" click.trigger="upload()">Upload</button>
+</div>
+</form>
+<div class='uploading-progress' if.bind="checking">
+  <i class="fa fa-spinner fa-spin"></i> Checking file please wait ...
+</div>
+
+<div class='uploading-progress' if.bind="uploading">
+  <i class="fa fa-spinner fa-spin"></i> Uploading file please wait ...
+</div>
+<div class="panel panel-danger" if.bind="uploadError">
+  <div class="panel-heading">
+    <h3 class="panel-title">Upload Error!</h3>
+  </div>
+  <div class="panel-body">
+    ${uploadError}
+  </div>
+</div>
+<div class="" if.bind="uploadId">
+  <p>File was successfully upload to server.  Now file has to be analyzed, it can take a while.
+    Wait for notification.
+  </p>
+</div>
+</div>
+</template>
