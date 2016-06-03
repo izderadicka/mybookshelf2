@@ -1,5 +1,5 @@
 from flask import request, redirect, flash, render_template, url_for, jsonify, Blueprint, abort
-from flask.ext.login import LoginManager, login_user, logout_user, current_user, login_required
+from flask_login import LoginManager, login_user, logout_user, current_user, login_required
 from functools import wraps
 from app.utils import check_pwd, create_token, verify_token
 import app.model as model

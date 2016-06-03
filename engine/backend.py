@@ -2,7 +2,8 @@ import os.path
 import sys
 import asyncio
 import logging
-from autobahn.asyncio.wamp import ApplicationSession, ApplicationRunnerRawSocket
+from autobahn.asyncio.wamp import ApplicationSession
+from asexor.runner import ApplicationRunnerRawSocket
 from autobahn.wamp.exception import ApplicationError
 import time
 

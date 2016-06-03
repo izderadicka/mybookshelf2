@@ -1,0 +1,11 @@
+#!/bin/bash
+VENV="venv/bin/activate"
+
+export PYTHONPATH=~/workspace/asexor:~/workspace/mybookshelf2
+
+gnome-terminal \
+--tab --title "crossbar" -e "bash --rcfile $VENV -ci 'cd engine && crossbar start'" \
+--tab --title "engine" -e "bash --rcfile $VENV" \
+--tab --title "web" -e "bash --rcfile $VENV" \
+--tab --title "client" -e "bash --rcfile $VENV" \
+--tab --title "terminal" -e "bash --rcfile $VENV"

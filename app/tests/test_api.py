@@ -137,11 +137,12 @@ class TestApi(TestCase):
         print (res.json)
         self.assert404(res)
 
-        res=self.get('/download/86060', query_string={'bearer_token':self.token}, not_json=True)
-        self.assertEqual(int (res.headers['Content-Length']), 3147900)
+        res = self.get(
+            '/api/download/86060', query_string={'bearer_token': self.token}, not_json=True)
+        self.assertEqual(int(res.headers['Content-Length']), 3147900)
         self.assertEqual(res.headers['Content-Type'], 'application/epub+zip')
         self.assertEqual(len(res.data), 3147900)
 
-        res = self.post('/api/upload/check', data='{"mime_type":"application/pdf", "size":10000}',
+        res = self.post('/api/upload/check', data='{"mime_type":"application/pdf", "size":10000, "hash":null}',
                         content_type='application/json')
         self.assertEqual(res['result'], 'ok')

@@ -44,7 +44,7 @@ class TestCase(BaseTestCase):
             connection.close()
 
     def tearDown(self):
-
+        db.session.rollback()
         db.session.remove()
         #db.drop_all()
 

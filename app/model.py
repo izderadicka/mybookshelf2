@@ -5,7 +5,7 @@ from sqlalchemy import Column, Date, DateTime, Float, Index, Integer, SmallInteg
 from sqlalchemy.ext.declarative import declarative_base,declared_attr
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship, deferred, backref
-from flask.ext.login import UserMixin
+from flask_login import UserMixin
 from sqlalchemy_utils import TSVectorType
 from app.utils import initials
 
