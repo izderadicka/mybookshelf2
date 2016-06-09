@@ -1,9 +1,16 @@
-import {EventAggregator} from 'aurelia-event-aggregator';
-import {Notification} from 'lib/notification';
-import {Access} from 'lib/access';
+import {
+  EventAggregator
+} from 'aurelia-event-aggregator';
+import {
+  Notification
+} from 'lib/notification';
+import {
+  Access
+} from 'lib/access';
 import {
   inject,
-  LogManager}
+  LogManager
+}
 from 'aurelia-framework';
 import {
   Configure
@@ -15,12 +22,15 @@ const logger = LogManager.getLogger('ws-client');
 
 @inject(Configure, Notification, EventAggregator, Access)
 export class WSClient {
-  conn=null;
+  conn = null;
+  session = null;
   constructor(config, notif, event, access) {
-    this.notif=notif;
-    this.event=event;
-    this.access=access;
-    this.config=config;
+    this.notif = notif;
+    this.event = event;
+    this.access = access;
+    this.config = config;
+
+    window.AUTOBAHN_DEBUG = true;
 
     event.subscribe('user-logged-in', (evt) => this.connect(evt.user));
     event.subscribe('user-logged-out', () => this.disconnect());
@@ -29,19 +39,19 @@ export class WSClient {
 
   connect(userEmail) {
     if (this.conn) {
-      throw new Error('Connection already exists');
+      logger.warn('Connection already exists');
     }
-    let connUrl=`ws://${this.config.get('wamp.host')}:${this.config.get('wamp.port')}${this.config.get('wamp.path')}`;
-    this.conn=new autobahn.Connection({
-        url:connUrl,
-        realm:this.config.get('wamp.realm'),
-        authmethods: ["ticket"],
-        authid: userEmail,
-        onchallenge: (session, method, extra)=> this.onChallenge(session, method, extra)
-      });
+    let connUrl = `ws://${this.config.get('wamp.host')}:${this.config.get('wamp.port')}${this.config.get('wamp.path')}`;
+    this.conn = new autobahn.Connection({
+      url: connUrl,
+      realm: this.config.get('wamp.realm'),
+      authmethods: ["ticket"],
+      authid: userEmail,
+      onchallenge: (session, method, extra) => this.onChallenge(session, method, extra)
+    });
     logger.debug('WAMP connection requested');
-    this.conn.onopen=(session, details) => this.onConnectionOpen(session, details);
-    this.conn.onclose=this.onConnectionClose;
+    this.conn.onopen = (session, details) => this.onConnectionOpen(session, details);
+    this.conn.onclose = this.onConnectionClose;
     this.conn.open();
   }
 
@@ -49,38 +59,60 @@ export class WSClient {
     if (this.conn) {
       this.conn.close();
       logger.debug('Disconnected WS connection');
-      this.conn=null;
+      this.conn = null;
+      this.session = null;
     }
   }
 
   receiveNotification(args, kwargs, options) {
-    //logger.debug('Notification '+args);
-    this.event.publish('notifications', {args, kwargs});
-    this.notif.add({text:'Notification', args, kwargs});
+    logger.debug(`Notification ${JSON.stringify(args)}, ${JSON.stringify(kwargs)}`);
+    this.event.publish('task_updates', {
+      taskId:args[0],
+      kwargs
+    });
+    this.notif.update(args[0], kwargs);
   }
 
   onChallenge(session, method, extra) {
     logger.debug(`Authentication required, method ${method}`);
-    if (method==='ticket') {
-						 return this.access.token;
-					 } else {
-						 throw new Error('invalid auth method');
-					 }
+    if (method === 'ticket') {
+      return this.access.token;
+    } else {
+      throw new Error('invalid auth method');
+    }
 
   }
 
   onConnectionOpen(session, details) {
     logger.debug('WAMP connection opened : ' + JSON.stringify(details));
-    this.session=session
-    session.subscribe('eu.zderadicka.mybookshelf2.heartbeat', (args, kwargs, options) =>
-            this.receiveNotification(args, kwargs, options))
-    .then(sub => logger.debug('WAMP subscribed to notifications'),
-          err => logger.error('WAMP Failed to subscribe to notifications '+JSON.stringify(err)));
+    this.session = session
+    session.subscribe('eu.zderadicka.asexor.task_update', (args, kwargs, options) =>
+        this.receiveNotification(args, kwargs, options))
+      .then(sub => logger.debug('WAMP subscribed to notifications'),
+        err => logger.error('WAMP Failed to subscribe to notifications ' + JSON.stringify(err)));
 
   }
 
   onConnectionClose(reason, details) {
     logger.warn(`WAMP connection closed ${reason}`);
+    this.conn=null;
+    this.session=null;
+
+  }
+
+  extractMeta(fileName, origName=null) {
+    return this.session.call('eu.zderadicka.asexor.run_task', ['metadata',fileName])
+    .then(taskId => {
+      this.notif.start(taskId,
+        {
+        text:`Extract Metadata from ${origName || fileName}`,
+        status:"submitted",
+        task:"metadata",
+        taskId:"taskId",
+        file: fileName
+      });
+      return taskId;
+    });
   }
 
 }

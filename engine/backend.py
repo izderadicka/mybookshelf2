@@ -2,12 +2,14 @@ import os.path
 import sys
 import asyncio
 import logging
-from autobahn.asyncio.wamp import ApplicationSession
 from asexor.runner import ApplicationRunnerRawSocket
+from asexor.executor import Executor
+from asexor.config import Config
+from asexor.task import load_tasks_from
 from autobahn.wamp.exception import ApplicationError
 import time
 
-sys.path.append(os.path.join(os.path.dirname(__file__),'..'))
+# sys.path.append(os.path.join(os.path.dirname(__file__),'..'))
 from app.utils import verify_token
 import settings
 
@@ -25,33 +27,26 @@ def authenticate(realm, user_id, details):
     return 'anonymous'
 
 
-@asyncio.coroutine
-def get_time():
-    return time.time()
-
-
-class AppSession(ApplicationSession):
-
-    @asyncio.coroutine
-    def onJoin(self, details):
-
-        self.register(authenticate, 'eu.zderadicka.mybookshelf.authenticate')
-
-        while True:
-            # PUBLISH an event
-            #
-            self.publish('eu.zderadicka.mybookshelf2.heartbeat', (yield from get_time()))
-            log.debug("Heartbeat")
-            yield from asyncio.sleep(5)
-
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
-    log.setLevel(logging.DEBUG)
-    asyncio.get_event_loop().set_debug(True)
-    log.debug('creating application')
+    import argparse
+
+    # for testing
+    load_tasks_from('engine.tasks')
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '-d', '--debug', action='store_true', help='enable debug')
+    opts = parser.parse_args()
+    level = 'info'
+    if opts.debug:
+        level = 'debug'
+
+    Config.AUTHENTICATION_PROCEDUTE = authenticate
+    Config.AUTHENTICATION_PROCEDURE_NAME = "eu.zderadicka.mybookshelf.authenticate"
+
     path = os.path.join(os.path.dirname(__file__), '.crossbar/socket1')
-    cb_realm = os.environ.get('CB_REALM', 'realm1')
-    app = ApplicationRunnerRawSocket(path, realm=cb_realm)
-    log.debug('started application')
-    app.run(AppSession)
-    log.debug('finished application')
+    runner = ApplicationRunnerRawSocket(
+        path,
+        u"realm1",
+    )
+    runner.run(Executor, logging_level=level)

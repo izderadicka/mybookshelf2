@@ -27,6 +27,9 @@ BOOKS_CONVERTED_DIR = "/books/books_converted"
 CONVERSION_FORMATS = ['epub', 'mobi', 'fb2']
 
 
+IMAGE_MAGIC = '/usr/bin/convert'
+
+
 class Testing:
     SQLALCHEMY_DATABASE_URI = 'postgresql://ebooks_test:ebooks@localhost/ebooks_test' 
     TESTING = True

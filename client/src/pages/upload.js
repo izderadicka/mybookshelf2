@@ -1,6 +1,7 @@
 import {LogManager, inject} from 'aurelia-framework';
 import {ApiClient} from 'lib/api-client';
 import {Configure} from 'lib/config/index';
+import {WSClient} from 'lib/ws-client';
 
 let logger=LogManager.getLogger('upload');
 
@@ -22,7 +23,7 @@ function hex(buffer) {
   return hexCodes.join("");
 }
 
-@inject(ApiClient, Configure)
+@inject(ApiClient, WSClient, Configure)
 export class Upload {
   fileOK=false;
   uploading=false;
@@ -30,8 +31,9 @@ export class Upload {
   uploadError=null;
   uploadId=null;
 
-  constructor(client, config) {
+  constructor(client, wsClient, config) {
     this.client=client;
+    this.wsClient=wsClient;
     this.config=config;
   }
   upload() {
@@ -45,8 +47,13 @@ export class Upload {
           this.uploadError=`Upload error: ${data.error}`;
           logger.error(`Upload error: ${data.error}`);
         } else {
-          logger.debug(`File uploaded ${data}`);
-          this.uploadId='aaa';
+          logger.debug(`File uploaded ${JSON.stringify(data)}`);
+          let origName =  document.getElementById('file-input').value;
+          this.wsClient.extractMeta(data.file, origName)
+            .then(taskId => {
+              logger.debug(`Task ID ${taskId} for file ${data.file}`);
+            })
+            .catch(err => logger.error(`Error when extracting metadata: ${err}`));
         }
       })
   }

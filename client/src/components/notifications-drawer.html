@@ -1,5 +1,5 @@
 <template>
-  
+  <require from="components/notification-metadata.html"></require>
     <div id="drawer-notifications" class="drawer drawer-right dw-xs-10 dw-sm-6 dw-md-4 fold" aria-labelledby="drawer-notifications">
         <div class="drawer-controls notifications-btn">
             <a href="#drawer-notifications" data-toggle="drawer" aria-foldedopen="false"
@@ -11,8 +11,10 @@
             </div>
 
             <ul class="drawer-nav">
-                <li repeat.for="n of notif.items" role="presentation">
-                <a data-toggle="drawer" data-target="#drawer-notifications" href="#">${n.text} ${n.args[0]}</a></li>
+                <li repeat.for="n of notif.items & throttle" role="presentation">
+                <!--<a data-toggle="drawer" data-target="#drawer-notifications" href="#">${n.text}</a> -->
+                <notification-metadata notification.bind="n"></notification-metadata>
+              </li>
 
             </ul>
 

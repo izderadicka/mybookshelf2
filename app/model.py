@@ -6,7 +6,7 @@ from sqlalchemy.ext.declarative import declarative_base,declared_attr
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship, deferred, backref
 from flask_login import UserMixin
-from sqlalchemy_utils import TSVectorType
+from sqlalchemy_utils import TSVectorType, JSONType
 from app.utils import initials
 
 
@@ -238,6 +238,15 @@ class Source(Base, Auditable):
     size = Column(Integer, nullable=False)
     hash = Column(String(128), nullable=False)
     quality = Column(Float(asdecimal=True))
+
+class Upload(Base, Auditable):
+    cover=Column(String(512))
+    file = Column(String(512), nullable=False)
+    load_source = Column(String(256))
+    format_id = Column(BigInteger, ForeignKey('format.id'), nullable=False)
+    format=relationship('Format')
+    size = Column(Integer, nullable=False)
+    hash = Column(String(128), nullable=False)
     
     def __repr__(self):
         return super(Source,self).__repr__(['location'])

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-from flask.ext.script import Manager, prompt_pass, prompt_bool
-from flask.ext.script.commands import InvalidCommand
+from flask_script import Manager, prompt_pass, prompt_bool
+from flask_script.commands import InvalidCommand
 from app import app,db
 import app.model as model
 from app.utils import hash_pwd

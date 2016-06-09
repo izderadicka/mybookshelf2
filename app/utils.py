@@ -24,7 +24,7 @@ READ_BLOCK = 8192
 
 def file_hash(fname):
     h = hashlib.sha1()
-    with open(fname, 'r') as f:
+    with open(fname, 'rb') as f:
         s = f.read(READ_BLOCK)
         if not s:
             raise ValueError("Empty file!")

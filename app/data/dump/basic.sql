@@ -25,7 +25,7 @@ SET search_path = public, pg_catalog;
 
 INSERT INTO format VALUES (1, 1, 'application/pdf', 'PDF document', 'pdf');
 INSERT INTO format VALUES (2, 1, 'text/plain', 'Plain text document', 'txt');
-INSERT INTO format VALUES (3, 1, 'application/vnd.palm', 'Palm Document', 'pdb');
+INSERT INTO format VALUES (3, 1, 'application/x-aportisdoc', 'Palm Document', 'pdb');
 INSERT INTO format VALUES (4, 1, 'application/rtf', 'RTF Document', 'rtf');
 INSERT INTO format VALUES (5, 1, 'application/msword', 'MS Word Document', 'doc');
 INSERT INTO format VALUES (6, 1, 'application/x-mobipocket-ebook', 'Mobipocket Ebook', 'mobi');
@@ -37,7 +37,7 @@ INSERT INTO format VALUES (11, 1, 'text/html', 'HTML File', 'html');
 INSERT INTO format VALUES (12, 1, 'text/html', 'HTML', 'htm');
 INSERT INTO format VALUES (13, 1, 'application/octet-stream', 'Compiled HTML', 'chm');
 INSERT INTO format VALUES (14, 1, 'application/x-ms-reader ', 'MS Reader Ebook', 'lit');
-INSERT INTO format VALUES (15, 1, 'text/xml', 'Fiction Book 2', 'fb2');
+INSERT INTO format VALUES (15, 1, 'application/x-fictionbook+xml', 'Fiction Book 2', 'fb2');
 INSERT INTO format VALUES (16, 1, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'MS Word XML document', 'docx');
 INSERT INTO format VALUES (17, 1, 'application/x-mobi8-ebook', 'Amazon KF8 eBook File', 'azw3');
 

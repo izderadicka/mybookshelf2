@@ -114,3 +114,25 @@ section {
   font-size: 2em;
 }
 
+.drawer-nav li {
+  border-bottom: solid 1px grey;
+}
+
+.notification.status {
+  height: 3em;
+}
+
+.notification.status span.success {
+  color: green;
+  font-weight: bold;
+}
+
+.notification.status span.error {
+  color: red;
+  font-weight: bold;
+}
+
+.drawer-heading {
+  height: 51px;
+}
+
