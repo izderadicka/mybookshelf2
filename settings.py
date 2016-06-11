@@ -2,7 +2,16 @@ import os.path
 
 _base_dir = os.path.dirname(__file__)
 
-SQLALCHEMY_DATABASE_URI = 'postgresql://ebooks:ebooks@localhost/ebooks'
+
+DB_NAME = 'ebooks'
+DB_HOST = 'localhost'
+DB_USER = 'ebooks'
+DB_PASSWORD = 'ebooks'
+
+SQLALCHEMY_DATABASE_URI = 'postgresql://{user}:{password}@{host}/{db}'.format(db=DB_NAME,
+                                                                              host=DB_HOST,
+                                                                              user=DB_USER,
+                                                                              password=DB_PASSWORD)
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 SECRET_KEY = 'Pjk5EzGOcCOG5Rf1deqpZAvz17uUdZmWxJa3X/izSns'
 MAX_CONTENT_LENGTH = 100 * 1024 * 1024
@@ -31,7 +40,15 @@ IMAGE_MAGIC = '/usr/bin/convert'
 
 
 class Testing:
-    SQLALCHEMY_DATABASE_URI = 'postgresql://ebooks_test:ebooks@localhost/ebooks_test' 
+    DB_NAME = 'ebooks_test'
+    DB_HOST = 'localhost'
+    DB_USER = 'ebooks_test'
+    DB_PASSWORD = 'ebooks'
+    
+    SQLALCHEMY_DATABASE_URI = 'postgresql://{user}:{password}@{host}/{db}'.format(db=DB_NAME,
+                                                                                  host=DB_HOST,
+                                                                                  user=DB_USER,
+                                                                                  password=DB_PASSWORD)
     TESTING = True
     DEBUG = True
 

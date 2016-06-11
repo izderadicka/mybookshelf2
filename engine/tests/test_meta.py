@@ -1,4 +1,6 @@
 import unittest
+from unittest.mock import Mock
+import engine.dal as dal
 import shutil
 import os.path
 import asyncio
@@ -23,16 +25,27 @@ class TestMeta(unittest.TestCase):
             pass
 
     def test_meta1(self):
-        t = MetadataTask()
+        result=[]
+        upload = Mock(side_effect=lambda *args: result.extend(args) or 1)
+        async def dummy(*args, **kwargs):
+            return upload(*args, **kwargs)
+        dal.add_upload = dummy
+        
+        t = MetadataTask(user='ivan')
         loop = asyncio.get_event_loop()
         res = loop.run_until_complete(t.run(self.fname))
-        self.assertTrue(res)
-        print (res)
+        self.assertEqual(res, 1)
         
-        self.assertEqual(res['metadata']['authors'], ['Douglas Adams'])
-        self.assertEqual(res['metadata']['title'], 'Stopařův průvodce po Galaxii')
-        self.assertEqual(res['metadata']['tags'], ['Fantasy', 'Humor', 'Sci-fi'])
-        self.assertTrue(res['cover'])
-        os.remove(os.path.join(UPLOAD_DIR, res['cover']))
+        
+        meta = result[2]
+        self.assertEqual(meta['authors'], ['Douglas Adams'])
+        self.assertEqual(meta['title'], 'Stopařův průvodce po Galaxii')
+        self.assertEqual(meta['tags'], ['Fantasy', 'Humor', 'Sci-fi'])
+        self.assertEqual(result[3], 200134)
+        self.assertEqual(result[4], 'f75a07f5ad1da3a27035742eb978868b1a912a1a')
+        self.assertEqual(result[5], 'ivan')
+        cover = result[1]
+        self.assertTrue(cover)
+        os.remove(os.path.join(UPLOAD_DIR, cover))
         
         

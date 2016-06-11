@@ -3,7 +3,9 @@ import re
 import asyncio
 from asexor.task import BaseTask, TaskError
 from settings import UPLOAD_DIR, IMAGE_MAGIC
+from app.utils import file_hash
 import logging
+import engine.dal as dal
 
 logger = logging.getLogger('tasks')
 
@@ -20,7 +22,8 @@ class MetadataTask(BaseTask):
         self.cover_name = base_name + '_tmp.jpg'
         if not os.access(fname, os.R_OK):
             raise TaskError('File %s does not exists or is not readable')
-        self.fname = fname
+        self.fname = f
+        self.fname_full = fname
         return ('--get-cover=%s' % os.path.join(UPLOAD_DIR, self.cover_name), fname)
 
     AUTHORS_RE = re.compile(
@@ -41,7 +44,7 @@ class MetadataTask(BaseTask):
         authors = self.AUTHORS_RE.search(data)
         if authors:
             authors = re.sub(r'\[[^\]]+\]', '', authors.group(1))
-            meta['authors'] = strip(authors.split(','))
+            meta['authors'] = strip(authors.split('&'))
 
         tags = self.TAGS_RE.search(data)
         if tags:
@@ -64,9 +67,12 @@ class MetadataTask(BaseTask):
 
         data = data.decode(self.output_encoding)
         meta = await self._parse_data(data)
-        res = {"file": self.fname,
-               "metadata": meta}
+        
         cover_in = os.path.join(UPLOAD_DIR, self.cover_name)
+        loop = asyncio.get_event_loop()
+        hash = await loop.run_in_executor(None, file_hash, self.fname_full)
+        size = await loop.run_in_executor(None, lambda f: os.stat(f).st_size, self.fname_full)
+        cover = None
         if os.path.exists(cover_in):
             cover_file = self.cover_name[:-8] + '_cover.jpg'
             cover_file_full = os.path.join(UPLOAD_DIR, cover_file)
@@ -81,8 +87,10 @@ class MetadataTask(BaseTask):
                 logger.warn(
                     'Image Magic failed triming file %s with code %d', cover_in, return_code)
                 os.rename(cover_in, cover_file_full)
-            res['cover'] = cover_file
+            cover = cover_file
         else:
-            res['cover'] = None
             logger.warn('Cannot get cover image')
-        return res
+        
+        upload_id = await dal.add_upload(self.fname, cover, meta, size, hash, self.user)
+        
+        return upload_id

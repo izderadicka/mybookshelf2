@@ -8,6 +8,7 @@ from asexor.config import Config
 from asexor.task import load_tasks_from
 from autobahn.wamp.exception import ApplicationError
 import time
+import engine.dal as dal
 
 # sys.path.append(os.path.join(os.path.dirname(__file__),'..'))
 from app.utils import verify_token
@@ -49,4 +50,6 @@ if __name__ == '__main__':
         path,
         u"realm1",
     )
+    dal.init()
     runner.run(Executor, logging_level=level)
+    dal.close()
