@@ -7,6 +7,8 @@ from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship, deferred, backref
 from flask_login import UserMixin
 from sqlalchemy_utils import TSVectorType, JSONType
+# TODO - check if can use thse types instead
+from sqlalchemy.dialects.postgresql import JSON, TSVECTOR
 from app.utils import initials
 
 
@@ -258,7 +260,7 @@ class Upload(Base, Auditable):
     format = relationship('Format')
     size = Column(Integer, nullable=False)
     hash = Column(String(128), nullable=False)
-    meta = Column(JSONType(2000))
+    meta = Column(JSON)
 
     def __repr__(self):
         return super(Source, self).__repr__(['location'])

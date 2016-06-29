@@ -13,6 +13,7 @@ class RouterStub {
 describe('the App module', () => {
   var sut;
   var mockedRouter;
+  var config = {};
 
   beforeEach(() => {
     mockedRouter = new RouterStub();

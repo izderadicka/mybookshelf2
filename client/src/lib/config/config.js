@@ -20,7 +20,7 @@ export class Configure {
         this._config = data;
         logger.debug('Loaded my config file');
       })
-      .catch((err) => reject(new Error(`Error loading config ${err}`)))
+      .catch((err) => Promise.reject(new Error(`Error loading config ${err}`)))
   }
 
   get(key, defval = undefined) {

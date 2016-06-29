@@ -1,0 +1,61 @@
+<template>
+  <require from="components/authors"></require>
+  <require from="components/list-converter"></require>
+  <section>
+    <h2 class="page-title">Upload Results</h2>
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">Extracted Metadata</h3>
+      </div>
+
+      <div class="panel-body">
+        <div class="row">
+        <div class="cover-meta" id="cover-holder"></div>
+        <div class="">
+        <div>
+          <label>File:</label>
+          ${file}
+        </div>
+        <div>
+          <label>Title:</label>
+          ${meta.title}
+        </div>
+        <div if.bind="meta.series">
+          <label>Series:</label>
+          ${meta.series} #${meta.series_index}
+        </div>
+        <div>
+          <label>Authors:</label>
+          ${meta.authors | list}
+        </div>
+        <div>
+          <label>Genres:</label>
+          ${meta.tags | list}
+        </div>
+          <label>Language:</label>
+          ${meta.language}
+        </div>
+      </div>
+      </div>
+      </div>
+    </div>
+      <div class="panel panel-default" if.bind="hasCandidates">
+        <div class="panel-heading">
+          <h3 class="panel-title">Existing Matching Ebooks</h3>
+        </div>
+        <div class="panel-body">
+        <p>Based of file metadata we think it can be one of these ebooks:</p>
+
+        <ul class="list-group">
+          <li class="list-group-item" repeat.for="ebook of ebookCandidates">
+            <authors authors.one-time="ebook.authors" compact.bind="true"></authors>
+            <span class="ebook-title">${ebook.title}</span>
+            <span class="ebook-series" if.bind="ebook.series">(${ebook.series.title} #${ebook.series_index})</span>
+            <button class="btn btn-xs btn-default">Add Here</button>
+          </li>
+        </ul>
+      </div>
+      </div>
+      <button class="btn btn-lg btn-default">Create New Ebook (for this file)</button>
+  </section>
+</template>

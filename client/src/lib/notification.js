@@ -16,7 +16,8 @@ export class Notification {
       this._details.set('aaaaa',{text:'Extra metadata from file xxxx',
             'type': 'metadata',
             'start': new Date(),
-            'status':'success'});
+            'status':'success',
+            'result': 3});
     }
   }
   start(taskId, taskInfo) {

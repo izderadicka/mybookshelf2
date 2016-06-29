@@ -136,3 +136,13 @@ section {
   height: 51px;
 }
 
+.cover-meta {
+  width: 320px;
+  float: left;
+  margin-right: 1em;
+}
+
+.cover-meta img{
+  width: 320px;
+}
+

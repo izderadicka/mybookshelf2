@@ -3,7 +3,7 @@ from flask_restful import Resource as BaseResource, Api
 import app.model as model
 import app.schema as schema
 import app.logic as logic
-from app.utils import success_error
+from app.utils import success_error, mimetype_from_file_name
 from app import db
 from app.cors import add_cors_headers
 from app.access import role_required
@@ -98,6 +98,21 @@ class AuthorEbooks(Resource):
         return logic.paginate(q, page, page_size, sort, schema.ebooks_list_serializer())
 
 
+class UploadMeta(Resource):
+
+    def get(self, id):
+        upload = model.Upload.query.get_or_404(id)
+        data = schema.upload_serializer().dump(upload).data
+#         search = upload.meta.get('title', '') + ' ' + ' '.join(upload.meta.get('authors', []))
+#         search = search.strip()
+#         if search:
+#             q = logic.search_query(model.Ebook.query, search)
+#             if q:
+#                 data['proposed_ebook'] = schema.ebook_serializer().dump(q[0]).data
+
+        return data
+
+
 @bp.route('/upload', methods=['POST'])
 @role_required('user')
 def upload():
@@ -137,6 +152,22 @@ def check_upload():
 def download(id):
     return logic.download(id)
 
+
+@bp.route('/cover-meta/<int:id>/<string:size>')
+@role_required('user')
+def cover_meta(id, size='normal'):
+    upload = model.Upload.query.get_or_404(id)
+    if not upload.cover:
+        abort(404, 'No cover')
+        
+    fname = os.path.join(current_app.config['UPLOAD_DIR'], upload.cover)
+    mimetype = mimetype_from_file_name(fname)
+    if not mimetype:
+        abort(500, 'Invalid cover file')
+        
+    return logic.stream_response(fname, mimetype)
+
+
 api.add_resource(Ebooks, '/ebooks')
 api.add_resource(Ebook, '/ebooks/<int:id>')
 api.add_resource(AuthorEbooks, '/ebooks/author/<int:id>')
@@ -144,3 +175,4 @@ api.add_resource(Authors, '/authors')
 api.add_resource(Author, '/authors/<int:id>')
 api.add_resource(Series, '/series')
 api.add_resource(Search, '/search/<string:search>')
+api.add_resource(UploadMeta, '/uploads-meta/<int:id>')

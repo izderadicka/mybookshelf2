@@ -76,6 +76,13 @@ export class App {
         title: 'Upload Ebook',
         nav: true,
         auth: true
+      },
+      {
+        route: 'upload-result/:id',
+        name : 'upload-result',
+        moduleId: 'pages/upload-result',
+        title: 'Upload results',
+        auth: true
       }
     ]);
 

@@ -46,7 +46,7 @@ export class ApiClient {
   }
 
   getOne(resource, id) {
-    const url=this.getUrl(resource+'/'+ id)
+    let url=this.getUrl(resource+'/'+ id)
     return this.http.fetch(url)
       .then(response => response.json());
   }
@@ -61,5 +61,11 @@ export class ApiClient {
   upload(formData) {
     return this.http.fetch(this.getUrl('upload'), {method:'post', body: formData})
       .then( resp => resp.json())
+  }
+
+  getCoverMeta(id) {
+    let url =  this.getUrl('cover-meta/'+id+'/normal')
+    return this.http.fetch(url)
+    .then(r => r.blob())
   }
 }

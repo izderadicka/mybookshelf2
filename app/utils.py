@@ -5,8 +5,13 @@ from datetime import datetime, timedelta
 import unicodedata
 import hashlib
 import logging
+import mimetypes
 
 logger = logging.getLogger('utils')
+
+
+def mimetype_from_file_name(fname):
+    return mimetypes.guess_type(fname, False)[0]
 
 
 def success_error(fn):

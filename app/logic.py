@@ -8,6 +8,7 @@ from app.utils import remove_diacritics, file_hash
 import os.path
 
 import logging
+import re
 logger = logging.getLogger('logic')
 
 
@@ -25,6 +26,7 @@ def safe_int(v, for_=''):
 
 def preprocess_search_query(text):
     tokens = text.split()
+    tokens = map(lambda t: re.sub('[:.;]', ' ', t, re.UNICODE).strip(), tokens)
     return ' & '.join(['%s:*' % t for t in tokens])
 
 
@@ -98,34 +100,41 @@ def norm_file_name_base(ebook):
     return new_name_rel
 
 
+def stream_response(fname, mimetype, headers={}):
+    def stream_file(f):
+        buf_size = 8192
+        try:
+            while True:
+                data = f.read(buf_size)
+                if not data:
+                    break
+                yield data
+        finally:
+            f.close()
+
+    try:
+        outfile = open(fname, 'rb')
+    except IOError as e:
+        logger.exception('File %s error %s', fname, e)
+        abort(404, 'File not found')
+
+    headers['Content-Length'] = os.stat(fname).st_size
+    response = Response(
+        stream_file(outfile), mimetype=mimetype, headers=headers)
+    return response
+
+
 def download(id):
     try:
         source = model.Source.query.get(id)
     except NoResultFound:
         abort(404, 'Source not found')
-    try:
-        fname = os.path.join(
-            current_app.config['BOOKS_BASE_DIR'], source.location)
-        outfile = open(fname, 'rb')
-    except IOError:
-        logger.exception('Source file %s error', fname)
-        abort(404, 'Source file not found')
-    size = os.stat(fname).st_size
+    fname = os.path.join(current_app.config['BOOKS_BASE_DIR'], source.location)
 
-    def stream_file(f):
-        buf_size = 8192
-        while True:
-            data = f.read(buf_size)
-            if not data:
-                break
-            yield data
-        f.close()
-
-    fname = norm_file_name(source)
-    fname = os.path.split(fname)[-1]
-    response = Response(stream_file(outfile), mimetype=source.format.mime_type,
-                        headers={'Content-Disposition': 'attachment; filename="%s"' % fname,
-                                 'Content-Length': size})
+    down_name = norm_file_name(source)
+    down_name = os.path.split(fname)[-1]
+    response = stream_response(fname, mimetype=source.format.mime_type,
+                               headers={'Content-Disposition': 'attachment; filename="%s"' % down_name})
 
     return response
 
@@ -134,17 +143,17 @@ def check_file(mime_type, size, hash):
     if size > current_app.config['MAX_CONTENT_LENGTH']:
         logger.warn('File too big %d (limit is %d)', size,
                     current_app.config['MAX_CONTENT_LENGTH'])
-        return {'error':'file too big'}
+        return {'error': 'file too big'}
 
     t = model.Format.query.filter_by(mime_type=mime_type.lower()).all()
     if not t:
         logger.warn('Unsupported mime type %s', mime_type)
-        return {'error':'unsupported file type'}
+        return {'error': 'unsupported file type'}
 
     sources = model.Source.query.filter_by(size=size, hash=hash).all()
     if sources:
         logger.warn('File already exists - %s', sources[0])
-        return {'error':'file already exists'}
+        return {'error': 'file already exists'}
 
 
 def check_uploaded_file(mime_type, fname):

@@ -55,6 +55,10 @@ export class WSClient {
     this.conn.open();
   }
 
+  get isConnected() {
+    return (this.session !== null)
+  }
+
   disconnect() {
     if (this.conn) {
       this.conn.close();
@@ -100,16 +104,21 @@ export class WSClient {
 
   }
 
-  extractMeta(fileName, origName=null) {
+  extractMeta(fileName, originalFileName=null) {
+    if (! this.isConnected) {
+      alert('WebSocket is not connected, reload application!');
+      return;
+    }
     return this.session.call('eu.zderadicka.asexor.run_task', ['metadata',fileName])
     .then(taskId => {
       this.notif.start(taskId,
         {
-        text:`Extract Metadata from ${origName || fileName}`,
+        text:`Extract Metadata from ${originalFileName || fileName}`,
         status:"submitted",
         task:"metadata",
         taskId:"taskId",
-        file: fileName
+        file: fileName,
+        originalFileName
       });
       return taskId;
     });
