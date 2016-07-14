@@ -159,13 +159,22 @@ def cover_meta(id, size='normal'):
     upload = model.Upload.query.get_or_404(id)
     if not upload.cover:
         abort(404, 'No cover')
-        
+
     fname = os.path.join(current_app.config['UPLOAD_DIR'], upload.cover)
     mimetype = mimetype_from_file_name(fname)
     if not mimetype:
         abort(500, 'Invalid cover file')
-        
+
     return logic.stream_response(fname, mimetype)
+
+
+@bp.route('/series/index/<string:start>')
+@role_required('user')
+def series_index(start):
+    total, items = logic.series_index(start)
+    serializer = schema.series_list_serializer()
+    return jsonify(total=total,
+                   items=serializer.dump(items).data)
 
 
 api.add_resource(Ebooks, '/ebooks')

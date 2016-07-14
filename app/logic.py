@@ -160,3 +160,8 @@ def check_uploaded_file(mime_type, fname):
     size = os.stat(fname).st_size
     hash = file_hash(fname)
     return check_file(mime_type, size, hash)
+
+def series_index(start):
+    q = model.Series.query
+    q = q.filter(func.unaccent(model.Series.title).ilike(func.unaccent(start+'%'))).order_by(model.Series.title)
+    return q.count(), q.limit(current_app.config.get('MAX_INDEX_SIZE', 100)).all()

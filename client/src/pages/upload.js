@@ -2,6 +2,8 @@ import {LogManager, inject} from 'aurelia-framework';
 import {ApiClient} from 'lib/api-client';
 import {Configure} from 'lib/config/index';
 import {WSClient} from 'lib/ws-client';
+import {EventAggregator} from 'aurelia-event-aggregator';
+import {Notification} from 'lib/notification';
 
 let logger=LogManager.getLogger('upload');
 
@@ -23,7 +25,7 @@ function hex(buffer) {
   return hexCodes.join("");
 }
 
-@inject(ApiClient, WSClient, Configure)
+@inject(ApiClient, WSClient, Configure, EventAggregator, Notification)
 export class Upload {
   fileOK=false;
   uploading=false;
@@ -31,14 +33,17 @@ export class Upload {
   uploadError=null;
   uploadId=null;
 
-  constructor(client, wsClient, config) {
+  constructor(client, wsClient, config, event, notif) {
     this.client=client;
     this.wsClient=wsClient;
     this.config=config;
+    this.event = event;
+    this.notif = notif;
   }
   upload() {
     this.fileOK=false;
     this.checking=false;
+    this.uploading =  true;
     logger.debug(`Uploading file`);
     let formData= new FormData(document.getElementById('file-upload-form'))
     this.client.upload(formData)
@@ -46,14 +51,33 @@ export class Upload {
         if (data.error) {
           this.uploadError=`Upload error: ${data.error}`;
           logger.error(`Upload error: ${data.error}`);
+          this.uploading = false;
         } else {
           logger.debug(`File uploaded ${JSON.stringify(data)}`);
           let origName =  document.getElementById('file-input').value;
           this.wsClient.extractMeta(data.file, origName)
             .then(taskId => {
               logger.debug(`Task ID ${taskId} for file ${data.file}`);
+              this.event.subscribe('metadata-ready', result => {
+                if (taskId === result.taskId) {
+                  this.uploading = false;
+                  this.notif.markDone(taskId);
+                  window.location.href='#/upload-result/'+result.result;
+
+                }
+              });
+              this.event.subscribe('metadata-error', result => {
+                if (taskId === result.taskId) {
+                this.uploading = false;
+                this.uploadError = `Error in metadata: ${result.error}`;
+              }
+              });
             })
-            .catch(err => logger.error(`Error when extracting metadata: ${err}`));
+            .catch(err => {
+              logger.error(`Error when extracting metadata: ${err}`);
+              this.uploading = false;
+              this.uploadError = `Error in metadata: ${err}`;
+            });
         }
       })
   }

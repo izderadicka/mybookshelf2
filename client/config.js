@@ -34,6 +34,7 @@ System.config({
     "bootstrap": "github:twbs/bootstrap@3.3.6",
     "bootstrap-drawer": "npm:bootstrap-drawer@1.0.5",
     "core-js": "npm:core-js@1.2.6",
+    "diacritic": "npm:diacritic@0.0.2",
     "fetch": "github:github/fetch@0.11.1",
     "font-awesome": "npm:font-awesome@4.6.1",
     "jquery": "github:components/jquery@2.2.1",

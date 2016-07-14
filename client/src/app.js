@@ -83,6 +83,12 @@ export class App {
         moduleId: 'pages/upload-result',
         title: 'Upload results',
         auth: true
+      },
+      {
+        route: 'test',
+        name : 'test',
+        moduleId: 'test/test-page',
+        title: 'Just testing'
       }
     ]);
 

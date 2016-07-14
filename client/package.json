@@ -84,6 +84,7 @@
       "aurelia-templating-router": "npm:aurelia-templating-router@^1.0.0-beta.1.2.1",
       "bootstrap": "github:twbs/bootstrap@^3.3.5",
       "bootstrap-drawer": "npm:bootstrap-drawer@^1.0.5",
+      "diacritic": "npm:diacritic@^0.0.2",
       "fetch": "github:github/fetch@^0.11.0",
       "font-awesome": "npm:font-awesome@^4.5.0",
       "jquery": "github:components/jquery@^2.2.1",

@@ -24,6 +24,11 @@ export class ApiClient {
     .then(resp => resp.json())
   }
 
+  getIndex(resource, start) {
+    let url = this.getUrl(resource + '/index/' + encodeURIComponent(start));
+    return this.http.fetch(url).then(response => response.json());
+  }
+
   getMany(resource, page=1, pageSize=25, sort, extra) {
     let query={page:page, page_size:pageSize,sort:sort};
     if (extra) {

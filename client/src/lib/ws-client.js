@@ -1,20 +1,8 @@
-import {
-  EventAggregator
-} from 'aurelia-event-aggregator';
-import {
-  Notification
-} from 'lib/notification';
-import {
-  Access
-} from 'lib/access';
-import {
-  inject,
-  LogManager
-}
-from 'aurelia-framework';
-import {
-  Configure
-} from 'lib/config/index';
+import {Notification} from 'lib/notification';
+import {Access} from 'lib/access';
+import {inject,LogManager} from 'aurelia-framework';
+import {Configure} from 'lib/config/index';
+import {EventAggregator} from 'aurelia-event-aggregator';
 
 import autobahn from 'autobahn.min';
 
@@ -26,7 +14,6 @@ export class WSClient {
   session = null;
   constructor(config, notif, event, access) {
     this.notif = notif;
-    this.event = event;
     this.access = access;
     this.config = config;
 
@@ -70,10 +57,6 @@ export class WSClient {
 
   receiveNotification(args, kwargs, options) {
     logger.debug(`Notification ${JSON.stringify(args)}, ${JSON.stringify(kwargs)}`);
-    this.event.publish('task_updates', {
-      taskId:args[0],
-      kwargs
-    });
     this.notif.update(args[0], kwargs);
   }
 
