@@ -1,4 +1,5 @@
 <template>
+  <require from="./autocomplete.css"></require>
   <div class="autocomplete-container">
   <input class="autocomplete-input" autocomplete="off" value.bind="value & debounce:850" blur.trigger="hideSuggestions()"
     keydown.delegate="keyPressed($event)">

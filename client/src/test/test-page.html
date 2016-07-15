@@ -1,5 +1,5 @@
 <template>
-  <require from="components/autocomplete"></require>
+  <require from="components/autocomplete/autocomplete"></require>
   <p> Lorem i psum bla </p>
   <p> Lorem i psum bla </p>
   <p> Lorem i psum bla </p>
@@ -9,7 +9,7 @@
   <h3> Countries (loader is an array)</h3>
   <autocomplete loader.bind="['Afghanistan','Albania','Algeria','Andorra','Angola','Anguilla','Antigua &amp; Barbuda','Argentina','Armenia','Aruba','Australia','Austria','Azerbaijan','Bahamas'
   		,'Bahrain','Bangladesh','Barbados','Belarus','Belgium','Belize','Benin','Bermuda','Bhutan','Bolivia','Bosnia &amp; Herzegovina','Botswana','Brazil','British Virgin Islands'
-  		,'Brunei','Bulgaria','Burkina Faso','Burundi','Cambodia','Cameroon','Cape Verde','Cayman Islands','Chad','Chile','China','Colombia','Congo','Cook Islands','Costa Rica'
+  		,'Brunei','Bulgaria','Burkina Faso','Burundi','Cambodia','Cameroon','Canada','Cape Verde','Cayman Islands','Chad','Chile','China','Colombia','Congo','Cook Islands','Costa Rica'
   		,'Cote D Ivoire','Croatia','Cruise Ship','Cuba','Cyprus','Czech Republic','Denmark','Djibouti','Dominica','Dominican Republic','Ecuador','Egypt','El Salvador','Equatorial Guinea'
   		,'Estonia','Ethiopia','Falkland Islands','Faroe Islands','Fiji','Finland','France','French Polynesia','French West Indies','Gabon','Gambia','Georgia','Germany','Ghana'
   		,'Gibraltar','Greece','Greenland','Grenada','Guam','Guatemala','Guernsey','Guinea','Guinea Bissau','Guyana','Haiti','Honduras','Hong Kong','Hungary','Iceland','India'
@@ -20,13 +20,14 @@
   		,'Puerto Rico','Qatar','Reunion','Romania','Russia','Rwanda','Saint Pierre &amp; Miquelon','Samoa','San Marino','Satellite','Saudi Arabia','Senegal','Serbia','Seychelles'
   		,'Sierra Leone','Singapore','Slovakia','Slovenia','South Africa','South Korea','Spain','Sri Lanka','St Kitts &amp; Nevis','St Lucia','St Vincent','St. Lucia','Sudan'
   		,'Suriname','Swaziland','Sweden','Switzerland','Syria','Taiwan','Tajikistan','Tanzania','Thailand','Timor LEste','Togo','Tonga','Trinidad &amp; Tobago','Tunisia'
-  		,'Turkey','Turkmenistan','Turks &amp; Caicos','Uganda','Ukraine','United Arab Emirates','United Kingdom','Uruguay','Uzbekistan','Venezuela','Vietnam','Virgin Islands (US)'
-  ,'Yemen','Zambia','Zimbabwe']">
-  <span slot="title">Select Country</span>
-  <span slot="suggestion">Suggestion</span>
+  		,'Turkey','Turkmenistan','Turks &amp; Caicos','Uganda','Ukraine','United Arab Emirates','United Kingdom','United States','Uruguay','Uzbekistan','Venezuela','Vietnam','Virgin Islands (US)'
+      ,'Yemen','Zambia','Zimbabwe']" value.bind="country">
   </autocomplete>
+  <p>Selected country is ${country}</p>
   <h3> Series (loader is fetching values from API)</h3>
-  <autocomplete loader.bind = "loaderSeries" value-key="title" suggestion-template="./autocomplete-series.html"></autocomplete>
+  <autocomplete loader.bind="loaderSeries" value-key="title" suggestion-template="./autocomplete-series.html" value.bind="series"
+  selected-value.bind="seriesSelected"></autocomplete>
+  <p>Selected series is ${series} and selected value is ${seriesSelectedRepr}</p>
   <p> Lorem i psum bla </p>
   <p> Lorem i psum bla </p>
   <p> Lorem i psum bla </p>

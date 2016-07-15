@@ -1,4 +1,4 @@
-import {bindable, inject, LogManager, computedFrom} from 'aurelia-framework';
+import {bindable, bindingMode, inject, LogManager, computedFrom} from 'aurelia-framework';
 import $ from 'jquery';
 import diacritic from 'diacritic'; // npm:diacritic package
 
@@ -14,8 +14,8 @@ function startsWith(string, start) {
 
 @inject(Element)
 export class Autocomplete {
-  @bindable value; // value of input
-  @bindable selectedValue; // this will be selected value from suggestions - full value
+  @bindable({defaultBindingMode: bindingMode.twoWay}) value; // value of input
+  @bindable({defaultBindingMode: bindingMode.twoWay}) selectedValue; // this will be selected value from suggestions - full value
   @bindable loader = []; // can be either array of suggestions or function returning Promise resolving to such array
   @bindable minLength = 1; // min length of input to start search and suggest
   @bindable valueKey = null; // name of value property, null means use use whole suggestion
@@ -26,12 +26,15 @@ export class Autocomplete {
   _suggestionsShown = false;
   _ignoreChange = false;
   _cache;
+  _attached = false;
 
   constructor(elem) {
     this.elem=elem;
   }
 
   valueChanged() {
+    if (!this._attached) return;
+
     if (this._ignoreChange) {
       this._ignoreChange = false;
       return;
@@ -54,6 +57,7 @@ export class Autocomplete {
 
   attached() {
     this.suggestionsList = $('div.autocomplete-suggestion', this.elem)
+    this._attached = true;
     this.hideSuggestions()
   }
 

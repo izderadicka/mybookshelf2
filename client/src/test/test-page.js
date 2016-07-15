@@ -3,8 +3,16 @@ import {ApiClient} from 'lib/api-client';
 
 @inject(ApiClient)
 export class TestPage {
+  country;
+  series;
+  seriesSelected;
+
   constructor(client) {
     this.client=client;
+  }
+
+  get seriesSelectedRepr() {
+    return JSON.stringify(this.seriesSelected);
   }
 
   get loaderSeries() {
