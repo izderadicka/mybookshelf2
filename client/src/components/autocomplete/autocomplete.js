@@ -115,26 +115,28 @@ export class Autocomplete {
   keyPressed(evt) {
     logger.debug(`Key pressed ${evt.keyCode}`);
     if (this._suggestionsShown) {
-    let key = evt.keyCode;
-    switch (key) {
-      case 13: // Enter
-      if (this._selected !== null) this.select(this._selected)
-      break;
-      case 40: // Down
-      this._selected++;
-      if (this._selected >= this._suggestions.length) this._selected = this._suggestions.length -1;
-      this.makeVisible(this._selected);
-      break;
-      case  38: // Up
-      this._selected--;
-      if (this._selected < 0) this._selected = 0;
-      this.makeVisible(this._selected);
-      break;
+      let key = evt.keyCode;
+      switch (key) {
+        case 13: // Enter
+          if (this._selected !== null) this.select(this._selected)
+          break;
+        case 40: // Down
+          this._selected++;
+          if (this._selected >= this._suggestions.length) this._selected = this._suggestions.length - 1;
+          this.makeVisible(this._selected);
+          break;
+        case 38: // Up
+          this._selected--;
+          if (this._selected < 0) this._selected = 0;
+          this.makeVisible(this._selected);
+          break;
+        case 27: // Escape
+          this.hideSuggestions();
+          break;
+      }
     }
-  }
     return true;
   }
-
   makeVisible(idx) {
     let item = $(`a[data-index="${idx}"]`, this.elem);
     this.suggestionsList.scrollTop(this.suggestionsList.scrollTop() + item.position().top);
@@ -153,7 +155,7 @@ export class Autocomplete {
 
   hideSuggestions() {
     this._suggestionsShown = false;
-    //this._selected = null;
+    this._selected = null;
     this.suggestionsList.hide();
   }
 
