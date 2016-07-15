@@ -21,9 +21,12 @@
   		,'Sierra Leone','Singapore','Slovakia','Slovenia','South Africa','South Korea','Spain','Sri Lanka','St Kitts &amp; Nevis','St Lucia','St Vincent','St. Lucia','Sudan'
   		,'Suriname','Swaziland','Sweden','Switzerland','Syria','Taiwan','Tajikistan','Tanzania','Thailand','Timor LEste','Togo','Tonga','Trinidad &amp; Tobago','Tunisia'
   		,'Turkey','Turkmenistan','Turks &amp; Caicos','Uganda','Ukraine','United Arab Emirates','United Kingdom','Uruguay','Uzbekistan','Venezuela','Vietnam','Virgin Islands (US)'
-  ,'Yemen','Zambia','Zimbabwe']"></autocomplete>
+  ,'Yemen','Zambia','Zimbabwe']">
+  <span slot="title">Select Country</span>
+  <span slot="suggestion">Suggestion</span>
+  </autocomplete>
   <h3> Series (loader is fetching values from API)</h3>
-  <autocomplete loader.bind = "loaderSeries" value-key="title"></autocomplete>
+  <autocomplete loader.bind = "loaderSeries" value-key="title" suggestion-template="./autocomplete-series.html"></autocomplete>
   <p> Lorem i psum bla </p>
   <p> Lorem i psum bla </p>
   <p> Lorem i psum bla </p>

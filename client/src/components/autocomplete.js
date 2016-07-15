@@ -4,6 +4,8 @@ import diacritic from 'diacritic'; // npm:diacritic package
 
 let logger = LogManager.getLogger('autocomplete');
 
+const CACHE_DURATION = 60000; //ms
+
 function startsWith(string, start) {
   string = diacritic.clean(string).toLowerCase();
   start = diacritic.clean(start).toLowerCase()
@@ -12,35 +14,36 @@ function startsWith(string, start) {
 
 @inject(Element)
 export class Autocomplete {
-  @bindable value;
-  @bindable search;
-  @bindable loader = [];
-  @bindable minLength = 1;
-
-  @bindable valueKey = null;
+  @bindable value; // value of input
+  @bindable selectedValue; // this will be selected value from suggestions - full value
+  @bindable loader = []; // can be either array of suggestions or function returning Promise resolving to such array
+  @bindable minLength = 1; // min length of input to start search and suggest
+  @bindable valueKey = null; // name of value property, null means use use whole suggestion
+  @bindable suggestionTemplate = null; // template to display a suggestion - if none string value of suggestion is shown
 
   _suggestions = [];
   _selected = null;
-  _prevSearch;
   _suggestionsShown = false;
   _ignoreChange = false;
+  _cache;
 
   constructor(elem) {
     this.elem=elem;
   }
 
-  searchChanged() {
+  valueChanged() {
     if (this._ignoreChange) {
       this._ignoreChange = false;
       return;
     }
-    if (!this.search || this.search.length < this.minLength) {
+    this.selectedValue = undefined;
+    if (!this.value || this.value.length < this.minLength) {
       this._suggestions = [];
       this.hideSuggestions();
       return;
     }
 
-    this.getSuggestions().then(suggestions => {
+    this.getSuggestions(this.value).then(suggestions => {
       this._suggestions = suggestions;
       if (this._suggestions.length) {
         this.showSuggestions();
@@ -54,20 +57,55 @@ export class Autocomplete {
     this.hideSuggestions()
   }
 
-  getSuggestions() {
-      logger.debug(`Get suggestions for ${this.search}`);
+  getSuggestionValue(item) {
+    if (!this.valueKey) {
+      return item;
+    } else if (typeof this.valueKey === 'string') {
+      return item[this.valueKey];
+    } else if (typeof this.valueKey === 'function') {
+      return this.valueKey(item)
+    }
+  }
+
+  getSuggestions(forValue) {
+      logger.debug(`Get suggestions for ${forValue}`);
       if (Array.isArray(this.loader)) {
-        return Promise.resolve(this.loader.filter(item => startsWith(item, this.search)));
-      } else if (typeof this.loader === 'function'){
-        return this.loader(this.search)
-          .then(res => res.items);
+        return Promise.resolve(this.loader.filter(item =>
+          startsWith(this.getSuggestionValue(item), forValue)));
+      } else if (typeof this.loader === 'function') {
+        if (this._cache && startsWith(forValue, this._cache.search) &&
+            new Date() - this._cache.ts <= CACHE_DURATION) {
+          return Promise.resolve(this._cache.items.filter(
+            item => startsWith(this.getSuggestionValue(item), forValue)
+          ))
+        }
+        return this.loader(forValue)
+          .then(res => {
+
+            if (res.items.length === res.total) {
+              // we have all results, can cache
+              this._cache = {search: forValue,
+                            items: res.items,
+                            ts: new Date()}
+            }
+
+            // if inputed value already changed do not return these suggestions
+            if (this.value !== forValue) return [];
+
+            return res.items;
+          });
       }
       return Promise.reject(new Error('Invalid loader'));
   }
 
   itemSelected(evt) {
-    let selected = $(evt.target).attr('data-index');
-    this.select(selected);
+    var item = $(evt.target),
+        selected = item.attr('data-index');
+    while (selected === undefined && item) {
+      item = item.parent();
+      selected = item.attr('data-index');
+    }
+    if (selected !== undefined) this.select(selected);
   }
 
   keyPressed(evt) {
@@ -99,18 +137,19 @@ export class Autocomplete {
   }
 
   select(idx) {
-    let newValue = this.valueKey ? this._suggestions[idx][this.valueKey] : this._suggestions[idx];
+    logger.debug(`Selected index ${idx}`);
+    let newValue = this.getSuggestionValue(this._suggestions[idx]);
     logger.debug(`Selected ${newValue}`);
-    if (this.search !== newValue) this._ignoreChange = true;
-    this.search = newValue;
-    this.value = this._suggestions[idx];
+    if (this.value !== newValue) this._ignoreChange = true;
+    this.value = newValue;
+    this.selectedValue = this._suggestions[idx];
 
     this.hideSuggestions()
   }
 
   hideSuggestions() {
     this._suggestionsShown = false;
-    this._selected = null;
+    //this._selected = null;
     this.suggestionsList.hide();
   }
 
