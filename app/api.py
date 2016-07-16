@@ -177,6 +177,24 @@ def series_index(start):
                    items=serializer.dump(items).data)
 
 
+@bp.route('/authors/index/<string:start>')
+@role_required('user')
+def authors_index(start):
+    total, items = logic.authors_index(start)
+    serializer = schema.authors_list_serializer()
+    return jsonify(total=total,
+                   items=serializer.dump(items).data)
+
+
+@bp.route('/ebooks/index/<string:start>')
+@role_required('user')
+def ebookss_index(start):
+    total, items = logic.ebooks_index(start)
+    serializer = schema.ebooks_list_serializer()
+    return jsonify(total=total,
+                   items=serializer.dump(items).data)
+
+
 api.add_resource(Ebooks, '/ebooks')
 api.add_resource(Ebook, '/ebooks/<int:id>')
 api.add_resource(AuthorEbooks, '/ebooks/author/<int:id>')

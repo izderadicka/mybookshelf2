@@ -14,8 +14,12 @@ function startsWith(string, start) {
 
 @inject(Element)
 export class Autocomplete {
-  @bindable({defaultBindingMode: bindingMode.twoWay}) value; // value of input
-  @bindable({defaultBindingMode: bindingMode.twoWay}) selectedValue; // this will be selected value from suggestions - full value
+  @bindable({
+    defaultBindingMode: bindingMode.twoWay
+  }) value; // value of input
+  @bindable({
+    defaultBindingMode: bindingMode.twoWay
+  }) selectedValue; // this will be selected value from suggestions - full value
   @bindable loader = []; // can be either array of suggestions or function returning Promise resolving to such array
   @bindable minLength = 1; // min length of input to start search and suggest
   @bindable valueKey = null; // name of value property, null means use use whole suggestion
@@ -29,7 +33,7 @@ export class Autocomplete {
   _attached = false;
 
   constructor(elem) {
-    this.elem=elem;
+    this.elem = elem;
   }
 
   valueChanged() {
@@ -72,39 +76,41 @@ export class Autocomplete {
   }
 
   getSuggestions(forValue) {
-      logger.debug(`Get suggestions for ${forValue}`);
-      if (Array.isArray(this.loader)) {
-        return Promise.resolve(this.loader.filter(item =>
-          startsWith(this.getSuggestionValue(item), forValue)));
-      } else if (typeof this.loader === 'function') {
-        if (this._cache && startsWith(forValue, this._cache.search) &&
-            new Date() - this._cache.ts <= CACHE_DURATION) {
-          return Promise.resolve(this._cache.items.filter(
-            item => startsWith(this.getSuggestionValue(item), forValue)
-          ))
-        }
-        return this.loader(forValue)
-          .then(res => {
-
-            if (res.items.length === res.total) {
-              // we have all results, can cache
-              this._cache = {search: forValue,
-                            items: res.items,
-                            ts: new Date()}
-            }
-
-            // if inputed value already changed do not return these suggestions
-            if (this.value !== forValue) return [];
-
-            return res.items;
-          });
+    logger.debug(`Get suggestions for ${forValue}`);
+    if (Array.isArray(this.loader)) {
+      return Promise.resolve(this.loader.filter(item =>
+        startsWith(this.getSuggestionValue(item), forValue)));
+    } else if (typeof this.loader === 'function') {
+      if (this._cache && startsWith(forValue, this._cache.search) &&
+        new Date() - this._cache.ts <= CACHE_DURATION) {
+        return Promise.resolve(this._cache.items.filter(
+          item => startsWith(this.getSuggestionValue(item), forValue)
+        ))
       }
-      return Promise.reject(new Error('Invalid loader'));
+      return this.loader(forValue)
+        .then(res => {
+
+          if (res.items.length === res.total) {
+            // we have all results, can cache
+            this._cache = {
+              search: forValue,
+              items: res.items,
+              ts: new Date()
+            }
+          }
+
+          // if inputed value already changed do not return these suggestions
+          if (this.value !== forValue) return [];
+
+          return res.items;
+        });
+    }
+    return Promise.reject(new Error('Invalid loader'));
   }
 
   itemSelected(evt) {
     var item = $(evt.target),
-        selected = item.attr('data-index');
+      selected = item.attr('data-index');
     while (selected === undefined && item) {
       item = item.parent();
       selected = item.attr('data-index');
@@ -139,7 +145,9 @@ export class Autocomplete {
   }
   makeVisible(idx) {
     let item = $(`a[data-index="${idx}"]`, this.elem);
-    this.suggestionsList.scrollTop(this.suggestionsList.scrollTop() + item.position().top);
+    if (item && item.position()) {
+      this.suggestionsList.scrollTop(this.suggestionsList.scrollTop() + item.position().top);
+    }
   }
 
   select(idx) {
@@ -149,7 +157,6 @@ export class Autocomplete {
     if (this.value !== newValue) this._ignoreChange = true;
     this.value = newValue;
     this.selectedValue = this._suggestions[idx];
-
     this.hideSuggestions()
   }
 
@@ -163,6 +170,7 @@ export class Autocomplete {
     this._suggestionsShown = true;
     this._selected = this._suggestions.length ? 0 : null;
     this.suggestionsList.show();
+    this.makeVisible(this._selected);
   }
 
 

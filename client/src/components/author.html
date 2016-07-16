@@ -1,3 +1,5 @@
 <template>
-  <a class="author-link" href="${link}">${fullName}</a>${!last?', ':''}
+  <a class="author-link" href="${link}" if.bind="linked">${fullName}</a>
+  <span if.bind="!linked">${fullName}</span>
+  ${!last?', ':''}
 </template>

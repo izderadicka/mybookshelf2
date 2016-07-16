@@ -1,7 +1,7 @@
 <template>
   <require from="components/author"></require>
   <div class="ebook-authors">
-    <author containerless repeat.for="author of authors" if.bind="!many" author.bind="author" last.bind="$last"></author>
+    <author containerless repeat.for="author of authors" if.bind="!many" author.bind="author" last.bind="$last" linked.bind="linked"></author>
     <span class="many-authors" if.bind="many">Many authors</span>
   </div>
 </template>

@@ -2,8 +2,9 @@ import {bindable, computedFrom, customElement} from 'aurelia-framework'
 
 @customElement('author')
 export class Author {
-  @bindable author
-  @bindable last=true
+  @bindable author;
+  @bindable last=true;
+  @bindable linked = true;
 
   @computedFrom('author')
   get link(){

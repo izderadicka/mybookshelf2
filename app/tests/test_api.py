@@ -167,4 +167,11 @@ class TestApi(TestCase):
         self.assertEqual(res['total'], 3)
         res = self.get('/api/series/index/á')
         self.assertEqual(res['total'], 3)
+        res = self.get('/api/authors/index/c')
+        self.assertEqual(res['total'], 4)
+        res = self.get('/api/authors/index/č')
+        self.assertEqual(res['total'], 4)
+
+        res = self.get('/api/ebooks/index/r')
+        self.assertEqual(res['total'], 1)
         print(res)

@@ -3,6 +3,7 @@ import {bindable, computedFrom} from 'aurelia-framework';
 export class Authors {
   @bindable authors=[];
   @bindable compact=false;
+  @bindable linked = true;
 
   @computedFrom('authors', 'compact')
   get many() {

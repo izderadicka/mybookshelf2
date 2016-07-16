@@ -161,7 +161,27 @@ def check_uploaded_file(mime_type, fname):
     hash = file_hash(fname)
     return check_file(mime_type, size, hash)
 
+
+def _run_query(q):
+    return q.count(), q.limit(current_app.config.get('MAX_INDEX_SIZE', 100)).all()
+
+
 def series_index(start):
     q = model.Series.query
-    q = q.filter(func.unaccent(model.Series.title).ilike(func.unaccent(start+'%'))).order_by(model.Series.title)
-    return q.count(), q.limit(current_app.config.get('MAX_INDEX_SIZE', 100)).all()
+    q = q.filter(func.unaccent(model.Series.title).ilike(
+        func.unaccent(start + '%'))).order_by(model.Series.title)
+    return _run_query(q)
+
+
+def ebooks_index(start):
+    q = model.Ebook.query
+    q = q.filter(func.unaccent(model.Ebook.title).ilike(
+        func.unaccent(start + '%'))).order_by(model.Ebook.title)
+    return _run_query(q)
+
+
+def authors_index(start):
+    q = model.Author.query
+    q = q.filter(func.unaccent(model.Author.last_name + ', ' + model.Author.first_name)
+                 .ilike(func.unaccent(start + '%'))).order_by(model.Author.last_name, model.Author.first_name)
+    return _run_query(q)
