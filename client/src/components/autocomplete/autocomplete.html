@@ -1,7 +1,8 @@
 <template>
   <require from="./autocomplete.css"></require>
   <div class="autocomplete-container">
-    <input class="autocomplete-input" autocomplete="off" value.bind="value & debounce:850" blur.trigger="hideSuggestions()" keydown.delegate="keyPressed($event)">
+    <input class="autocomplete-input ${additionalClass}" autocomplete="off" value.bind="value & debounce:850" blur.trigger="hideSuggestions()"
+    keydown.delegate="keyPressed($event)" placeholder.bind="placeholder">
     <div class="autocomplete-suggestion" style="display:none">
       <div class="list-group">
         <a data-index="${$index}" class="list-group-item ${$index == _selected ? 'active' : ''}" repeat.for="item of _suggestions" mousedown.delegate="itemSelected($event)">

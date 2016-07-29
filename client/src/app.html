@@ -5,7 +5,7 @@
   <require from="bootstrap-drawer/dist/css/bootstrap-drawer.css"></require>
 
   <nav-bar router.bind="router" do-search.bind="doSearch"></nav-bar>
-<div class="page-host has-drawer">
+<div class="page-host-overfloable has-drawer">
 
     <router-view></router-view>
     <notifications-drawer if.bind="access.authenticated"></notifications-drawer>

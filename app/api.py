@@ -46,6 +46,17 @@ class Authors(Resource):
     def get(self, page=1, page_size=20, sort=None, **kwargs):
         q = model.Author.query
         return logic.paginate(q, page, page_size, sort, schema.authors_list_serializer())
+    
+class Languages(Resource):
+    def get(self):
+        q = model.Language.query.order_by(model.Language.name)
+        return schema.languages_list_serializer().dump(q.all()).data
+
+
+class Genres(Resource):
+    def get(self):
+        q = model.Genre.query.order_by(model.Genre.name)
+        return schema.languages_list_serializer().dump(q.all()).data
 
 
 class Series(Resource):
@@ -203,3 +214,5 @@ api.add_resource(Author, '/authors/<int:id>')
 api.add_resource(Series, '/series')
 api.add_resource(Search, '/search/<string:search>')
 api.add_resource(UploadMeta, '/uploads-meta/<int:id>')
+api.add_resource(Languages, '/languages')
+api.add_resource(Genres, '/genres')

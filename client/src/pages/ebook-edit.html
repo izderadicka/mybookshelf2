@@ -1,0 +1,31 @@
+<template>
+  <require from="components/authors-edit"></require>
+  <require from="components/genres-edit"></require>
+  <section>
+    <h2 class="page-title">Edit Ebook</h2>
+    <div class="">
+      <div class="form-group">
+
+        <label>Title</label>
+        <input class="form-control" type="text" value.bind="ebook.title">
+      </div>
+
+      <div class=form-group>
+        <label>Authors</label>
+        <authors-edit authors.bind="ebook.authors"></authors-edit>
+      </div>
+      <div class="form-group">
+        <label>Language</label>
+        <select value.bind="ebook.language.id" class="form-control">
+          <option value=''>Select Language</option>
+          <option repeat.for="language of _languages" model.bind="language.id">${language.name}</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Genres</label>
+        <genres-edit all-genres.bind="_genres" genres.bind="ebook.genres"></genres-edit>
+      </div>
+     genres count ${ebook.genres.length}
+    </div>
+  </section>
+</template>

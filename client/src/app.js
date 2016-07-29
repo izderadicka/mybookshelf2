@@ -4,6 +4,7 @@ import { HttpClient} from 'aurelia-fetch-client';
 import {Configure} from 'lib/config/index';
 import {WSClient} from 'lib/ws-client';
 import {Access} from 'lib/access';
+import {ROUTES} from 'routes';
 
 const logger = LogManager.getLogger('app');
 @inject(Configure, FetchConfig, HttpClient, WSClient, Access)
@@ -33,64 +34,7 @@ export class App {
   configureRouter(config, router) {
     config.title = 'MyBookshelf2';
     config.addPipelineStep('authorize', AuthorizeStep);
-    config.map([{
-        route: ['', 'welcome'],
-        name: 'welcome',
-        moduleId: 'pages/welcome',
-        nav: true,
-        title: 'Welcome'
-      }, {
-        route: 'ebooks',
-        name: 'ebooks',
-        moduleId: 'pages/ebooks',
-        nav: true,
-        title: 'Ebooks',
-        auth: true
-      }, {
-        route: 'login',
-        name: 'login',
-        moduleId: 'pages/login',
-        title: 'Login'
-      }, {
-        route: 'ebook/:id',
-        name: 'ebook',
-        moduleId: 'pages/ebook',
-        title: 'Ebook',
-        auth: true
-      }, {
-        route: 'search/:query',
-        name: 'search',
-        moduleId: 'pages/search',
-        title: 'Search Results',
-        auth: true
-      }, {
-        route: ['author/:id'],
-        name: 'author',
-        moduleId: 'pages/author',
-        title: 'Authors books',
-        auth: true
-      }, {
-        route: 'upload',
-        name: 'upload',
-        moduleId: 'pages/upload',
-        title: 'Upload Ebook',
-        nav: true,
-        auth: true
-      },
-      {
-        route: 'upload-result/:id',
-        name : 'upload-result',
-        moduleId: 'pages/upload-result',
-        title: 'Upload results',
-        auth: true
-      },
-      {
-        route: 'test',
-        name : 'test',
-        moduleId: 'test/test-page',
-        title: 'Just testing'
-      }
-    ]);
+    config.map(ROUTES);
 
     this.router = router;
   }

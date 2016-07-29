@@ -9,6 +9,7 @@ export class ApiClient {
     this.http=http;
     this.apiPath=config.get('api.path');
     this.baseUrl=http.baseUrl;
+    this._cache= new Map();
   }
 
   getUrl(r, query=null) {
@@ -29,6 +30,19 @@ export class ApiClient {
     return this.http.fetch(url).then(response => response.json());
   }
 
+  getManyUnpagedCached(resource) {
+    let now = new Date()
+    if (this._cache.has(resource) && (now- this._cache.get(resource).ts) < 60*3600*1000) {
+      return Promise.resolve(this._cache.get(resource).data)
+    }
+    let url = this.getUrl(resource);
+    return this.http.fetch(url)
+      .then(response => response.json())
+      .then(data => {
+        this._cache.set(resource, {ts: new Date, data});
+        return data
+      });
+  }
   getMany(resource, page=1, pageSize=25, sort, extra) {
     let query={page:page, page_size:pageSize,sort:sort};
     if (extra) {

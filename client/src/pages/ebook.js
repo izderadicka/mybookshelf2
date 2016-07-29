@@ -17,7 +17,7 @@ export class Ebook {
   }
 
   activate(params) {
-    this.client.getOne('ebooks', params.id)
+    return this.client.getOne('ebooks', params.id)
       .then(b => this.ebook=b)
       .catch(err => logger.error(`Failed to load ${err}`));
   }

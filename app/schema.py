@@ -92,8 +92,9 @@ class EbookSchema(ModelSchema):
     authors = fields.Nested(
         AuthorSchema, many=True, only=('id', 'first_name', 'last_name'))
     series = fields.Nested(SeriesSchema, only=('id', 'title'))
-    language = fields.Function(
-        serialize=lambda o: o.language.name, deserialize=lang_from_code)
+    language = fields.Nested(LanguageSchema)
+#     language = fields.Function(
+#         serialize=lambda o: o.language.name, deserialize=lang_from_code)
     genres = fields.Nested(GenreSchema, many=True)
     sources = fields.Nested(SourceSchema, many=True, only=(
         'id', 'format', 'location', 'quality', 'modified', 'size'))
@@ -125,3 +126,6 @@ author_serializer = lambda: AuthorSchema()
 series_list_serializer = lambda: SeriesSchema(many=True, only=('id', 'title'))
 
 upload_serializer = lambda: UploadSchema()
+
+languages_list_serializer = lambda: LanguageSchema(many=True)
+genres_list_serializer = lambda: GenreSchema(many=True)
