@@ -25,7 +25,7 @@ export class Autocomplete {
   @bindable valueKey = null; // name of value property, null means use use whole suggestion
   @bindable suggestionTemplate = null; // template to display a suggestion - if none string value of suggestion is shown
   @bindable additionalClass; // additional classes for input control
-  @bindable placeholder; // placeholder for input control
+  @bindable placeholder = ''; // placeholder for input control
 
   _suggestions = [];
   _selected = null;

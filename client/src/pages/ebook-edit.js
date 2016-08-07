@@ -1,4 +1,4 @@
-import {LogManager, inject} from 'aurelia-framework';
+import {LogManager, inject, bindable} from 'aurelia-framework';
 import {ApiClient} from 'lib/api-client';
 
 let logger = LogManager.getLogger('ebook-edit')
@@ -9,9 +9,13 @@ export class EditEbook {
 
   _languages;
   _genres;
+  @bindable _series;
+  _seriesSelected;
+
   constructor(client) {
     this.client = client;
   }
+
   activate(params) {
     logger.debug(`Activated with ${JSON.stringify(params)}`)
     let promises = [];
@@ -21,6 +25,7 @@ export class EditEbook {
     this.client.getOne('ebooks', params.id)
       .then(b => {
         this.ebook=b;
+        this._series = b.series ? b.series.title : undefined;
         logger.debug(`Ebook data ${JSON.stringify(b)}`);
       })
       .catch(err => logger.error(`Failed to load ${err}`))
@@ -39,10 +44,20 @@ export class EditEbook {
     this.client.getManyUnpagedCached('genres')
       .then(data => this._genres = data)
     );
-
-
-
-
     return Promise.all(promises);
+  }
+
+  _seriesChanged() {
+    logger.debug(`Series is ${this._series} selected ${JSON.stringify(this._seriesSelected)}`);
+    if (this._seriesSelected) this.ebook.series = this._seriesSelected
+    else this.ebook.series = {title: this._series};
+  }
+
+  save() {
+    logger.debug(`Saving ${JSON.stringify(this.ebook)}`);
+  }
+
+  get seriesLoader() {
+    return start => this.client.getIndex('series', start);
   }
 }

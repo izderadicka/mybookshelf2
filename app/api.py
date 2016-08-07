@@ -183,7 +183,7 @@ def cover_meta(id, size='normal'):
 @role_required('user')
 def series_index(start):
     total, items = logic.series_index(start)
-    serializer = schema.series_list_serializer()
+    serializer = schema.series_index_serializer()
     return jsonify(total=total,
                    items=serializer.dump(items).data)
 
@@ -199,7 +199,7 @@ def authors_index(start):
 
 @bp.route('/ebooks/index/<string:start>')
 @role_required('user')
-def ebookss_index(start):
+def ebooks_index(start):
     total, items = logic.ebooks_index(start)
     serializer = schema.ebooks_list_serializer()
     return jsonify(total=total,

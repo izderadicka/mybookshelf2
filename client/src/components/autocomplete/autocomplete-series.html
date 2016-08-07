@@ -1,3 +1,5 @@
 <template>
-  ${title} (${id})
+  <require from="components/authors"></require>
+  <div class="ebook-title">${title}</div>
+  <authors authors.one-time="authors" compact.bind="true" linked.bind="false"></authors>  
 </template>

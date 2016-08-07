@@ -1,9 +1,11 @@
 from flask import abort, request, current_app, Response, jsonify
 from sqlalchemy.sql import text, desc, func
 from functools import wraps
+from app import db
 import app.model as model
 import app.schema as schema
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.orm import aliased
 from app.utils import remove_diacritics, file_hash
 import os.path
 
@@ -167,11 +169,26 @@ def _run_query(q):
 
 
 def series_index(start):
+    # Need to add authors
+    # select distinct series.*, author.id as author_id, author.first_name, author.last_name from series left join ebook on series.id = ebook.series_id join ebook_authors on ebook_authors.ebook_id=ebook.id join author on author.id = ebook_authors.author_id;
+
     q = model.Series.query
     q = q.filter(func.unaccent(model.Series.title).ilike(
         func.unaccent(start + '%'))).order_by(model.Series.title)
-    return _run_query(q)
-
+    count = q.count()
+    q = q.limit(current_app.config.get('MAX_INDEX_SIZE', 100)).subquery('series_view')
+    q = aliased(model.Series, q)
+    session_author = db.session.query(q, model.Author).outerjoin(model.Ebook).join(model.Ebook.authors).order_by(q.title, model.Author.id).all()
+    res=[]
+    current=None
+    for series, author in session_author:
+        if series == current:
+            series.authors.append(author)
+        else:
+            current = series
+            res.append(series)
+            series.authors = [author] if author else []
+    return count, res
 
 def ebooks_index(start):
     q = model.Ebook.query

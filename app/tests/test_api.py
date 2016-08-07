@@ -165,6 +165,12 @@ class TestApi(TestCase):
         # indexes
         res = self.get('/api/series/index/a')
         self.assertEqual(res['total'], 3)
+        self.assertEqual(len(res['items'][0]['authors']), 1)
+        print(res)
+        res = self.get('/api/series/index/na')
+        self.assertEqual(res['total'], 1)
+        self.assertEqual(len(res['items'][0]['authors']), 2)
+
         res = self.get('/api/series/index/á')
         self.assertEqual(res['total'], 3)
         res = self.get('/api/authors/index/c')
@@ -174,4 +180,3 @@ class TestApi(TestCase):
 
         res = self.get('/api/ebooks/index/r')
         self.assertEqual(res['total'], 1)
-        print(res)

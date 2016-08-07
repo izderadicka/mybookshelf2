@@ -1,0 +1,11 @@
+<template>
+  <div class="genres-edit-list edit-list">
+    <div class="genres-edit-list-item" repeat.for="genre of genres">${genre.name}
+      <i click.delegate="removeGenre($index)" class="fa fa-minus-circle fa-1x" aria-hidden="true"></i></div>
+  </div>
+  
+  <select value.bind="_selected" class="secondary-input" change.delegate="addGenre()">
+    <option value=''>Add Genre</option>
+    <option repeat.for="genre of visibleGenres" model.bind="genre">${genre.name}</option>
+  </select>
+</template>

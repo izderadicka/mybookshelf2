@@ -155,9 +155,8 @@ section {
 }
 
 .autocomplete-container {
-  width: 305px;
+  /* width: 305px; */
   display: inline-block;
-  
 }
 
 .secondary-input {
@@ -175,7 +174,7 @@ section {
 }
 
 .edit-list {
-  margin: 15px 10px;
+  margin: 0px 10px 10px;
 }
 
 .form-group i {
@@ -185,4 +184,18 @@ section {
 
 .form-group label {
   display: block;
+}
+
+.composed-control label{
+  font-weight: normal;
+  display: inline;
+}
+
+.composed-control input{
+  width:90%;
+  display: inline-block;
+}
+
+.composed-control .autocomplete-container {
+  width:90%;
 }

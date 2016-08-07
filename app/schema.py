@@ -35,6 +35,14 @@ class SeriesSchema(ModelSchema):
         model = model.Series
 
 
+class SeriesSchemaWithAuthors(ModelSchema):
+    authors = fields.Nested(
+        AuthorSchema, many=True, only=('id', 'first_name', 'last_name'))
+
+    class Meta:
+        model = model.Series
+
+
 class LanguageSchema(ModelSchema):
 
     class Meta:
@@ -124,6 +132,7 @@ authors_list_serializer = lambda: AuthorSchema(
 author_serializer = lambda: AuthorSchema()
 
 series_list_serializer = lambda: SeriesSchema(many=True, only=('id', 'title'))
+series_index_serializer = lambda: SeriesSchemaWithAuthors(many=True, only=('id', 'title', 'authors'))
 
 upload_serializer = lambda: UploadSchema()
 
