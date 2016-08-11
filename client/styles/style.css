@@ -199,3 +199,14 @@ section {
 .composed-control .autocomplete-container {
   width:90%;
 }
+
+.page-title .actions {
+  
+  opacity: 0;
+  transition: opacity 2s ease-out;
+}
+
+.page-title:hover > .actions {
+  opacity: 1;
+  
+}

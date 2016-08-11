@@ -2,7 +2,12 @@
   <require from="components/authors"></require>
    <require from="components/genres-converter"></require>
   <section>
-    <h2 class="page-title">${ebook.title}</h2>
+    <h2 class="page-title">
+      <span class="title">${ebook.title}</span>
+      <span class="actions">
+      <a route-href="route: ebook-edit; params.bind: {id:ebook.id}" if.bind="isEditable"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
+    </span>
+    </h2>
     <authors authors.bind="ebook.authors"></authors>
     <ul class="list-group ebook-properties">
       <li class="list-group-item">

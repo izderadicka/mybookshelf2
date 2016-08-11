@@ -5,9 +5,9 @@
       <div class="authors-edit-list-item" repeat.for="author of authorsVisible">${author}
         <i click.delegate="removeAuthor($index)" class="fa fa-minus-circle fa-1x" aria-hidden="true"></i></div>
     </div>
-    
+
     <autocomplete loader.bind="loaderAuthors" value-key.bind="getFullName" suggestion-template="./autocomplete-authors.html"
-    value.bind="_author" selected-value.bind="_authorSelected" placeholder="Add Author" additional-class="secondary-input"></autocomplete>
+    value.bind="_author" selected-value.bind="_authorSelected" placeholder="Add Author as Last, First" additional-class="secondary-input"></autocomplete>
     <i click.delegate="addAuthor()" class="fa fa-plus-circle fa-2x" aria-hidden="true"></i>
 
   </div>

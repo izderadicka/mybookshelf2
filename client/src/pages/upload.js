@@ -4,6 +4,7 @@ import {Configure} from 'lib/config/index';
 import {WSClient} from 'lib/ws-client';
 import {EventAggregator} from 'aurelia-event-aggregator';
 import {Notification} from 'lib/notification';
+import {Router} from 'aurelia-router';
 
 let logger=LogManager.getLogger('upload');
 
@@ -25,7 +26,7 @@ function hex(buffer) {
   return hexCodes.join("");
 }
 
-@inject(ApiClient, WSClient, Configure, EventAggregator, Notification)
+@inject(ApiClient, WSClient, Configure, EventAggregator, Notification, Router)
 export class Upload {
   fileOK=false;
   uploading=false;
@@ -33,12 +34,13 @@ export class Upload {
   uploadError=null;
   uploadId=null;
 
-  constructor(client, wsClient, config, event, notif) {
+  constructor(client, wsClient, config, event, notif, router) {
     this.client=client;
     this.wsClient=wsClient;
     this.config=config;
     this.event = event;
     this.notif = notif;
+    this.router = router;
   }
   upload() {
     this.fileOK=false;
@@ -62,7 +64,7 @@ export class Upload {
                 if (taskId === result.taskId) {
                   this.uploading = false;
                   this.notif.markDone(taskId);
-                  window.location.href='#/upload-result/'+result.result;
+                  this.router.navigateToRoute('upload-result', {id:result.result});
 
                 }
               });

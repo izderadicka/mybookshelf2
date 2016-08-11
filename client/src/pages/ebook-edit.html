@@ -5,19 +5,19 @@
   <section>
     <h2 class="page-title">Edit Ebook</h2>
     <div class="">
-      <div class="form-group">
+      <div class="form-group" id="title-input-group">
 
-        <label>Title</label>
+        <label class="control-label">Title</label>
         <input class="form-control" type="text" value.bind="ebook.title">
       </div>
 
-      <div class=form-group>
-        <label>Authors</label>
+      <div class=form-group id="authors-input-group">
+        <label class="control-label">Authors</label>
         <authors-edit authors.bind="ebook.authors"></authors-edit>
       </div>
 
-      <div class="form-group">
-        <label>Series</label>
+      <div class="form-group" id="series-input-group">
+        <label class="control-label">Series</label>
         <div class="row composed-control">
           <div class="col-xs-8">
             <label>Title</label>
@@ -31,20 +31,20 @@
         </div>
       </div>
 
-      <div class="form-group">
-        <label>Language</label>
+      <div class="form-group" id="language-input-group">
+        <label class="control-label">Language</label>
         <select value.bind="ebook.language.id" class="form-control">
           <option value=''>Select Language</option>
           <option repeat.for="language of _languages" model.bind="language.id">${language.name}</option>
         </select>
       </div>
-      <div class="form-group">
-        <label>Genres</label>
+      <div class="form-group" id="genres-input-group">
+        <label class="control-label">Genres</label>
         <genres-edit all-genres.bind="_genres" genres.bind="ebook.genres"></genres-edit>
       </div>
      <div class="form-group">
-       <button type="button" class="btn btn-primary btn-lg">Save</button>
-       <button type="button" class="btn btn-default btn-lg">Cancel</button>
+       <button type="button" class="btn btn-primary btn-lg" click.delegate="save()">Save</button>
+       <button type="button" class="btn btn-default btn-lg" click.delegate="cancel()">Cancel</button>
      </div>
     </div>
   </section>

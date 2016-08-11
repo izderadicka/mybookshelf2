@@ -11,9 +11,14 @@ export class Ebook {
   constructor(client, access, ) {
     this.client=client;
     this.access=access;
-    this.token=access.token;
+    this.token = access.token;
     this.canDownload=access.hasRole('user');
     this.canConvert=access.hasRole('user');
+  }
+
+
+  get isEditable() {
+    return this.access.canEdit(this.ebook.created_by);
   }
 
   activate(params) {

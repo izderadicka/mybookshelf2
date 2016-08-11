@@ -2,15 +2,17 @@ import {AuthService} from 'aurelia-auth';
 import {Authentication} from 'aurelia-auth/authentication'
 import {inject, LogManager} from 'aurelia-framework';
 import {EventAggregator} from 'aurelia-event-aggregator';
+import {Router} from 'aurelia-router';
 
 let logger=LogManager.getLogger('access')
 
-@inject(AuthService, Authentication, EventAggregator)
+@inject(AuthService, Authentication, EventAggregator, Router)
 export class Access {
-  constructor(auth, authUtil, event) {
+  constructor(auth, authUtil, event, router) {
     this.auth=auth;
     this.util=authUtil;
     this.event=event;
+    this.router = router;
     logger.debug(`AuthUtil ${authUtil}`);
   }
 
@@ -22,6 +24,10 @@ export class Access {
     let token = this.auth.getTokenPayload();
     if (! token) return false;
     let roles=this.auth.getTokenPayload().roles
+    return this.checkRoles(requiredRoles, roles);
+  }
+
+  checkRoles(requiredRoles, roles) {
     return requiredRoles.reduce((prev, curr) => prev || roles.includes(curr), false);
   }
 
@@ -29,6 +35,13 @@ export class Access {
     if (this.auth.isAuthenticated()) {
       return this.auth.getTokenPayload().email;
     }
+  }
+
+  canEdit(userId) {
+    let token = this.auth.getTokenPayload();
+    if (this.checkRoles(['admin'], token.roles)) return true
+    else if (this.checkRoles(['user'], token.roles) && userId && userId == token.id ) return true;
+    return false;
   }
 
   get authenticated() {
@@ -51,7 +64,7 @@ export class Access {
         this.error=true;
         logger.error("Login failure: "+err);
         //todo: get it from auth config?
-        window.location.href='#/login';
+        this.router.navigate('login')
     });
   }
 
