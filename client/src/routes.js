@@ -1,4 +1,4 @@
-export let ROUTES =
+export const ROUTES =
 [{
     route: ['', 'welcome'],
     name: 'welcome',

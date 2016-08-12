@@ -1,17 +1,20 @@
 import {inject, LogManager, computedFrom} from 'aurelia-framework';
 import {ApiClient} from 'lib/api-client';
+import {Router} from 'aurelia-router';
 
 let logger = LogManager.getLogger('upload-result');
 
-@inject(ApiClient)
+@inject(ApiClient, Router)
 export class UploadResult {
   meta;
+  metaId;
   file;
   ebook;
   ebookCandidates=[];
   cover=new Image();
-  constructor(client) {
+  constructor(client, router) {
     this.client=client;
+    this.router = router;
     // has to revoke object URL to release blob
     this.cover.onload = function() {
         URL.revokeObjectURL(this.src);
@@ -24,6 +27,7 @@ export class UploadResult {
     this.client.getOne('uploads-meta', model.id)
     .then(meta => {
       this.meta = meta.meta;
+      this.metaId = meta.id;
       this.file = meta.load_source;
       logger.debug(`Got meta ${JSON.stringify(meta)}`);
       this.client.getCoverMeta(model.id)
@@ -55,6 +59,10 @@ export class UploadResult {
   @computedFrom('ebookCandidates')
   get hasCandidates() {
     return this.ebookCandidates && this.ebookCandidates.length>0;
+  }
+
+  createNew() {
+    this.router.navigateToRoute('ebook-create', {metaId: this.metaId});
   }
 
 }

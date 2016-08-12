@@ -15,7 +15,14 @@ export class Login{
     };
 
     login(){
-        return this.access.login(this.email,this.password);
+        return this.access.login(this.email,this.password)
+        .then( () => this.error = false)
+        .catch(err=>{
+            this.error=true;
+            logger.error("Login failure: "+err);
+            //todo: get it from auth config?
+            //this.router.navigate('login')
+        });
     };
 
 

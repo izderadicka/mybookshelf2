@@ -23,7 +23,8 @@ export class Access {
   hasRole(...requiredRoles) {
     let token = this.auth.getTokenPayload();
     if (! token) return false;
-    let roles=this.auth.getTokenPayload().roles
+    let roles=token.roles
+    if (! roles) return false;
     return this.checkRoles(requiredRoles, roles);
   }
 
@@ -52,20 +53,14 @@ export class Access {
     return this.auth.login({username, password})
     .then(response=>{
       if (response.error) {
-        this.error=true;
         throw new Error('Invalid login');
       } else {
         this.error=false;
-        logger.debug("success logged: " + JSON.stringify(response));
+        logger.debug("success user logged in: " + JSON.stringify(response));
         this.event.publish('user-logged-in', {user:this.currentUser});
       }
-    })
-    .catch(err=>{
-        this.error=true;
-        logger.error("Login failure: "+err);
-        //todo: get it from auth config?
-        this.router.navigate('login')
     });
+
   }
 
   logout() {
