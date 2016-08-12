@@ -91,7 +91,7 @@ export class EditEbook {
         return {id:obj.id}
       } else {
         let newObj = {}
-        for (var prop of Object.keys(obj)) {
+        for (let prop of Object.keys(obj)) {
           if (prop !=='id' && obj[prop]) newObj[prop] = obj[prop]
         }
         if (Object.keys(newObj).length === 0) return null;
