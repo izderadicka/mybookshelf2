@@ -18,11 +18,23 @@ export class ApiClient {
 
   post(resource, data) {
     return this.http.fetch(this.getUrl(resource),
-    {method:'post',
+    {method:'POST',
     body:json(data)
-
     })
     .then(resp => resp.json())
+  }
+
+  delete(resource, id) {
+    return this.http.fetch(this.getUrl(resource)+'/'+id,
+      {method:'DELETE'})
+    .then(resp => resp.json());
+  }
+
+  patch(resource, data, id) {
+    return this.http.fetch(this.getUrl(resource+'/'+id),
+    {method: 'PATCH',
+    body:json(data)})
+    .then(resp => resp.json());
   }
 
   getIndex(resource, start) {
@@ -80,6 +92,12 @@ export class ApiClient {
   upload(formData) {
     return this.http.fetch(this.getUrl('upload'), {method:'post', body: formData})
       .then( resp => resp.json())
+  }
+
+  addUploadToEbook(ebookId, uploadId) {
+    let url=this.getUrl(`ebooks/${ebookId}/add-upload/${uploadId}`)
+    return this.http.fetch(url)
+      .then(response => response.json());
   }
 
   getCoverMeta(id) {

@@ -1,10 +1,8 @@
 <template>
-
+  <require from="components/error-alert"></require>
   <div class="container">
   <h2 class="page-title">${title}</h2>
-  <div class="alert alert-danger" role="alert" if.bind="error">
-    Login Failed!
-  </div>
+  <error-alert error.bind="error"></error-alert>
   <form submit.trigger="login()">
 
       <div class='form-group'>

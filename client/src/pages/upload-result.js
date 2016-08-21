@@ -8,10 +8,12 @@ let logger = LogManager.getLogger('upload-result');
 export class UploadResult {
   meta;
   metaId;
+  id;
   file;
   ebook;
   ebookCandidates=[];
   cover=new Image();
+  error;
   constructor(client, router) {
     this.client=client;
     this.router = router;
@@ -22,9 +24,10 @@ export class UploadResult {
 
   }
 
-  activate(model) {
+  canActivate(model) {
     logger.debug(`Activated with ${JSON.stringify(model)}`);
-    this.client.getOne('uploads-meta', model.id)
+    this.id = model.id;
+    return this.client.getOne('uploads-meta', model.id)
     .then(meta => {
       this.meta = meta.meta;
       this.metaId = meta.id;
@@ -35,7 +38,6 @@ export class UploadResult {
 
       return meta.meta
     })
-    .catch(err => logger.error(`Upload meta error ${err}`))
     .then(meta => {
       var authors = meta.authors ? meta.authors.join(' ') : null;
       var search=meta.title ? meta.title : '';
@@ -47,8 +49,11 @@ export class UploadResult {
     .then(result => {
       logger.debug(`Found ${result.data}`);
       this.ebookCandidates=result.data;
-
+      return true;
       })
+    .catch(err => {
+      logger.error(`Upload meta error ${err}`);
+      return false});
 
   }
 
@@ -63,6 +68,17 @@ export class UploadResult {
 
   createNew() {
     this.router.navigateToRoute('ebook-create', {metaId: this.metaId});
+  }
+
+  addToEbook(ebookId) {
+    this.client.addUploadToEbook(ebookId, this.id)
+    .then(res => {
+      if (res.error) this.error={error:res.error, errorDetail:res.error_details}
+      else {
+        this.router.navigateToRoute('ebook', {id:ebookId});
+      }
+    })
+    .catch(err => this.error={error:'Server error', errorDetail:err})
   }
 
 }

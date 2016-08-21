@@ -23,7 +23,8 @@ export class App {
             this.router.navigateToRoute('login');
             throw new Error('Not autherticated!');
 
-          }
+          } else if (response && response.status >= 300)
+            throw new Error(`HTTP error ${response.status}`);
           return response;
         }
       })

@@ -40,7 +40,7 @@ export class Access {
 
   canEdit(userId) {
     let token = this.auth.getTokenPayload();
-    if (this.checkRoles(['admin'], token.roles)) return true
+    if (this.checkRoles(['superuser'], token.roles)) return true
     else if (this.checkRoles(['user'], token.roles) && userId && userId == token.id ) return true;
     return false;
   }
@@ -53,9 +53,10 @@ export class Access {
     return this.auth.login({username, password})
     .then(response=>{
       if (response.error) {
-        throw new Error('Invalid login');
+        let err=new Error('Invalid login');
+        err.error=response.error;
+        throw err;
       } else {
-        this.error=false;
         logger.debug("success user logged in: " + JSON.stringify(response));
         this.event.publish('user-logged-in', {user:this.currentUser});
       }

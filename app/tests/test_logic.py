@@ -1,16 +1,28 @@
 from app import db, app
 import app.model as model
 import app.logic as logic
+import app.utils as utils
 from .basecase import TestCase
 import os.path
+import shutil
+import settings
 
 
-ebook_file = os.path.join(os.path.dirname(
-    __file__), '../data/books/Kissinger, Henry/Roky v Bilem dome/Kissinger, Henry - Roky v Bilem dome.epub')
+ebook_file = os.path.join(settings.BOOKS_BASE_DIR,
+    'Kissinger, Henry/Roky v Bilem dome/Kissinger, Henry - Roky v Bilem dome.epub')
 
+downloaded_file = os.path.join(settings.UPLOAD_DIR, 'kissinger.epub')
 
 class TestLogic(TestCase):
-
+    
+    def setUp(self):
+        TestCase.setUp(self)
+        shutil.copy(ebook_file, downloaded_file)
+        
+    def tearDown(self):
+        shutil.rmtree(downloaded_file, ignore_errors=True)
+        shutil.rmtree(os.path.join(settings.BOOKS_BASE_DIR, 'Kissinger Henry'))
+        
     def test_logic(self):
 
         b1 = model.Ebook.query.get(33837)
@@ -41,3 +53,17 @@ class TestLogic(TestCase):
 
         res = logic.check_uploaded_file('application/epub+zip', ebook_file)
         self.assertEqual(res['error'], 'file already exists')
+        
+        size = os.stat(downloaded_file).st_size
+        hash = utils.file_hash(downloaded_file)
+        
+        s=model.Source.query.get(86060)
+        
+        new_loc=logic.create_new_location(s, downloaded_file)
+        self.assertEqual(new_loc, 'Kissinger Henry/Roky v Bilem dome/Kissinger Henry - Roky v Bilem dome.epub')
+        
+        shutil.copy(ebook_file, downloaded_file)
+        new_loc=logic.create_new_location(s, downloaded_file)
+        self.assertEqual(new_loc, 'Kissinger Henry/Roky v Bilem dome/Kissinger Henry - Roky v Bilem dome(1).epub')
+        
+        

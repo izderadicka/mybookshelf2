@@ -9,6 +9,12 @@ export function configure(aurelia) {
     .feature('components/pagination')
     .plugin('aurelia-auth', baseConfig => baseConfig.configure(authConfig))
     .feature('lib/config')
+    .plugin('aurelia-dialog', config => {
+      config.useDefaults();
+      config.settings.lock = false;
+      config.settings.centerHorizontalOnly = false;
+      config.settings.startingZIndex = 1045;
+    });
     //.plugin('aurelia-configuration');
 
 

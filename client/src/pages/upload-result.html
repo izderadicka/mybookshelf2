@@ -1,6 +1,7 @@
 <template>
   <require from="components/authors"></require>
   <require from="components/list-converter"></require>
+  <require from="components/error-alert"></require>
   <section>
     <h2 class="page-title">Upload Results</h2>
     <div class="panel panel-default">
@@ -39,6 +40,7 @@
       </div>
       </div>
     </div>
+     <error-alert error.bind="error"></error-alert>
       <div class="panel panel-default" if.bind="hasCandidates">
         <div class="panel-heading">
           <h3 class="panel-title">Existing Matching Ebooks</h3>
@@ -51,7 +53,7 @@
             <authors authors.one-time="ebook.authors" compact.bind="true"></authors>
             <span class="ebook-title">${ebook.title}</span>
             <span class="ebook-series" if.bind="ebook.series">(${ebook.series.title} #${ebook.series_index})</span>
-            <button class="btn btn-xs btn-default">Add Here</button>
+            <button class="btn btn-xs btn-default" click.delegate="addToEbook(ebook.id)">Add Here</button>
           </li>
         </ul>
       </div>

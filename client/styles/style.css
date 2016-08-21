@@ -210,3 +210,12 @@ section {
   opacity: 1;
   
 }
+
+.drawer-controls.notifications-btn {
+  height:70px;
+}
+
+ai-dialog-overlay.active {
+  background-color: black;
+  opacity: 0.5 !important;
+}

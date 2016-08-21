@@ -130,3 +130,4 @@ def remove_diacritics(text):
             else:
                 b.append(' ')
     return ''.join(b)
+

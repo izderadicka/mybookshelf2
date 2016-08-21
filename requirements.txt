@@ -18,6 +18,7 @@ SQLAlchemy>=1.0.12
 SQLAlchemy-Utils>=0.32.2
 PyJWT>=1.4.0
 aiopg>=0.9.2
+filelock>=2.0.6
 
 # development 
 pytest

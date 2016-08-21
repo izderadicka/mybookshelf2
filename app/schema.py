@@ -1,13 +1,22 @@
 import app
+from copy import deepcopy
 from flask_marshmallow import Marshmallow
 from marshmallow import fields, post_dump, validate, Schema, post_load
 import app.model as model
-from sqlalchemy import desc
-from collections import namedtuple
+
 
 schema = Marshmallow(app.app)
 
 BaseModelSchema = schema.ModelSchema
+
+def PartialSchemaFactory(schema_cls, **kwargs):
+    schema = schema_cls(**kwargs)
+    for field_name, field in schema.fields.items():
+        if isinstance(field, fields.Nested):
+            new_field = deepcopy(field)
+            new_field.schema.partial = True
+            schema.fields[field_name] = new_field
+    return schema
 
 
 class ModelSchema(BaseModelSchema):
@@ -98,19 +107,20 @@ def lang_from_code(c):
 
 class EbookSchema(ModelSchema):
     authors = fields.Nested(
-        AuthorSchema, many=True, only=('id', 'first_name', 'last_name'))
-    series = fields.Nested(SeriesSchema, only=('id', 'title'))
-    language = fields.Nested(LanguageSchema)
+        AuthorSchema, many=True, only=('id', 'first_name', 'last_name'), allow_none=True)
+    series = fields.Nested(SeriesSchema, only=('id', 'title'), allow_none=True)
+    language = fields.Nested(LanguageSchema, required=True)
 #     language = fields.Function(
 #         serialize=lambda o: o.language.name, deserialize=lang_from_code)
-    genres = fields.Nested(GenreSchema, many=True)
+    genres = fields.Nested(GenreSchema, many=True, allow_none=True)
     sources = fields.Nested(SourceSchema, many=True, only=(
-        'id', 'format', 'location', 'quality', 'modified', 'size'))
+        'id', 'format', 'location', 'quality', 'modified', 'size'), allow_none=True)
     full_text = None
 
     class Meta:
         model = model.Ebook
         exclude = ('full_text',)
+    
 
 
 class FileInfoSchema(Schema):
@@ -122,8 +132,8 @@ class FileInfoSchema(Schema):
 # schemas are probably not thread safe, better to have new instance per
 # each use
 ebook_serializer = lambda: EbookSchema()
-ebook_deserializer_update = lambda: EbookSchema()
-ebook_deserializer_insert = lambda: EbookSchema(exclude=('version_id',))
+ebook_deserializer_update = lambda: PartialSchemaFactory(EbookSchema, partial=True)
+ebook_deserializer_insert = lambda: PartialSchemaFactory(EbookSchema, exclude=('version_id',))
 ebooks_list_serializer = lambda: EbookSchema(many=True, only=(
     'id', 'title', 'authors', 'series', 'series_index', 'language', 'genres'))
 
@@ -133,6 +143,7 @@ author_serializer = lambda: AuthorSchema()
 
 series_list_serializer = lambda: SeriesSchema(many=True, only=('id', 'title'))
 series_index_serializer = lambda: SeriesSchemaWithAuthors(many=True, only=('id', 'title', 'authors'))
+series_serializer = lambda: SeriesSchema()
 
 upload_serializer = lambda: UploadSchema()
 

@@ -1,0 +1,6 @@
+<template>
+  <div class="alert alert-danger alert-dismissible" role="alert" if.bind="error">
+    <button type="button" class="close" aria-label="Close" click.delegate="clearError()"><span aria-hidden="true">&times;</span></button>
+    <strong>${error.error}</strong> ${error.errorDetail}
+  </div>
+</template>

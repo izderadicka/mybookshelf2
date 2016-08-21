@@ -1,16 +1,18 @@
 from flask import Blueprint, request, abort, current_app, jsonify
 from flask_restful import Resource as BaseResource, Api
+from flask_login import current_user
 import app.model as model
 import app.schema as schema
 import app.logic as logic
 from app.utils import success_error, mimetype_from_file_name
 from app import db
 from app.cors import add_cors_headers
-from app.access import role_required
+from app.access import role_required, can_change_object
 from werkzeug import secure_filename
 import os.path
 import logging
 import tempfile
+from time import sleep
 
 logger = logging.getLogger('api')
 
@@ -37,7 +39,36 @@ class Ebooks(Resource):
         return logic.paginate(q, page, page_size, sort, schema.ebooks_list_serializer())
 
     def post(self):
-        pass
+        if not request.json:
+            abort(400)
+
+        try:
+            data = logic.clear_ebook_data(request.json)
+        except ValueError as e:
+            db.session.rollback()
+            return jsonify(error="Invalid data", error_details=str(e))
+
+        deserializer = schema.ebook_deserializer_insert()
+        ebook, errors = deserializer.load(data)
+
+        if errors:
+            db.session.rollback()
+            return jsonify(error="Invalid data", error_details=errors)
+
+        ebook.created_by = current_user
+        ebook.modified_by = current_user
+
+        logic.check_ebook_entity(ebook, current_user)
+
+        db.session.add(ebook)
+
+        try:
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            return jsonify(error="Database error", error_details=str(e))
+
+        return jsonify(id=ebook.id, success=True)
 
 
 class Authors(Resource):
@@ -46,14 +77,17 @@ class Authors(Resource):
     def get(self, page=1, page_size=20, sort=None, **kwargs):
         q = model.Author.query
         return logic.paginate(q, page, page_size, sort, schema.authors_list_serializer())
-    
+
+
 class Languages(Resource):
+
     def get(self):
         q = model.Language.query.order_by(model.Language.name)
         return schema.languages_list_serializer().dump(q.all()).data
 
 
 class Genres(Resource):
+
     def get(self):
         q = model.Genre.query.order_by(model.Genre.name)
         return schema.languages_list_serializer().dump(q.all()).data
@@ -67,20 +101,74 @@ class Series(Resource):
         return logic.paginate(q, page, page_size, sort, schema.series_list_serializer())
 
 
+class Serie(Resource):
+
+    def get(self, id):
+        s = model.Series.query.get_or_404(id)
+        return schema.series_serializer().dump(s).data
+
+
 class Ebook(Resource):
 
     def get(self, id):
         b = model.Ebook.query.get_or_404(id)
         return schema.ebook_serializer().dump(b).data  # @UndefinedVariable
 
-    @role_required('superuser')
     def delete(self, id):
+        # check access - superuser or owner
         b = model.Ebook.query.get_or_404(id)
+        can_change_object(b)
         r = db.session.delete(b)  # @UndefinedVariable
+        # delete also series with no ebooks?
         db.session.commit()
+        return jsonify(id=id)
 
-    def put(self, id):
-        pass
+    def patch(self, id):
+        if not request.json:
+            abort(400)
+
+        try:
+            data = logic.clear_ebook_data(request.json)
+        except ValueError as e:
+            db.session.rollback()
+            return jsonify(error="Invalid data", error_details=str(e))
+
+        deserializer = schema.ebook_deserializer_update()
+
+        data['id'] = int(id)
+
+        try:
+            version_id = data.pop('version_id')
+        except KeyError:
+            db.session.rollback()
+            return jsonify(error="Version_id missing", error_details="")
+
+        ebook, errors = deserializer.load(data)
+
+        if ebook.id != data['id']:
+            db.session.rollback()
+            return jsonify(error="Unknown record", error_details="Id %d is not in table" % data['id'])
+
+        can_change_object(ebook)
+
+        if version_id != ebook.version_id:
+            db.session.rollback()
+            return jsonify(error="Stalled record",  error_details="Your version %d, db version %d" %
+                           (version_id, ebook.version_id))
+        if errors:
+            db.session.rollback()
+            return jsonify(error="Invalid data", error_details=errors)
+
+        ebook.modified_by = current_user
+        logic.check_ebook_entity(ebook, current_user)
+
+        try:
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            return jsonify(error="Database error", error_details=str(e))
+
+        return jsonify(id=ebook.id, success=True)
 
 
 class Author(Resource):
@@ -206,12 +294,41 @@ def ebooks_index(start):
                    items=serializer.dump(items).data)
 
 
+@bp.route('/ebooks/<int:id>/add-upload/<int:upload_id>')
+@role_required('user')
+def add_upload_to_ebook(id, upload_id):
+    ebook = model.Ebook.query.get_or_404(id)
+    upload = model.Upload.query.get_or_404(upload_id)
+
+    existing = model.Source.query.filter_by(
+        hash=upload.hash, size=upload.size).first()
+    if existing:
+        return jsonify(error="File already exists", error_details="Existing source %d in ebook %s(%d)" %
+                       (existing.id, existing.ebook.title, existing.ebook.id))
+
+    source = model.Source(ebook=ebook,
+                          format=upload.format,
+                          size=upload.size,
+                          hash=upload.hash,
+                          load_source=upload.load_source
+                          )
+    source.location = logic.create_new_location(source, upload)
+    source.created_by= current_user
+    source.modified_by = current_user
+    db.session.add(source)
+
+    db.session.commit()
+
+    return jsonify(id=source.id)
+
+
 api.add_resource(Ebooks, '/ebooks')
 api.add_resource(Ebook, '/ebooks/<int:id>')
 api.add_resource(AuthorEbooks, '/ebooks/author/<int:id>')
 api.add_resource(Authors, '/authors')
 api.add_resource(Author, '/authors/<int:id>')
 api.add_resource(Series, '/series')
+api.add_resource(Serie, '/series/<int:id>')
 api.add_resource(Search, '/search/<string:search>')
 api.add_resource(UploadMeta, '/uploads-meta/<int:id>')
 api.add_resource(Languages, '/languages')

@@ -16,7 +16,8 @@ System.config({
     "aurelia-animator-css": "npm:aurelia-animator-css@1.0.0",
     "aurelia-auth": "npm:aurelia-auth@3.0.2",
     "aurelia-bootstrapper": "npm:aurelia-bootstrapper@1.0.0",
-    "aurelia-configuration": "github:vheissu/aurelia-configuration@1.0.9",
+    "aurelia-configuration": "github:vheissu/aurelia-configuration@1.0.12",
+    "aurelia-dialog": "npm:aurelia-dialog@1.0.0-beta.3.0.0",
     "aurelia-event-aggregator": "npm:aurelia-event-aggregator@1.0.0",
     "aurelia-fetch-client": "npm:aurelia-fetch-client@1.0.0",
     "aurelia-framework": "npm:aurelia-framework@1.0.1",
@@ -50,7 +51,7 @@ System.config({
       "path-browserify": "npm:path-browserify@0.0.0"
     },
     "github:jspm/nodelibs-process@0.1.2": {
-      "process": "npm:process@0.11.6"
+      "process": "npm:process@0.11.8"
     },
     "github:jspm/nodelibs-util@0.1.0": {
       "util": "npm:util@0.10.3"
@@ -61,7 +62,7 @@ System.config({
     "github:twbs/bootstrap@3.3.6": {
       "jquery": "github:components/jquery@2.2.1"
     },
-    "github:vheissu/aurelia-configuration@1.0.9": {
+    "github:vheissu/aurelia-configuration@1.0.12": {
       "aurelia-dependency-injection": "npm:aurelia-dependency-injection@1.0.0",
       "aurelia-loader": "npm:aurelia-loader@1.0.0",
       "aurelia-loader-default": "npm:aurelia-loader-default@1.0.0",
@@ -110,6 +111,12 @@ System.config({
     "npm:aurelia-dependency-injection@1.0.0": {
       "aurelia-metadata": "npm:aurelia-metadata@1.0.0",
       "aurelia-pal": "npm:aurelia-pal@1.0.0"
+    },
+    "npm:aurelia-dialog@1.0.0-beta.3.0.0": {
+      "aurelia-dependency-injection": "npm:aurelia-dependency-injection@1.0.0",
+      "aurelia-metadata": "npm:aurelia-metadata@1.0.0",
+      "aurelia-pal": "npm:aurelia-pal@1.0.0",
+      "aurelia-templating": "npm:aurelia-templating@1.0.0"
     },
     "npm:aurelia-event-aggregator@1.0.0": {
       "aurelia-logging": "npm:aurelia-logging@1.0.0"
@@ -239,7 +246,7 @@ System.config({
     "npm:path-browserify@0.0.0": {
       "process": "github:jspm/nodelibs-process@0.1.2"
     },
-    "npm:process@0.11.6": {
+    "npm:process@0.11.8": {
       "assert": "github:jspm/nodelibs-assert@0.1.0",
       "fs": "github:jspm/nodelibs-fs@0.1.2",
       "vm": "github:jspm/nodelibs-vm@0.1.0"

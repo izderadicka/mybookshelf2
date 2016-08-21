@@ -6,8 +6,11 @@ import app.model as model
 import app.schema as schema
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm import aliased
+from sqlalchemy import inspect
 from app.utils import remove_diacritics, file_hash
 import os.path
+import filelock
+import shutil
 
 import logging
 import re
@@ -75,6 +78,29 @@ def paginate(q, page, page_size, sort, serializer):
             'page_size': pager.per_page,
             'total': pager.total,
             'items': serializer.dump(pager.items).data}
+
+
+def create_new_location(source, upload):
+    base_dir = current_app.config['BOOKS_BASE_DIR']
+    if isinstance(upload, model.Upload):
+        new_file = os.path.join(current_app.config['UPLOAD_DIR'], upload.file)
+    else:
+        new_file=upload
+    new_location = norm_file_name(source)
+    ebook_dir = os.path.join(base_dir,os.path.split(new_location)[0])
+    if not os.path.exists(ebook_dir):
+        os.makedirs(ebook_dir, exist_ok=True)
+    lock_file = os.path.join(ebook_dir, '.lock_this_dir')
+    index = 1
+    with filelock.SoftFileLock(lock_file, timeout=5):
+        while os.path.exists(os.path.join(base_dir, new_location)):
+            name, ext = os.path.splitext(new_location)
+            new_location = name + '(%d)' % index + ext
+            index += 1
+        # TODO: consider copy for better safety?
+        shutil.move(new_file, os.path.join(base_dir, new_location))
+
+    return new_location
 
 
 def norm_file_name(source):
@@ -170,17 +196,22 @@ def _run_query(q):
 
 def series_index(start):
     # Need to add authors
-    # select distinct series.*, author.id as author_id, author.first_name, author.last_name from series left join ebook on series.id = ebook.series_id join ebook_authors on ebook_authors.ebook_id=ebook.id join author on author.id = ebook_authors.author_id;
+    # select distinct series.*, author.id as author_id, author.first_name,
+    # author.last_name from series left join ebook on series.id =
+    # ebook.series_id join ebook_authors on ebook_authors.ebook_id=ebook.id
+    # join author on author.id = ebook_authors.author_id;
 
     q = model.Series.query
     q = q.filter(func.unaccent(model.Series.title).ilike(
         func.unaccent(start + '%'))).order_by(model.Series.title)
     count = q.count()
-    q = q.limit(current_app.config.get('MAX_INDEX_SIZE', 100)).subquery('series_view')
+    q = q.limit(current_app.config.get('MAX_INDEX_SIZE', 100)).subquery(
+        'series_view')
     q = aliased(model.Series, q)
-    session_author = db.session.query(q, model.Author).outerjoin(model.Ebook).join(model.Ebook.authors).order_by(q.title, model.Author.id).all()
-    res=[]
-    current=None
+    session_author = db.session.query(q, model.Author).outerjoin(model.Ebook).join(
+        model.Ebook.authors).order_by(q.title, model.Author.id).all()
+    res = []
+    current = None
     for series, author in session_author:
         if series == current:
             series.authors.append(author)
@@ -189,6 +220,7 @@ def series_index(start):
             res.append(series)
             series.authors = [author] if author else []
     return count, res
+
 
 def ebooks_index(start):
     q = model.Ebook.query
@@ -202,3 +234,79 @@ def authors_index(start):
     q = q.filter(func.unaccent(model.Author.last_name + ', ' + model.Author.first_name)
                  .ilike(func.unaccent(start + '%'))).order_by(model.Author.last_name, model.Author.first_name)
     return _run_query(q)
+
+
+def clear_ebook_data(data):
+    '''Because of generality of Marshmallow-SqlAlchemy we have to clear 
+    input data to prevent unwanted modifications of other entities'''
+    EDITABLE = ['id', 'version_id', 'title', 'series_index',
+                'language', 'series', 'genres', 'authors']
+    if not isinstance(data, dict):
+        raise ValueError('Invalid data type')
+    tbd = []
+    for key in data:
+        if not key in EDITABLE:
+            tbd.append(key)
+    for key in tbd:
+        del data[key]
+
+    def shrink(d, id_mandatory=False):
+        if (d.get('id')):
+            return {'id': d['id']}
+        elif id_mandatory:
+            raise ValueError('This entity %s must have id' % d)
+        else:
+            if 'id' in d:
+                del d['id']
+            return d
+
+    def shrink_list(l, id_mandatory=False):
+        if l is None:
+            return []
+        if not isinstance(l, list):
+            raise ValueError('Value must be list')
+        return list(filter(lambda x: x, map(lambda i: shrink(i, id_mandatory), l)))
+
+    if 'language' in data:
+        data['language'] = shrink(data['language'], True)
+    if 'series' in data:
+        data['series'] = shrink(data['series'])
+    if 'authors' in data:
+        data['authors'] = shrink_list(data['authors'])
+    if 'genres' in data:
+        data['genres'] = shrink_list(data['genres'], True)
+
+    return data
+
+
+def check_ebook_entity(ebook, current_user=None):
+
+    def check_entity(entity, query, replace_cb):
+        if not inspect(entity).has_identity:
+            with db.session.no_autoflush:
+                existing = query.first()
+            if existing:
+                replace_cb(existing)
+                if inspect(entity).pending:
+                    db.session.expunge(entity)
+            else:
+                entity.created_by = current_user
+                entity.modified_by = current_user
+
+    def replace_series(other):
+        ebook.series = other
+    if ebook.series:
+        check_entity(ebook.series, model.Series.query.filter_by(
+            title=ebook.series.title), replace_series)
+
+    for i, author in enumerate(ebook.authors):
+
+        def replace_author(other):
+            ebook.authors[i] = other
+
+        check_entity(author,
+                     model.Author.query.filter(model.Author.last_name == author.last_name,
+                                               model.Author.first_name == author.first_name),
+                     replace_author)
+
+    # deduplicate authors

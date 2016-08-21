@@ -22,7 +22,7 @@ class TestApi(TestCase):
 
     def __getattr__(self, name):
         name = name.upper()
-        if name in ('GET', 'POST', 'DELETE', 'PUT', 'OPTIONS'):
+        if name in ('GET', 'POST', 'DELETE', 'PUT', 'OPTIONS', 'PATCH'):
             def req(*args, **kwargs):
                 kwargs['method'] = name
                 if 'headers' in kwargs:
@@ -142,7 +142,7 @@ class TestApi(TestCase):
 
         id = 62241
         res = self.delete('/api/ebooks/%d' % id, failure=True)
-        self.assert401(res)
+        self.assert403(res)
 
         self.login('superuser', 'superuser')
 
@@ -180,3 +180,72 @@ class TestApi(TestCase):
 
         res = self.get('/api/ebooks/index/r')
         self.assertEqual(res['total'], 1)
+
+    def test_api_create_edit(self):
+        self.login()
+        data = '{"title":"Testovací kniha","authors":[{"id":5222},{"last_name":"Novy","first_name":"Autor"}],"genres":[{"id":43}],"language":{"id":1},"series":{"title":"Nejaka"},"series_index":"1"}'
+        res = self.post(
+            '/api/ebooks', data=data, content_type="application/json")
+
+        if res.get('error'):
+            print(res.get('error_details'))
+            self.fail('Ebook create error: %s' % res['error'])
+
+        id = res['id']
+
+        self.assertTrue(id > 0)
+        
+        ebook = self.get('/api/ebooks/%d'%id)
+        
+        self.assertEqual(ebook['title'], "Testovací kniha")
+        self.assertEqual(len(ebook['authors']), 2)
+        self.assertEqual(ebook['series_index'], 1)
+        self.assertEqual(ebook['series']['title'], 'Nejaka')
+        
+        ser = self.get('/api/series/%d'%ebook['series']['id'])
+        self.assertEqual(ser['created_by'], 1)
+        self.assertEqual(ser['modified_by'], 1)
+        
+        ser_id = ebook['series']['id']
+        
+        def has_obj(l, attr, value):
+            for o in l:
+                if o.get(attr) == value:
+                    return True
+                
+        self.assertTrue(has_obj(ebook['authors'], 'last_name', 'King'))
+        self.assertTrue(has_obj(ebook['authors'], 'last_name', 'Novy'))
+        self.assertTrue(has_obj(ebook['genres'], 'name', 'Espionage'))
+        
+        self.assertEqual(ebook['created_by'], 1)
+        self.assertEqual(ebook['modified_by'], 1)
+        
+        res=self.patch('/api/ebooks/%d'%id, data='{"series":{"title": "Jinaci"}, "version_id":1}', 
+                       content_type='application/json')
+        res=self.get('/api/ebooks/%d'%id)
+        new_ser_id = res['series']['id']
+        self.assertNotEqual(ser_id, new_ser_id)
+        
+        res=self.patch('/api/ebooks/%d'%id, data='{"series":{"title": "Nejaka"}, "version_id":2}', 
+                       content_type='application/json')
+        res=self.get('/api/ebooks/%d'%id)
+        self.assertEqual(ser_id, res['series']['id'])
+        
+        res=self.patch('/api/ebooks/%d'%id, data='{"authors":[{"last_name": "James", "first_name": "Peter"}], "version_id":3}', 
+                       content_type='application/json')
+        res=self.get('/api/ebooks/%d'%id)
+        self.assertEqual(res['authors'][0]['id'], 5185)
+        self.assertEqual(len(res['authors']), 1)
+        
+        res = self.patch('/api/ebooks/35485', data='{"title": "Prokleta vesnice", "version_id":1}', 
+                         content_type="application/json")
+        if res.get('error'): print(res.get('error'), res.get('error_details'))
+        self.assertFalse(res.get('error'))
+        self.assertTrue(res.get('success'))
+        print(res)
+        
+        res= self.get('/api/ebooks/35485')
+        self.assertEqual(res['title'], 'Prokleta vesnice')
+        self.assertEqual(res['version_id'], 2)
+        
+        

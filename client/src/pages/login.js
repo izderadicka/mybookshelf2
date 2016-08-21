@@ -16,14 +16,18 @@ export class Login{
 
     login(){
         return this.access.login(this.email,this.password)
-        .then( () => this.error = false)
+        .then( () => this.error = undefined)
         .catch(err=>{
-            this.error=true;
+            this.error={error:'Login Failed', errorDetail: (err.error? err.error: err)};
             logger.error("Login failure: "+err);
             //todo: get it from auth config?
             //this.router.navigate('login')
         });
     };
+
+    canDeactivate() {
+      return ! this.error;
+    }
 
 
 }

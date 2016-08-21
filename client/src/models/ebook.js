@@ -50,6 +50,7 @@ export class Ebook {
 
   get editableProps() {
     return this._editableProps.map(p => {
+      p = p.split('.')[0];
       return p.endsWith('[]')? p.slice(0,-2):p;
     })
   }

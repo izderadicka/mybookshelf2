@@ -1,0 +1,12 @@
+<template>
+    <ai-dialog>
+        <ai-dialog-header><h3>Confirm ${action}</h3></ai-dialog-header>
+        <ai-dialog-body>
+            <p>${message}</p>
+        </ai-dialog-body>
+        <ai-dialog-footer>
+            <button class="btn btn-default" click.trigger="controller.cancel()">No</button>
+            <button class="btn btn-primary" click.trigger="controller.ok()">Yes</button>
+        </ai-dialog-footer>
+    </ai-dialog>
+</template>

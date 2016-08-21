@@ -4,10 +4,12 @@ import $ from 'jquery';
 import {ApiClient} from 'lib/api-client';
 import {Access} from 'lib/access';
 import {Ebook} from 'models/ebook';
+import {DialogService} from 'aurelia-dialog';
+import {ConfirmDialog} from 'components/confirm-dialog';
 
 let logger = LogManager.getLogger('ebook-edit')
 
-@inject(ApiClient, Router, Access)
+@inject(ApiClient, Router, Access, DialogService)
 export class EditEbook {
   ebook;
   originalEbook;
@@ -16,10 +18,11 @@ export class EditEbook {
   @bindable _series;
   _seriesSelected;
 
-  constructor(client, router, access) {
+  constructor(client, router, access, dialog) {
     this.client = client;
     this.router = router;
     this.access = access;
+    this.dialog = dialog;
   }
 
 /*
@@ -75,8 +78,33 @@ export class EditEbook {
 
   save() {
     //logger.debug(`Saving ${JSON.stringify(this.ebook)}`);
+    this.error=undefined;
+
     if (this.validate()) {
       let data = this.ebook.prepareData();
+      if (!data || ! Object.keys(data).length) {
+        this.error={error:'No changes to save'};
+        return
+      }
+      let result;
+      if (this.ebook.id) {
+        result = this.client.patch('ebooks', data, this.ebook.id)
+      } else {
+        result = this.client.post('ebooks', data);
+      }
+
+      result.then(res => {
+        if (res.error) {
+          this.error={error:res.error, errorDetail:res.error_details}
+        } else if (res.id) {
+          this.router.navigateToRoute('ebook', {id:res.id})
+        } else {
+          this.error = {error:'Invalid respose', errorDetail: 'Ebook ID is missing'}
+        }
+      })
+      .catch(err => this.error={error:'Request failed', errorDetail:err})
+
+
     } else {
       logger.debug(`Validation fails`)
     }
@@ -108,5 +136,34 @@ export class EditEbook {
 
   get seriesLoader() {
     return start => this.client.getIndex('series', start);
+  }
+
+  clearError() {
+    this.error=undefined;
+    logger.debug("clearError")
+  }
+
+  canDelete() {
+    return this.ebook.id && this.access.canEdit(this.ebook.id);
+  }
+
+  delete() {
+    this.error=undefined;
+    this.dialog.open({viewModel:ConfirmDialog, model: {action:'Delete', message:`Do you want to delete ebook ${this.ebook.title}`}})
+    .then(response => {
+      if (!response.wasCancelled && this.ebook.id) {
+        this.client.delete('ebooks', this.ebook.id)
+        .then(res => {
+          if (res.error) {
+            this.error={error:res.error, errorDetail:res.error_details}
+          } else {
+            this.router.navigateToRoute('welcome');
+          }
+        })
+        .catch(err=> this.error={error:'Delete error', errorDetail:err})
+
+      }
+    });
+
   }
 }
