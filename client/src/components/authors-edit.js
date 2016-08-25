@@ -19,7 +19,9 @@ export class AuthorsEdit {
   }
 
   getFullName(item) {
-    return item.first_name ? item.last_name + ', ' + item.first_name : item.last_name
+    let name= item.first_name ? item.last_name + ', ' + item.first_name : item.last_name
+    //if (!item.id) name+= ' (new)';
+    return name
   }
 
   //@computedFrom('authors')

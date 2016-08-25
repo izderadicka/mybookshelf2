@@ -6,6 +6,7 @@ import unicodedata
 import hashlib
 import logging
 import mimetypes
+import os.path
 
 logger = logging.getLogger('utils')
 
@@ -131,3 +132,10 @@ def remove_diacritics(text):
                 b.append(' ')
     return ''.join(b)
 
+def purge_empty_dirs(path, delete_root=True):
+    for f in os.listdir(path):
+        full_path = os.path.join(path,f)
+        if os.path.isdir(full_path):
+            purge_empty_dirs(full_path)
+    if delete_root and not os.listdir(path):
+        os.rmdir(path)

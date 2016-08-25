@@ -41,7 +41,7 @@ export class EditEbook {
         this.ebook=new Ebook(b);
         this._series = b.series ? b.series.title : undefined;
         logger.debug(`Ebook data ${JSON.stringify(b)}`);
-        return this.access.canEdit(b.id);
+        return this.access.canEdit(b.created_by);
       })
       .catch(err => { logger.error(`Failed to load ${err}`);
                       return false;})
@@ -67,7 +67,41 @@ export class EditEbook {
     this.client.getManyUnpagedCached('genres')
       .then(data => this._genres = data)
     );
-    return Promise.all(promises);
+
+    if (params.upload) {
+      promises.push(
+          this.client.getOne('uploads-meta', params.upload)
+          .then(upload=> {
+            this.uploadId=upload.id;
+            this.meta = upload.meta;
+          })
+          .catch(err=> logger.error('Upload fetch error: '+err))
+      )
+    }
+
+    return Promise.all(promises).then(() => {
+      logger.debug('Try to use metada '+ JSON.stringify(this.meta));
+      if (this.meta) this.prefill()});
+  }
+
+  prefill() {
+    if (this.meta.title) this.ebook.title = this.meta.title;
+    if (this.meta.authors && this.meta.authors.length) {
+      this.ebook.authors=this.meta.authors;
+    }
+    if (this.meta.series && this.meta.series.title) {
+      this.ebook.series =  this.meta.series;
+      this._series = this.meta.series.title;
+      this.ebook.series_index = this.meta.series_index;
+    }
+
+    if (this.meta.language && this.meta.language.id) {
+      this.ebook.language = {id:this.meta.language.id};
+    }
+
+    if (this.meta.genres && this.meta.genres.length) {
+      this.ebook.genres = this.meta.genres.filter(i => i.id);
+    }
   }
 
   _seriesChanged() {
@@ -138,13 +172,8 @@ export class EditEbook {
     return start => this.client.getIndex('series', start);
   }
 
-  clearError() {
-    this.error=undefined;
-    logger.debug("clearError")
-  }
-
   canDelete() {
-    return this.ebook.id && this.access.canEdit(this.ebook.id);
+    return this.ebook.id && this.access.canEdit(this.ebook.created_by);
   }
 
   delete() {
@@ -166,4 +195,5 @@ export class EditEbook {
     });
 
   }
+
 }

@@ -110,15 +110,6 @@ export class Autocomplete {
     return Promise.reject(new Error('Invalid loader'));
   }
 
-  itemSelected(evt) {
-    var item = $(evt.target),
-      selected = item.attr('data-index');
-    while (selected === undefined && item) {
-      item = item.parent();
-      selected = item.attr('data-index');
-    }
-    if (selected !== undefined) this.select(selected);
-  }
 
   keyPressed(evt) {
     logger.debug(`Key pressed ${evt.keyCode}`);

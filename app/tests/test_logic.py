@@ -20,6 +20,7 @@ class TestLogic(TestCase):
         shutil.copy(ebook_file, downloaded_file)
         
     def tearDown(self):
+        TestCase.tearDown(self)
         shutil.rmtree(downloaded_file, ignore_errors=True)
         shutil.rmtree(os.path.join(settings.BOOKS_BASE_DIR, 'Kissinger Henry'))
         

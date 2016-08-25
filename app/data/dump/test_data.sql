@@ -22,7 +22,7 @@ SET search_path = public, pg_catalog;
 -- Dependencies: 193
 -- Data for Name: author; Type: TABLE DATA; Schema: public; Owner: ebooks
 --
-
+INSERT INTO author VALUES (4879, 1, '2010-07-25 11:35:49', '2010-07-25 11:35:49', 'Adams', 'Douglas', NULL, 1, 1);
 INSERT INTO author VALUES (4920, 1, '2010-07-25 11:35:49', '2010-07-25 11:35:49', 'Bialolecka', 'Ewa', NULL, 1, 1);
 INSERT INTO author VALUES (4924, 1, '2010-07-25 11:35:52', '2010-07-25 11:35:52', 'Birdman', 'Shigor', NULL, 1, 1);
 INSERT INTO author VALUES (4938, 1, '2010-07-25 11:36:11', '2012-08-03 13:12:39', 'Borovička', 'Václav Pavel', NULL, 1, 1);

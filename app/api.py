@@ -30,6 +30,9 @@ class Resource(BaseResource):
     decorators = [role_required('user')]
     pass
 
+#############################################################################################
+# API RESOURCES
+#############################################################################################
 
 class Ebooks(Resource):
 
@@ -121,6 +124,7 @@ class Ebook(Resource):
         r = db.session.delete(b)  # @UndefinedVariable
         # delete also series with no ebooks?
         db.session.commit()
+        #TODO: delete sources files!
         return jsonify(id=id)
 
     def patch(self, id):
@@ -202,15 +206,21 @@ class UploadMeta(Resource):
     def get(self, id):
         upload = model.Upload.query.get_or_404(id)
         data = schema.upload_serializer().dump(upload).data
-#         search = upload.meta.get('title', '') + ' ' + ' '.join(upload.meta.get('authors', []))
-#         search = search.strip()
-#         if search:
-#             q = logic.search_query(model.Ebook.query, search)
-#             if q:
-#                 data['proposed_ebook'] = schema.ebook_serializer().dump(q[0]).data
-
         return data
+    
+class Source(Resource): 
+    
+    def delete(self,id):
+        source= model.Source.query.get_or_404(id)
+        can_change_object(source)
+        return logic.delete_source(source)
+        
+        
 
+
+###################################################################################################
+# API SPECIAL METHODS
+###################################################################################################
 
 @bp.route('/upload', methods=['POST'])
 @role_required('user')
@@ -316,7 +326,7 @@ def add_upload_to_ebook(id, upload_id):
     source.created_by= current_user
     source.modified_by = current_user
     db.session.add(source)
-
+    logic.delete_upload(upload)
     db.session.commit()
 
     return jsonify(id=source.id)
@@ -324,6 +334,7 @@ def add_upload_to_ebook(id, upload_id):
 
 api.add_resource(Ebooks, '/ebooks')
 api.add_resource(Ebook, '/ebooks/<int:id>')
+api.add_resource(Source, '/sources/<int:id>')
 api.add_resource(AuthorEbooks, '/ebooks/author/<int:id>')
 api.add_resource(Authors, '/authors')
 api.add_resource(Author, '/authors/<int:id>')

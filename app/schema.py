@@ -114,7 +114,7 @@ class EbookSchema(ModelSchema):
 #         serialize=lambda o: o.language.name, deserialize=lang_from_code)
     genres = fields.Nested(GenreSchema, many=True, allow_none=True)
     sources = fields.Nested(SourceSchema, many=True, only=(
-        'id', 'format', 'location', 'quality', 'modified', 'size'), allow_none=True)
+        'id', 'format', 'location', 'quality', 'modified', 'size', 'created_by'), allow_none=True)
     full_text = None
 
     class Meta:

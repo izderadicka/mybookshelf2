@@ -85,9 +85,9 @@ def create_new_location(source, upload):
     if isinstance(upload, model.Upload):
         new_file = os.path.join(current_app.config['UPLOAD_DIR'], upload.file)
     else:
-        new_file=upload
+        new_file = upload
     new_location = norm_file_name(source)
-    ebook_dir = os.path.join(base_dir,os.path.split(new_location)[0])
+    ebook_dir = os.path.join(base_dir, os.path.split(new_location)[0])
     if not os.path.exists(ebook_dir):
         os.makedirs(ebook_dir, exist_ok=True)
     lock_file = os.path.join(ebook_dir, '.lock_this_dir')
@@ -310,3 +310,27 @@ def check_ebook_entity(ebook, current_user=None):
                      replace_author)
 
     # deduplicate authors
+
+
+def delete_source(source):
+    source_id = source.id
+    db.session.delete(source)
+    try:
+        db.session.commit()
+    except Exception as e:
+        return jsonify(error='DB error', error_details=str(e))
+    full_path = os.path.join(
+        current_app.config['BOOKS_BASE_DIR'], source.location)
+    try:
+        os.remove(full_path)
+    except IOError:
+        pass
+    # do not delete empty directory because of concurrency - other thread, process may use it
+    # purging of empty dirs must be done when system is offline
+    return jsonify(id=source_id)
+
+
+def delete_upload(upload):
+    dir = os.path.join(current_app.config['UPLOAD_DIR'], os.path.split(upload.file)[0])
+    shutil.rmtree(dir, ignore_errors=True)
+    db.session.delete(upload)

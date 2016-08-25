@@ -11,7 +11,8 @@ export class UploadResult {
   id;
   file;
   ebook;
-  ebookCandidates=[];
+  ebooksCandidates;
+  ebooksSearched;
   cover=new Image();
   error;
   constructor(client, router) {
@@ -39,16 +40,16 @@ export class UploadResult {
       return meta.meta
     })
     .then(meta => {
-      var authors = meta.authors ? meta.authors.join(' ') : null;
+      var authors = meta.authors ? meta.authors.map(a => a.first_name ? a.first_name + ' ' + a.last_name : a.last_name ).join(' ') : null;
       var search=meta.title ? meta.title : '';
-      search = meta.series ? search + ' '+ meta.series : search
+      search = meta.series ? search + ' '+ meta.series.title : search
       search = authors ? authors + ' ' + search : search;
       logger.debug(`Searching for ebooks: ${search}`);
       return this.client.search(search, 1, 5);
       })
     .then(result => {
       logger.debug(`Found ${result.data}`);
-      this.ebookCandidates=result.data;
+      if (result.data && result.data.length) this.ebooksCandidates=result;
       return true;
       })
     .catch(err => {
@@ -61,24 +62,41 @@ export class UploadResult {
     document.getElementById('cover-holder').appendChild(this.cover);
   }
 
-  @computedFrom('ebookCandidates')
-  get hasCandidates() {
-    return this.ebookCandidates && this.ebookCandidates.length>0;
-  }
-
   createNew() {
-    this.router.navigateToRoute('ebook-create', {metaId: this.metaId});
+    this.router.navigateToRoute('ebook-create', {upload: this.id});
   }
 
-  addToEbook(ebookId) {
+get addToEbook() {
+  return ebookId => {
     this.client.addUploadToEbook(ebookId, this.id)
-    .then(res => {
-      if (res.error) this.error={error:res.error, errorDetail:res.error_details}
-      else {
-        this.router.navigateToRoute('ebook', {id:ebookId});
-      }
-    })
-    .catch(err => this.error={error:'Server error', errorDetail:err})
+      .then(res => {
+        if (res.error) this.error = {
+          error: res.error,
+          errorDetail: res.error_details
+        }
+        else {
+          this.router.navigateToRoute('ebook', {
+            id: ebookId
+          });
+        }
+      })
+      .catch(err => this.error = {
+        error: 'Server error',
+        errorDetail: err
+      });
   }
+}
+
+get search() {
+  return ({query}) => {
+    this.ebooksSearched = null;
+    this.client.search(query, 1, 5)
+    .then(res => {
+      this.ebooksSearched = res;
+
+    })
+    .catch(err => this.error ={error: 'Search error', errorDetail:err});
+  }
+}
 
 }

@@ -87,7 +87,7 @@ export class Ebook {
       addError('series', 'If series index is present then series title is mandatory');
     if (this.series && this.series.title && this.series.title.length > 256)
       addError('series', 'Series title too long');
-    if (this.series_index && ! this.series_index.match(/^\d+$/))
+    if (this.series_index && ! Number.isInteger(this.series_index) && ! this.series_index.match(/^\d+$/))
       addError('series', 'Series index must be numeric');
     // Authors
     if (this.authors && this.authors.length > 20) addError('authors', 'Too many authors');

@@ -273,6 +273,16 @@ class Genre(Base):
         return super(Genre, self).__repr__(['name'])
 
 
+class Synonym(Base):
+    LANGUAGE_CODE = 'LNG'
+    LANGUAGE_NAME = 'LGN'
+    GENRE = 'GNR'
+
+    other_name = Column(String(512), nullable=False)
+    our_name = Column(String(512), nullable=False)
+    category = Column(String(3), nullable=False)
+
+
 sortings = {'ebook': {'title': [Ebook.title],
                       '-title': [desc(Ebook.title)],
                       'created': [Ebook.created],

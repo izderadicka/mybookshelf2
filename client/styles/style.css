@@ -219,3 +219,11 @@ ai-dialog-overlay.active {
   background-color: black;
   opacity: 0.5 !important;
 }
+
+.ebook-meta .ebook-authors {
+  display: inline;
+}
+
+.onpage-search .input-group {
+  width: 100%;
+}

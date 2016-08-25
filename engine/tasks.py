@@ -43,23 +43,49 @@ class MetadataTask(BaseTask):
             meta['title'] = title.group(1).strip()
         authors = self.AUTHORS_RE.search(data)
         if authors:
+            def parse_author(author):
+                parts = author.split(',')
+                if len(parts) > 1:
+                    return {'last_name': parts[0], 'first_name': ' '.join(parts[1:])}
+                parts = list(
+                    filter(lambda i: i, map(lambda i: i.strip(), author.split(' '))))
+                a = {'last_name': parts[-1]}
+                if len(parts) > 1:
+                    a['first_name'] = ' '.join(parts[:-1])
+                return a
+
             authors = re.sub(r'\[[^\]]+\]', '', authors.group(1))
-            meta['authors'] = strip(authors.split('&'))
+            authors = map(parse_author, strip(authors.split('&')))
+            final_authors = []
+            for a in authors:
+                na = await dal.find_author(a)
+                final_authors.append(na or a)
+            meta['authors'] = final_authors
 
         tags = self.TAGS_RE.search(data)
         if tags:
-            meta['tags'] = strip(tags.group(1).split(','))
+            genres = strip(tags.group(1).split(','))
+            final_genres = []
+            for g in map(lambda x: {'name': x}, genres):
+                ng = await dal.find_genre(g)
+                final_genres.append(ng or g)
+
+            meta['genres'] = final_genres
 
         languages = self.LANGUAGES_RE.search(data)
         if languages:
-            meta['language'] = languages.group(1).split(',')[0].strip()
+            l = {'code': languages.group(1).split(',')[0].strip()}
+            nl = await dal.find_language(l)
+            meta['language'] = nl or l
 
         series = self.SERIES_RE.search(data)
         if series:
-            series = re.match(r'(.*) #(\d+)', series.group(1))
-            if series:
-                meta['series'] = series.group(1)
-                meta['series_index'] = int(series.group(2))
+            series_re = re.match(r'(.*) #(\d+)', series.group(1))
+            if series_re:
+                series = {'title': series_re.group(1)}
+                ns = await dal.find_series(series)
+                meta['series'] = ns or series
+                meta['series_index'] = int(series_re.group(2))
 
         return meta
 
@@ -67,7 +93,7 @@ class MetadataTask(BaseTask):
 
         data = data.decode(self.output_encoding)
         meta = await self._parse_data(data)
-        
+
         cover_in = os.path.join(UPLOAD_DIR, self.cover_name)
         loop = asyncio.get_event_loop()
         hash = await loop.run_in_executor(None, file_hash, self.fname_full)
@@ -90,7 +116,7 @@ class MetadataTask(BaseTask):
             cover = cover_file
         else:
             logger.warn('Cannot get cover image')
-        
+
         upload_id = await dal.add_upload(self.fname, cover, meta, size, hash, self.user)
-        
+
         return upload_id
