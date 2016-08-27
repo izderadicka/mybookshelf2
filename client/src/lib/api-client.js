@@ -100,8 +100,8 @@ export class ApiClient {
       .then(response => response.json());
   }
 
-  getCoverMeta(id) {
-    let url =  this.getUrl('cover-meta/'+id+'/normal')
+  getCover(resource, id) {
+    let url =  this.getUrl(resource+'/'+id+'/cover')
     return this.http.fetch(url)
     .then(r => r.blob())
   }

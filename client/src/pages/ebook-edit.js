@@ -131,7 +131,16 @@ export class EditEbook {
         if (res.error) {
           this.error={error:res.error, errorDetail:res.error_details}
         } else if (res.id) {
-          this.router.navigateToRoute('ebook', {id:res.id})
+          let action = this.uploadId ? this.client.addUploadToEbook(res.id, this.uploadId) : Promise.resole({})
+           action.then(res2 => {
+              if (res2.error) this.error = {
+                error: res2.error,
+                errorDetail: res2.error_details }
+              else
+                this.router.navigateToRoute('ebook', {id:res.id});
+              })
+            .catch(err => this.error={error:"Server error attaching source", errorDetail:err});
+
         } else {
           this.error = {error:'Invalid respose', errorDetail: 'Ebook ID is missing'}
         }

@@ -103,11 +103,18 @@ def create_new_location(source, upload):
     return new_location
 
 
-def norm_file_name(source):
-    new_name_rel = norm_file_name_base(source.ebook)
+def norm_file_name(source, ext=''):
+    if isinstance(source, model.Source):
+        ebook = source.ebook
+        ext = source.format.extension
+    elif isinstance(source, model.Ebook):
+        ebook = source
+    else:
+        raise ValueError('Invalid input - sould be either Source or Ebook')
+    new_name_rel = norm_file_name_base(ebook)
     for ch in [':', '*', '%', '|', '"', '<', '>', '?', '\\']:
         new_name_rel = new_name_rel.replace(ch, '')
-    new_name_rel += '.' + source.format.extension
+    new_name_rel += '.' + ext
 
     return new_name_rel
 
@@ -331,6 +338,24 @@ def delete_source(source):
 
 
 def delete_upload(upload):
-    dir = os.path.join(current_app.config['UPLOAD_DIR'], os.path.split(upload.file)[0])
+    dir = os.path.join(
+        current_app.config['UPLOAD_DIR'], os.path.split(upload.file)[0])
     shutil.rmtree(dir, ignore_errors=True)
     db.session.delete(upload)
+
+
+def update_cover(upload, ebook):
+    src = os.path.join(current_app.config['UPLOAD_DIR'], upload.cover)
+    cover_file = os.path.split(upload.cover)[1]
+    dst_dir = os.path.split(norm_file_name(ebook))[0]
+    dst = os.path.join(
+        current_app.config['BOOKS_BASE_DIR'], dst_dir, cover_file)
+    shutil.copy(src, dst)
+    ebook.cover = os.path.join(dst_dir, cover_file)
+    thumb = "thumbnail.jpg"
+    thumb_file = os.path.join(os.path.split(upload.cover)[0], thumb)
+    src = os.path.join(current_app.config['UPLOAD_DIR'], thumb_file)
+    if os.access(src, os.R_OK):
+        dst = os.path.join(
+            current_app.config['THUMBS_DIR'], '%d.jpg'%ebook.id)
+        shutil.copy(src, dst)

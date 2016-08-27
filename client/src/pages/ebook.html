@@ -9,6 +9,10 @@
     </span>
     </h2>
     <authors authors.bind="ebook.authors"></authors>
+    <div class="ebook-panel">
+    <div class="ebook-cover-big" id="cover-holder">
+    </div>
+    <div class="ebook-details">
     <ul class="list-group ebook-properties">
       <li class="list-group-item">
         <label class="ebook-detail-label">Language:</label>
@@ -32,7 +36,8 @@
       </li>
 
     </ul>
-
+  </div>
+  </div>
     <table class="table">
       <tr><th>Format</th><th>Size</th><th>Quality</th><th>Action</th></tr>
       <tr repeat.for="source of ebook.sources">

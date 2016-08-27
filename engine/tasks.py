@@ -2,7 +2,7 @@ import os.path
 import re
 import asyncio
 from asexor.task import BaseTask, TaskError
-from settings import UPLOAD_DIR, IMAGE_MAGIC
+from settings import UPLOAD_DIR, IMAGE_MAGIC, THUMBNAIL_SIZE
 from app.utils import file_hash
 import logging
 import engine.dal as dal
@@ -18,8 +18,8 @@ class MetadataTask(BaseTask):
     async def validate_args(self, *args, **kwargs):
         f = args[0]
         fname = os.path.join(UPLOAD_DIR, f)
-        base_name = os.path.splitext(f)[0]
-        self.cover_name = base_name + '_tmp.jpg'
+        self.base_dir = os.path.split(f)[0]
+        self.cover_name = os.path.join(self.base_dir, 'cover_tmp.jpg')
         if not os.access(fname, os.R_OK):
             raise TaskError('File %s does not exists or is not readable')
         self.fname = f
@@ -100,7 +100,7 @@ class MetadataTask(BaseTask):
         size = await loop.run_in_executor(None, lambda f: os.stat(f).st_size, self.fname_full)
         cover = None
         if os.path.exists(cover_in):
-            cover_file = self.cover_name[:-8] + '_cover.jpg'
+            cover_file = os.path.join(self.base_dir, 'cover.jpg')
             cover_file_full = os.path.join(UPLOAD_DIR, cover_file)
 
             proc = await asyncio.create_subprocess_exec(IMAGE_MAGIC, cover_in, '-fuzz', '7%',
@@ -114,6 +114,13 @@ class MetadataTask(BaseTask):
                     'Image Magic failed triming file %s with code %d', cover_in, return_code)
                 os.rename(cover_in, cover_file_full)
             cover = cover_file
+            thumb_out_full = os.path.join(UPLOAD_DIR, self.base_dir, 'thumbnail.jpg')
+            proc = await asyncio.create_subprocess_exec(IMAGE_MAGIC, cover_file_full, '-resize', THUMBNAIL_SIZE, thumb_out_full)
+            return_code = await proc.wait()
+            
+            if return_code != 0 or not os.path.exists(thumb_out_full):
+                logger.warn('Error creating thumbnail')
+            
         else:
             logger.warn('Cannot get cover image')
 

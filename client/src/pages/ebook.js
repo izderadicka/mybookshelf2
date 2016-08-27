@@ -17,6 +17,10 @@ export class Ebook {
     this.token = access.token;
     this.canDownload=access.hasRole('user');
     this.canConvert=access.hasRole('user');
+    this.cover = new Image();
+    this.cover.onload = function() {
+        URL.revokeObjectURL(this.src);
+      }
   }
 
 
@@ -28,11 +32,24 @@ export class Ebook {
     return this.client.getOne('ebooks', params.id)
       .then(b => {
         this.ebook=b;
+        return this.client.getCover('ebooks', b.id)
+          .then (blob => {
+            this.cover.src = URL.createObjectURL(blob);
+            return true })
+          .catch(err => {
+            logger.warn(`Cannot load cover for ebook ${b.id}: ${err}`);
+            return true
+          })
         return true;})
       .catch(err => {
         logger.error(`Failed to load ${err}`);
         return false;
       });
+  }
+
+  attached() {
+    if (this.cover.src)
+      document.getElementById('cover-holder').appendChild(this.cover);
   }
 
   canDeleteSource(source) {

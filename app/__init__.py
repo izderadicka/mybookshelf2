@@ -21,7 +21,6 @@ def main():
     return render_template('main.html')
 
 
-
 #blueprints
 def register_blueprints():
     from app.api import bp as api_bp

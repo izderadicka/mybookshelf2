@@ -25,6 +25,7 @@ CORS_PORTS = None  # or (lower, upper) or []
 CORS_SECURE = False  # if cors is allowed only for https
 
 UPLOAD_DIR = os.path.join(_base_dir, 'app/data/uploads')
+THUMBS_DIR = os.path.join(_base_dir, 'app/data/thumbs')
 BOOKS_BASE_DIR = os.path.join(_base_dir, 'app/data/books')
 BOOKS_FILE_SCHEMA = "%(author)s/%(title)s/%(author)s - %(title)s"
 
@@ -37,6 +38,8 @@ CONVERSION_FORMATS = ['epub', 'mobi', 'fb2']
 
 
 IMAGE_MAGIC = '/usr/bin/convert'
+
+THUMBNAIL_SIZE = '100X140'
 
 
 class Testing:

@@ -34,7 +34,7 @@ export class UploadResult {
       this.metaId = meta.id;
       this.file = meta.load_source;
       logger.debug(`Got meta ${JSON.stringify(meta)}`);
-      this.client.getCoverMeta(model.id)
+      this.client.getCover('uploads-meta', model.id)
         .then(blob => this.cover.src = URL.createObjectURL(blob))
 
       return meta.meta
@@ -59,7 +59,8 @@ export class UploadResult {
   }
 
   attached() {
-    document.getElementById('cover-holder').appendChild(this.cover);
+    if (this.cover.src)
+      document.getElementById('cover-holder').appendChild(this.cover);
   }
 
   createNew() {

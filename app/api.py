@@ -262,7 +262,7 @@ def download(id):
     return logic.download(id)
 
 
-@bp.route('/cover-meta/<int:id>/<string:size>')
+@bp.route('/uploads-meta/<int:id>/cover')
 @role_required('user')
 def cover_meta(id, size='normal'):
     upload = model.Upload.query.get_or_404(id)
@@ -274,6 +274,19 @@ def cover_meta(id, size='normal'):
     if not mimetype:
         abort(500, 'Invalid cover file')
 
+    return logic.stream_response(fname, mimetype)
+
+@bp.route('/ebooks/<int:id>/cover')
+@role_required('user')
+def cover_ebook(id, size='normal'):
+    ebook = model.Ebook.query.get_or_404(id)
+    if not ebook.cover:
+        abort(404, 'No cover')
+
+    fname = os.path.join(current_app.config['BOOKS_BASE_DIR'], ebook.cover)
+    mimetype = mimetype_from_file_name(fname)
+    if not mimetype:
+        abort(500, 'Invalid cover file')
     return logic.stream_response(fname, mimetype)
 
 
@@ -326,7 +339,13 @@ def add_upload_to_ebook(id, upload_id):
     source.created_by= current_user
     source.modified_by = current_user
     db.session.add(source)
+     #cover
+    if upload.cover and not ebook.cover:
+        logic.update_cover(upload, ebook)
+        
     logic.delete_upload(upload)
+   
+        
     db.session.commit()
 
     return jsonify(id=source.id)

@@ -12,8 +12,8 @@
       </div>
 
       <div class="panel-body">
-        <div class="row">
-          <div class="cover-meta" id="cover-holder"></div>
+
+          <div class="ebook-cover-big" id="cover-holder"></div>
           <div class="ebook-meta">
             <div>
               <label>File:</label>
@@ -38,10 +38,10 @@
             <label>Language:</label>
             ${meta.language.name || meta.language.code}
           </div>
-        </div>
+
       </div>
     </div>
-    </div>
+
     <error-alert error.bind="error"></error-alert>
     <div class="panel panel-default" if.bind="ebooksCandidates">
       <div class="panel-heading">
