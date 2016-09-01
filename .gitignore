@@ -147,3 +147,5 @@ jspm_packages
 /.project
 /.pydevproject
 /cover/
+
+Untitled*.ipynb

@@ -31,7 +31,6 @@ def authenticate(realm, user_id, details):
 if __name__ == '__main__':
     import argparse
 
-    # for testing
     load_tasks_from('engine.tasks')
 
     parser = argparse.ArgumentParser()

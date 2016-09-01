@@ -52,6 +52,14 @@ export class Ebook {
       document.getElementById('cover-holder').appendChild(this.cover);
   }
 
+  get searchString() {
+    let s=''
+    if (this.ebook.authors)
+      s += this.ebook.authors.slice(0,2).map(a=> a.first_name? a.first_name+' '+a.last_name: a.last_name).join(' ');
+    s += ' '+ this.ebook.title;
+    return encodeURIComponent(s);
+  }
+
   canDeleteSource(source) {
     return this.access.canEdit(source.created_by);
   }
@@ -80,6 +88,10 @@ export class Ebook {
           })
         }
       });
+  }
+
+  convertSource(source) {
+    source.active=1;
   }
 
 }

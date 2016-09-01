@@ -57,3 +57,12 @@ input.addon {
 table.sources {
     margin-top:1em;
 }
+
+.nav a {
+    font-weight: bold;
+    color: white;
+}
+
+.nav a:hover {
+    text-decoration: underline;
+}

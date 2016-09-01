@@ -33,13 +33,18 @@ BOOKS_FILE_SCHEMA_SERIE = "%(author)s/%(serie)s/%(serie)s %(serie_index)d - %(ti
 BOOKS_RECON_DIR = "/books/books_recon"
 BOOKS_DIR_UMASK = 0  # umask for uploaded files and their directories - consider that it should be RW for both web server and console user
 # Conversion related
-BOOKS_CONVERTED_DIR = "/books/books_converted"
+BOOKS_CONVERTED_DIR = os.path.join(_base_dir, 'app/data/converted')
 CONVERSION_FORMATS = ['epub', 'mobi', 'fb2']
+#sorted in order of preference of the source
+CONVERTABLE_TYPES=['doc', 'docx', 'odt', 'rtf', 'epub', 'mobi','fb2', 'htm', 'html', 'azw3', 'lit',
+  'pdb', 'chm', 'prc', 'txt', 'pdf', ] # 'djvu' ,
 
 
-IMAGE_MAGIC = '/usr/bin/convert'
+IMAGE_MAGIC = '/usr/bin/convert' # IMAGEMAGIC BINARY
+OOFFICE = '/usr/bin/soffice' #OPEN OFFICE BINARY
 
-THUMBNAIL_SIZE = '100X140'
+THUMBNAIL_SIZE = (100,140) # width, height
+COVER_SIZE =(320,452)
 
 
 class Testing:

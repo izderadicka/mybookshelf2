@@ -24,9 +24,18 @@
 
         <ul class="nav navbar-nav navbar-right">
           <li if.bind="!isAuthenticated"><a data-toggle="collapse" data-target="#skeleton-navigation-navbar-collapse.in"
-            href='/#/login'>Login</a></li>
-          <li if.bind="isAuthenticated" click.delegate="access.logout()"><a data-toggle="collapse" data-target="#skeleton-navigation-navbar-collapse.in"
-            href='#'>Logout</a></li>
+            href='/#/login'>Login</a>
+          </li>
+          <li if.bind="isAuthenticated"><a click.delegate="" data-toggle="collapse"
+            data-target="#skeleton-navigation-navbar-collapse.in" href='#'>
+            <i class="fa fa-user fa-2x" aria-hidden="true"></i>  <span class="visible-xs-inline">Profile</span></a>
+          </li>
+          <li if.bind="isAuthenticated"><a click.delegate="access.logout()" data-toggle="collapse"
+            data-target="#skeleton-navigation-navbar-collapse.in" href='#'>
+            <i class="fa fa-sign-out fa-2x" aria-hidden="true"></i> <span class="visible-xs-inline">Logout</span></a>
+          </li>
+
+
         </ul>
 
 

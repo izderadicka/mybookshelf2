@@ -34,6 +34,11 @@
         <label class="ebook-detail-label">Created:</label>
         <span class="ebook-date">${ebook.created}</span>
       </li>
+      <li class="list-group-item">
+        <label class="ebook-detail-label">Find Details On:</label>
+        <a if.bind="ebook.language.code=='cs'" class="ext-link" target="_blank" href="http://www.databazeknih.cz/search?q=${searchString}">DatabazeKnih</a>
+        <a class="ext-link" target="_blank" href="http://www.goodreads.com/search?q=${searchString}">GoodReads</a>
+      </li>
 
     </ul>
   </div>
@@ -46,7 +51,7 @@
         <td>${source.quality}</td>
         <td><a if.bind="canDownload" href="${client.baseUrl}/api/download/${source.id}?bearer_token=${token}">
             <i class="fa fa-download source-action"></i></a>
-          <a if.bind="canConvert" href="#"><i class="fa fa-cog source-action"></i></a>
+          <a if.bind="canConvert" href="#" click.delegate="convertSource(source)"><i class="fa fa-cog source-action ${source.active? 'fa-spin':''}"></i></a>
           <a if.bind="true" href="#" click.delegate="deleteSource(source)"><i class="fa fa-minus-circle source-action"></i></a>
         </td>
       </tr>

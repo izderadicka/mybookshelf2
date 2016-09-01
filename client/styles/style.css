@@ -53,6 +53,11 @@ section {
   margin: 12px 24px 0 6px;
 }
 
+.navbar-nav.navbar-right li a {
+  padding-top:10px;
+  padding-bottom:10px;
+}
+
 .ebook-authors {
   font-style: italic;
 }
@@ -215,6 +220,7 @@ section {
 
 .drawer-controls.notifications-btn {
   height:70px;
+  /* margin-top: 0; */
 }
 
 .notifications-btn i {
@@ -250,4 +256,12 @@ ai-dialog-overlay.active {
 
 .ebook-panel {
   margin: 10px 0px;
+}
+
+.ebook-cover.missing{
+background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAACMCAMAAAC9K/yJAAAA+VBMVEXKysqzs7Pc3Nzz8/P5+fnQ0NCtra3t7e25ubni4uK+vr7o6OjExMTW1tbS0tLIyMjg4ODCwsLe3t719fWxsbHNzc2vr6/39/fZ2dm1tbXGxsbb29vk5OTLy8vx8fH7+/vs7Ozw8PDU1NTm5ubq6urv7++7u7u9vb3+/v6/v7+6urrDw8Pl5eXh4eHY2Nipqam3t7fV1dW4uLjAwMDn5+fPz8/u7u7BwcHr6+v6+vrOzs6oqKirq6v9/f34+Pi8vLyqqqra2trR0dGsrKzp6enX19f8/Pz09PTj4+P29vbFxcXMzMyysrLHx8fJycny8vK0tLT///+np6dlj6GFAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4AgbDxUSoqj6HAAAA69JREFUaN7tm2lv1DAQhse3nWR7LNBCDygCcbWFIoEoVQUIqQghIWr//x+Dx85mKde2G89+8nxJskn8rMfj16NoDH4FBhVSIauAbPO3NpS1v/fk1uM7m4SQELbgwgy0+7vAKCBotz/e3Zv3aw+eUkAGu7fPxQAzG6ApIIPZs9Pt2TPSfN75RAFJoB0uh24d8M5SQGam7euNLwOt3X9HAUn2AtyvQficUUAGa3aP5oHoXj4hgczsZJPfmgfidN1SQJJ1Z6f+z6YKQ4ZAXF8BBBuukJIQB5YeEo+MHhKCVOQQHTxC2K/LhygNkcLFg/KyIYSEYETqjAJsXrZXIZqxIpDYZmrVdx1eeYiXnYQku5KDkrYAhMkeAhyPHC99m+5K7AZbRFkIUUaYJjiD95sEYX7+VvZbCgo9esYzAUy50PgMEbNBccMTRprxsqJTrsAEY9LhILkrYaYl+o4HGfuDHtR6lHZ1OOBdbCpRZv8efEby+INEnMIZbPvJtbxA5uhyVyEWBSL9ERXPnBdFVNga0Yo4T1V0Jo5YxzgLMdMU3DWDM8dL/cQ5loKZpXBw0Vs8sBjtEI+l15MG8szBltvsTk66aDEe066xED1ZmA9hwI+DsLSQMSBd45k3q4CgHidIFnoPFBCceRGiWoUxq7wihKBkNTy03nckkCABQq8mZO4KTtBCsjpaSJKFJBLIYEqm5I8WEjQ0gRxSdDLqdgUQ6ekhrNVRU+GK67XUrCiENzi7U0qEH6RygmC0LwnhvsVEJAHaYIWayHjaBX+tHPyaEExHLVIkZkG+/0ngmRIxS9UDhC8NYelV36Bg+R4y6SHeKRk1cjzE9rMbRwVynhBUhnAcHhUhUqmYNI+A9NFk+pzR4urR9pB0J0JSXpQhrMiM74z3vbuaJjspuUvpeKZawIWslKyk6BKCgeghXRchvmOpT8W0C9BVXk4iBLMkjj3xMiapkkQgOxbXYI6Ok6QqnESHY9j9FmQUUt8vZPVT1Mogj6Chh/jjg/wl9gK26CCX2Q4nxx/wqfdmzZ5TQdBOztzD3C2+84oKMtjh2tEzTw1Bq5AKqZAKqZAKqZAKqZAKqZAKqZBlIQfHQA4JDeT6qh/t2ncyCNol9EV+b6bfnlBB5p+5+iK/B18VHWRm5+tTQw6pn6IqpEIIIcUKxf8PKVQovhhSoFD8psX7SxWKL7tD4EaF4mO3IVyrULzIXodFheJlN1T8o1C8/K6NvxSKE24NmReKr2D/iZnW7ToVMrOftizFjczX8AMAAAAASUVORK5CYII=')
+}
+
+.ebook-cover.missing img {
+  display:none;
 }

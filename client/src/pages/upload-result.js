@@ -45,7 +45,11 @@ export class UploadResult {
       search = meta.series ? search + ' '+ meta.series.title : search
       search = authors ? authors + ' ' + search : search;
       logger.debug(`Searching for ebooks: ${search}`);
-      return this.client.search(search, 1, 5);
+      return this.client.search(search, 1, 5).
+        catch(err => {
+          logger.error('Search failed: '+err);
+          return {};
+        });
       })
     .then(result => {
       logger.debug(`Found ${result.data}`);

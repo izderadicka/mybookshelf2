@@ -3,7 +3,6 @@ export const ROUTES =
     route: ['', 'welcome'],
     name: 'welcome',
     moduleId: 'pages/welcome',
-    nav: true,
     title: 'Welcome'
   }, {
     route: 'ebooks',

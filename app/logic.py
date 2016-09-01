@@ -30,8 +30,9 @@ def safe_int(v, for_=''):
 
 
 def preprocess_search_query(text):
+    text = re.sub('[:.;_-]', ' ', text, re.UNICODE)
     tokens = text.split()
-    tokens = map(lambda t: re.sub('[:.;]', ' ', t, re.UNICODE).strip(), tokens)
+    tokens = map(lambda t: t.strip(), tokens)
     return ' & '.join(['%s:*' % t for t in tokens])
 
 

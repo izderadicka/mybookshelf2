@@ -16,32 +16,45 @@ dal.DSN = 'dbname={db} user={user} password={password} host={host}'.format(db=Te
                                                                            password=Testing.DB_PASSWORD
                                                                            )
 
-
+FILES = ['Adams, Douglas - Stoparuv pruvodce 1 - Stoparuv pruvodce po Galaxii.epub', 
+                  'Brown, Eric - Virex 1 - Newyorske noci.epub',
+                  'Nix G. - Klice od Kralovstvi 2 - Udesne utery [Triton 2006].doc',
+                  'Zweig, Stefan - Netrpelivost srdce.docx']
 class TestMeta(TestCase):
 
     def setUp(self):
         TestCase.setUp(self)
         dal.init()
-        fname = os.path.join(os.path.dirname(__file__),
-                             './files/Adams, Douglas - Stoparuv pruvodce 1 - Stoparuv pruvodce po Galaxii.epub'
-                             )
-        shutil.copy(fname, UPLOAD_DIR)
-        self.fname = os.path.split(fname)[1]
-        fname = os.path.join(os.path.dirname(__file__),
-                             './files/Brown, Eric - Virex 1 - Newyorske noci.epub'
-                             )
-        shutil.copy(fname, UPLOAD_DIR)
-        self.fname2 = os.path.split(fname)[1]
-
+        self.fname=[]
+        for f in FILES:
+            fname = os.path.join(os.path.dirname(__file__), 'files', f)
+            shutil.copy(fname, UPLOAD_DIR)
+            self.fname.append(os.path.split(fname)[1])
+       
     def tearDown(self):
         TestCase.tearDown(self)
         dal.close()
+        for f in self.fname:
+            try:
+                os.remove(os.path.join(UPLOAD_DIR, f))
+            except IOError:
+                pass
+            
         try:
-            os.remove(os.path.join(UPLOAD_DIR, self.fname))
-            os.remove(os.path.join(UPLOAD_DIR, self.fname2))
+            os.remove(os.path.join(UPLOAD_DIR, 'cover.jpg'))
         except IOError:
             pass
-
+        
+        try:
+            os.remove(os.path.join(UPLOAD_DIR, 'thumbnail.jpg'))
+        except IOError:
+            pass
+    
+    def assert_cover(self, cover):
+         self.assertEqual(cover, 'cover.jpg')
+         self.assertTrue(os.path.exists(os.path.join(UPLOAD_DIR, cover)))
+         self.assertTrue(os.stat(os.path.join(UPLOAD_DIR, cover)).st_size > 0)
+    
     def test_meta1(self):
         result = []
         upload = Mock(side_effect=lambda *args: result.extend(args) or 1)
@@ -51,9 +64,29 @@ class TestMeta(TestCase):
 
         t = MetadataTask(user='ivan')
         loop = asyncio.get_event_loop()
-        res = loop.run_until_complete(t.run(self.fname))
+        
+        result = []
+        res = loop.run_until_complete(t.run(self.fname[2]))
         self.assertEqual(res, 1)
-
+        self.assert_cover(result[1])
+        meta = result[2]
+        self.assertEqual(meta['title'], 'Nix G. - Klice od Kralovstvi 2 - Udesne utery [Triton 2006]')
+        self.assertEqual(len(meta), 1)
+        
+        result = []
+        res = loop.run_until_complete(t.run(self.fname[3]))
+        self.assertEqual(res, 1)
+        self.assert_cover(result[1])
+        meta = result[2]
+        self.assertEqual(meta['title'], 'Netrpelivost srdce')
+        self.assertEqual(meta['authors'][0], {'first_name':'Stefan', 'last_name':'Zweig'})
+        self.assertEqual(
+            meta['language'], {'code': 'cs', 'name': 'Czech', 'id': 1})
+    
+        result = []
+        res = loop.run_until_complete(t.run(self.fname[0]))
+        self.assertEqual(res, 1)
+        self.assert_cover(result[1])
         meta = result[2]
         self.assertEqual(
             meta['authors'], [{'last_name': 'Adams', 'first_name': 'Douglas', 'id': 4879}])
@@ -70,11 +103,9 @@ class TestMeta(TestCase):
         os.remove(os.path.join(UPLOAD_DIR, cover))
 
         result = []
-
-        t = MetadataTask(user='ivan')
-        loop = asyncio.get_event_loop()
-        res = loop.run_until_complete(t.run(self.fname2))
+        res = loop.run_until_complete(t.run(self.fname[1]))
         self.assertEqual(res, 1)
+        self.assert_cover(result[1])
         meta = result[2]
 
         self.assertEqual(meta['title'], 'Newyorské noci')
@@ -86,3 +117,6 @@ class TestMeta(TestCase):
             meta['language'], {'code': 'cs', 'name': 'Czech', 'id': 1})
         self.assertEqual(meta['series'], {'title': 'Virex'})
         self.assertEqual(meta['series_index'], 1)
+        
+        
+        

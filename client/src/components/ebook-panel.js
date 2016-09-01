@@ -1,6 +1,7 @@
 
 import {inject, bindable, LogManager} from 'aurelia-framework';
 import {HttpClient} from 'aurelia-fetch-client';
+import $ from 'jquery';
 
 const logger=LogManager.getLogger('ebooks-panel');
 
@@ -16,6 +17,18 @@ export class EbookPanel {
 
   loaderChanged() {
     logger.debug('Loader changed in EbookPanel');
+  }
+
+  handleImgError(evt) {
+      logger.debug('Missing thumb');
+      $(evt.target).parent().parent().addClass('missing');
+
+  }
+
+  handleImgLoad(evt) {
+      logger.debug('Load thumb');
+      $(evt.target).parent().parent().removeClass('missing');
+
   }
 
   getThumbSource(ebook) {

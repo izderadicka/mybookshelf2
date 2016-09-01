@@ -79,6 +79,7 @@ class User(Base, Auditable, UserMixin):
     password = Column(String(128), nullable=False)
     active = Column(Boolean)
     roles = relationship('Role', secondary=user_roles)
+    preferences = Column(JSON)
 
     @property
     def is_active(self):

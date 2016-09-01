@@ -48,14 +48,19 @@ class TestDAL(TestCase):
 
         new_id = loop.run_until_complete(insert)
         self.assertEqual(new_id, 1)
-
         upload = model.Upload.query.get(new_id)
-
         self.assertEqual(upload.created_by.email, 'admin@example.com')
-
         self.assertEqual(upload.meta['title'], 'Stoparuv pruvodce')
 
         # -------
+        insert = dal.add_conversion(fname='converted.epub', format='epub', source_id=43290, user_email='admin@example.com')
+        new_id =  loop.run_until_complete(insert)
+        self.assertEqual(new_id, 1)
+        
+        conv = model.Conversion.query.get(new_id)
+        self.assertEqual(conv.format.extension, 'epub')
+        
+        #-------
 
         q = dal.find_series({'title': 'Nekroskop'})
         series = loop.run_until_complete(q)
@@ -119,3 +124,23 @@ class TestDAL(TestCase):
         q = dal.find_genre({'name': "Kulisarna"})
         genre = loop.run_until_complete(q)
         self.assertTrue(genre is None)
+        
+# -----------------------------------
+        
+        q = dal.get_source_file(1)
+        source, format = loop.run_until_complete(q)
+        self.assertEqual((source, format), (None,None))
+        
+        q = dal.get_source_file(42448)
+        source, format = loop.run_until_complete(q)
+        self.assertEqual((source, format), ('Crichton, Michael/Let cislo TPA 545/Crichton, Michael - Let cislo TPA 545.doc','doc'))
+        
+        q = dal.get_meta(43290)
+        meta = loop.run_until_complete(q)
+        self.assertEqual(meta['title'], 'Legenda')
+        self.assertEqual(meta['authors'], 'David Gemmell')
+        self.assertEqual(meta['language'], 'cs')
+        self.assertEqual(meta['series'], 'Drenajská sága')
+        self.assertEqual(meta['series-index'], 1)
+        self.assertEqual(meta['tags'], 'Fantasy')
+        

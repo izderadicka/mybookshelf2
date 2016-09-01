@@ -3,7 +3,7 @@
   <ul class="list-group">
     <li class="list-group-item" repeat.for="ebook of ebooks.data">
       <authors authors.one-time="ebook.authors" compact.bind="true" linked.bind="false"></authors>
-      <span class="ebook-title">${ebook.title}</span>
+      <span class="ebook-title">${ebook.title} (${ebook.language.name})</span>
       <span class="ebook-series" if.bind="ebook.series">(${ebook.series.title} #${ebook.series_index})</span>
       <button class="btn btn-xs btn-default" click.delegate="action(ebook.id)">${actionName}</button>
     </li>
