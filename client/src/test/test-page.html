@@ -1,5 +1,8 @@
 <template>
   <require from="components/autocomplete/autocomplete"></require>
+  <require from="components/context-menu/context-menu"></require>
+  <p click.delegate="menu1.show($event)"> Context menu Show</p>
+  <context-menu  view-model.ref='menu1' items.bind="[{text:'Item 1', value:1}, {text:'Item 2', value:2}, {text:'Item 3', value:3}]"></context-menu>
 
   <h3> Countries (loader is an array)</h3>
   <autocomplete loader.bind="['Afghanistan','Albania','Algeria','Andorra','Angola','Anguilla','Antigua &amp; Barbuda','Argentina','Armenia','Aruba','Australia','Austria','Azerbaijan','Bahamas'
@@ -29,7 +32,7 @@
   <h3>Authors</h3>
   <autocomplete loader.bind="loaderAuthors" value-key.bind="getFullName" suggestion-template="./autocomplete-authors.html" value.bind="author"></autocomplete>
   <p>Selected author is ${author}</p>
-  <p> Lorem i psum bla </p>
+  <div click.delegate="menu1.show($event)" style="background-color:lightgrey"> Show menu </div>
   <p> Lorem i psum bla </p>
   <p> Lorem i psum bla </p>
   <p> Lorem i psum bla </p>

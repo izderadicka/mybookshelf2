@@ -1,4 +1,4 @@
-from flask import Blueprint, request, abort, current_app, jsonify
+from flask import Blueprint, request, abort, current_app, jsonify, json
 from flask_restful import Resource as BaseResource, Api
 from flask_login import current_user
 import app.model as model
@@ -261,6 +261,14 @@ def check_upload():
 def download(id):
     return logic.download(id)
 
+@bp.route('/download-converted/<int:id>')
+@role_required('user')
+def download_converted(id):
+    conversion = model.Conversion.query.get_or_404(id)
+    if conversion.created_by != current_user:
+        abort(403, 'No Access')
+    return logic.download_converted(conversion)
+
 
 @bp.route('/uploads-meta/<int:id>/cover')
 @role_required('user')
@@ -349,6 +357,14 @@ def add_upload_to_ebook(id, upload_id):
     db.session.commit()
 
     return jsonify(id=source.id)
+
+@bp.route('/ebooks/<int:ebook_id>/converted') 
+@role_required('user')
+def converted_sources(ebook_id):
+    q = logic.query_converted_sources_for_ebook(ebook_id, current_user)
+    serializer = schema.conversions_list_serializer()
+    return jsonify( total=q.count(), items=serializer.dump(q.limit(100).all()).data)
+    
 
 
 api.add_resource(Ebooks, '/ebooks')

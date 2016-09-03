@@ -19,7 +19,9 @@ async def convert_file(fname, format, outdir=None):
     proc_params = []
     if not outdir:
         outdir=os.path.dirname(fname)
-    out_file = os.path.splitext(fname)[0] +'.'+format
+        out_file = os.path.splitext(fname)[0] +'.'+format
+    else:
+        out_file=os.path.join(outdir, os.path.splitext(os.path.basename(fname))[0]+'.'+format)
     proc = await asyncio.create_subprocess_exec(OOFFICE, '--headless', '--convert-to', 
                                                 format,'--outdir', outdir, fname)
     return_code = await proc.wait()
@@ -164,7 +166,7 @@ class MetadataTask(BaseTask):
 class ConvertTask(BaseTask):
     NAME = 'convert'
     COMMAND = 'ebook-convert'
-    MAX_TIME = 180
+    MAX_TIME = 300
     
     NEED_PRECONVERSION =['doc']
     PRECONVERSION_FORMAT = 'html'
@@ -203,7 +205,9 @@ class ConvertTask(BaseTask):
         self.tmp_file = None
         if format in self.NEED_PRECONVERSION:
             outdir = os.path.dirname(self.out_file_full)
-            self.tmp_file = convert_file(source_file_full, self.PRECONVERSION_FORMAT, outdir)
+            self.tmp_file = await convert_file(source_file_full, self.PRECONVERSION_FORMAT, outdir)
+            if not self.tmp_file or not await aos.path.exists(self.tmp_file):
+                raise TaskError('Unsuccessful pre conversion of %s'%format)
             
         params = [self.tmp_file or source_file_full, self.out_file_full]
         if format in self.EXTRA_PARAMS_INPUT:
@@ -211,8 +215,7 @@ class ConvertTask(BaseTask):
         if to_format in self.EXTRA_PARAMS_OUTPUT:
             params.extend(self.EXTRA_PARAMS_OUTPUT[to_format])
             
-        self._update_meta(source_id, params)
-            
+        await self._update_meta(source_id, params)
         return tuple(params)
     
     async def _update_meta(self, source_id, params):
@@ -225,7 +228,7 @@ class ConvertTask(BaseTask):
         
     
     async def parse_result(self, data): 
-        if not aos.path.exists(self.out_file_full):
+        if not (await aos.path.exists(self.out_file_full)):
             raise TaskError('Converted file does not exists')
         
         conversion_id = await dal.add_conversion(self.out_file, self.to_format, self.source_id, self.user)

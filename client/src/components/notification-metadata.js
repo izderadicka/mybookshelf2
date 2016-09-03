@@ -1,18 +1,8 @@
 
-import {bindable, inject} from 'aurelia-framework'
-import {Router} from 'aurelia-router';
+import {NotificationBase} from './notification-base';
 
-@inject(Router)
-export class NotificationMetadata {
-    @bindable notification;
+export class NotificationMetadata extends NotificationBase {
 
-    constructor(router) {
-      this.router=router
-    }
-
-    get isReady() {
-      return this.notification.status === 'success' && this.notification.result && ! this.notification.done;
-    }
     navigate() {
       this.notification.done = true;
       this.router.navigateToRoute('upload-result', {id:this.notification.result})

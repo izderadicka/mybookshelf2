@@ -174,6 +174,17 @@ def download(id):
 
     return response
 
+def download_converted(conversion):
+    
+    fname = os.path.join(current_app.config['BOOKS_CONVERTED_DIR'], conversion.location)
+    down_name = norm_file_name(conversion.source)
+    down_name = os.path.split(fname)[-1]
+    down_name = os.path.splitext(down_name)[0]+'.'+conversion.format.extension
+    response = stream_response(fname, mimetype=conversion.format.mime_type,
+                               headers={'Content-Disposition': 'attachment; filename="%s"' % down_name})
+
+    return response
+
 
 def check_file(mime_type, size, hash):
     if size > current_app.config['MAX_CONTENT_LENGTH']:
@@ -360,3 +371,13 @@ def update_cover(upload, ebook):
         dst = os.path.join(
             current_app.config['THUMBS_DIR'], '%d.jpg'%ebook.id)
         shutil.copy(src, dst)
+        
+def query_converted_sources_for_ebook(ebook_id, user=None):
+    q = model.Conversion.query.join(model.Conversion.source)\
+        .join(model.Source.ebook).filter(model.Ebook.id == ebook_id)
+        
+    if user:
+        q = q.filter(model.Conversion.created_by_id == user.id)
+        
+    return q.order_by(desc(model.Conversion.created))
+        

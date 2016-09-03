@@ -67,4 +67,14 @@ class TestLogic(TestCase):
         new_loc=logic.create_new_location(s, downloaded_file)
         self.assertEqual(new_loc, 'Kissinger Henry/Roky v Bilem dome/Kissinger Henry - Roky v Bilem dome(1).epub')
         
+        admin = model.User.query.get(1)
+        conv = model.Conversion(source=source, format=model.Format.query.filter_by(extension='epub').one(),
+                                location = 'bla.epub', created_by=admin, modified_by=admin )
+        db.session.add(conv)
+        db.session.commit()
+        
+        res=logic.query_converted_sources_for_ebook(source.ebook.id, admin).all()
+        self.assertEqual(len(res), 1)
+        self.assertEqual(res[0].location, 'bla.epub')
+        
         

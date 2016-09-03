@@ -64,6 +64,12 @@ class GenreSchema(ModelSchema):
     class Meta:
         model = model.Genre
         exclude = ('version_id',)
+        
+class ConversionSchema(ModelSchema):
+    format = fields.Function(serialize=lambda o: o.format.extension)
+    class Meta:
+        model = model.Conversion
+        exclude = ('version_id',)
 
 
 class FormatSchema(ModelSchema):
@@ -149,3 +155,5 @@ upload_serializer = lambda: UploadSchema()
 
 languages_list_serializer = lambda: LanguageSchema(many=True)
 genres_list_serializer = lambda: GenreSchema(many=True)
+
+conversions_list_serializer = lambda: ConversionSchema(many=True)

@@ -28,7 +28,7 @@ body {
   left: 0;
   right: 0;
   top: 50px;
-  bottom: 0;
+  bottom: 0;this.root.offset({top:pageY, left:pageX});
   overflow-x: hidden;
   overflow-y: auto;
 }
@@ -208,14 +208,14 @@ section {
 }
 
 .page-title .actions {
-  
+
   opacity: 0;
   transition: opacity 2s ease-out;
 }
 
 .page-title:hover > .actions {
   opacity: 1;
-  
+
 }
 
 .drawer-controls.notifications-btn {
@@ -264,4 +264,8 @@ background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAACMCAMAAAC9K
 
 .ebook-cover.missing img {
   display:none;
+}
+
+.converted-sources-item {
+  font-weight: bold;
 }

@@ -4,14 +4,16 @@ import {LogManager} from 'aurelia-framework';
 import {Access} from 'lib/access';
 import {DialogService} from 'aurelia-dialog';
 import {ConfirmDialog} from 'components/confirm-dialog';
+import {WSClient} from 'lib/ws-client';
 
 let logger = LogManager.getLogger('ebooks');
 
-@inject(ApiClient, Access, DialogService)
+@inject(ApiClient, WSClient, Access, DialogService)
 export class Ebook {
   ebook
-  constructor(client, access, dialog ) {
+  constructor(client, ws, access, dialog ) {
     this.client=client;
+    this.ws = ws;
     this.access=access;
     this.dialog =  dialog;
     this.token = access.token;
@@ -21,6 +23,7 @@ export class Ebook {
     this.cover.onload = function() {
         URL.revokeObjectURL(this.src);
       }
+
   }
 
 
@@ -45,6 +48,12 @@ export class Ebook {
         logger.error(`Failed to load ${err}`);
         return false;
       });
+  }
+
+  activate(params) {
+    this.client.getManyUnpaged(`ebooks/${this.ebook.id}/converted`)
+    .then(data => this.convertedSources = data.items)
+    .catch(err => logger.error('Cannot get converted sources',err))
   }
 
   attached() {
@@ -90,8 +99,23 @@ export class Ebook {
       });
   }
 
-  convertSource(source) {
-    source.active=1;
+  get convertSource() {
+    return (format,source) => {
+
+      if (format != source.format) {
+        this.ws.convertSource(source, format, this.ebook).then(
+          taskId => {
+            if (! source.active) source.active=1;
+            else source.active += 1;
+            logger.debug(`Converting ${JSON.stringify(source)} to ${format} in task ${taskId}`);
+          })
+          .catch(err => {
+            alert('Conversion submission error');
+            logger.error('Conversion submission error: '+JSON.stringify(err));
+          });
+        };
+      }
   }
+
 
 }

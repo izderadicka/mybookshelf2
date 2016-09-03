@@ -15,8 +15,8 @@ export class Notification {
     this.event = event;
     if (config.get('debug')) {
       this._ns=['aaaaa'];
-      this._details.set('aaaaa',{text:'Extract metadata from file xxxx',
-            'task': 'metadata',
+      this._details.set('aaaaa',{text:'Converted ebook TEST ',
+            'task': 'convert',
             'start': new Date(),
             'status':'success',
             'result': 3});

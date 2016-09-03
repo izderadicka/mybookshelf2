@@ -13,7 +13,8 @@
             <ul class="drawer-nav">
                 <li repeat.for="n of notif.items & throttle" role="presentation">
                 <!--<a data-toggle="drawer" data-target="#drawer-notifications" href="#">${n.text}</a> -->
-                <notification-metadata notification.bind="n"></notification-metadata>
+                <compose model.bind="n" view-model="components/notification-${n.task}"></compose>
+                
               </li>
 
             </ul>

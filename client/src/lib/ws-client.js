@@ -99,12 +99,32 @@ export class WSClient {
         text:`Extract Metadata from ${originalFileName || fileName}`,
         status:"submitted",
         task:"metadata",
-        taskId:"taskId",
+        taskId,
         file: fileName,
         originalFileName
       });
       return taskId;
     });
+  }
+
+  convertSource(source, format, ebook) {
+    if (! this.isConnected) {
+      alert('WebSocket is not connected, reload application!');
+      return;
+    }
+    return this.session.call('eu.zderadicka.asexor.run_task', ['convert', source.id, format])
+      .then(taskId => {
+        this.notif.start(taskId,
+          {
+          text:`Convert ebook ${ebook.title}: from ${source.format} to ${format}`,
+          status:"submitted",
+          task:"convert",
+          taskId,
+          sourceId: source.id,
+          ebookId: ebook.id
+        });
+        return taskId;
+      })
   }
 
 }

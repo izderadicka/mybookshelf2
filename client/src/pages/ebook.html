@@ -1,6 +1,7 @@
 <template>
   <require from="components/authors"></require>
    <require from="components/genres-converter"></require>
+   <require from="components/context-menu/context-menu"></require>
   <section>
     <h2 class="page-title">
       <span class="title">${ebook.title}</span>
@@ -39,6 +40,11 @@
         <a if.bind="ebook.language.code=='cs'" class="ext-link" target="_blank" href="http://www.databazeknih.cz/search?q=${searchString}">DatabazeKnih</a>
         <a class="ext-link" target="_blank" href="http://www.goodreads.com/search?q=${searchString}">GoodReads</a>
       </li>
+      <li class="list-group-item" if.bind="convertedSources.length">
+        <label class="ebook-detail-label">Recently Converted To:</label>
+        <a class="converted-sources-item" repeat.for="converted of convertedSources"
+        href="${client.baseUrl}/api/download-converted/${converted.id}?bearer_token=${token}">${converted.format} </a>
+      </li>
 
     </ul>
   </div>
@@ -51,10 +57,13 @@
         <td>${source.quality}</td>
         <td><a if.bind="canDownload" href="${client.baseUrl}/api/download/${source.id}?bearer_token=${token}">
             <i class="fa fa-download source-action"></i></a>
-          <a if.bind="canConvert" href="#" click.delegate="convertSource(source)"><i class="fa fa-cog source-action ${source.active? 'fa-spin':''}"></i></a>
+          <a if.bind="canConvert" href="#" click.delegate="menuConvert.show($event, source)"><i class="fa fa-cog source-action ${source.active? 'fa-spin':''}"></i></a>
           <a if.bind="true" href="#" click.delegate="deleteSource(source)"><i class="fa fa-minus-circle source-action"></i></a>
         </td>
       </tr>
     </table>
+    <context-menu items.bind="[{text:'epub', value:'epub'}, {text:'mobi', value:'mobi'}]" title="Convert to"
+    view-model.ref="menuConvert" action.bind="convertSource"></context-menu>
   </section>
+
 </template>

@@ -1,0 +1,9 @@
+<template>
+  <require from="./context-menu.css"></require>
+  <div class="context-menu" css="display:none;width:${width}px">
+    <div class="list-group">
+      <div class="list-group-item header">${title}</div>
+      <a class="list-group-item item" repeat.for="item of items" click.delegate="select(item)">${item.text}</a>
+    </div>
+  </div>
+</template>

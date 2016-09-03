@@ -1,0 +1,19 @@
+.context-menu {
+  box-shadow: 3px 3px 5px 0px rgba(0,0,0,0.50);
+  z-index: 4000;
+  position:absolute;
+  border-radius: 5px;
+}
+
+.context-menu .list-group {
+  margin-bottom: 0px;
+}
+
+.context-menu .header {
+  font-weight: bold;
+}
+
+.context-menu a.item {
+  color: #337ab7;
+  cursor: pointer;
+}

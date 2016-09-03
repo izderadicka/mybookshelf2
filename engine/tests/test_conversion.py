@@ -26,13 +26,13 @@ class TestMeta(TestCase):
         TestCase.tearDown(self)
         dal.close()
         
-        shutil.rmtree(os.path.join(BOOKS_CONVERTED_DIR, 'Kissinger, Henry'), ignore_errors=True)
+        #shutil.rmtree(os.path.join(BOOKS_CONVERTED_DIR, 'Kissinger, Henry'), ignore_errors=True)
         
     
     def test_convert(self):
         
        
-        t = ConvertTask(user='ivan')
+        t = ConvertTask(user='admin@example.com')
         loop = asyncio.get_event_loop()
         
         book = 'Kissinger, Henry/Roky v Bilem dome/Kissinger, Henry - Roky v Bilem dome (1).epub'
@@ -41,6 +41,7 @@ class TestMeta(TestCase):
         
         c = model.Conversion.query.get(conv_id)
         self.assertEqual(c.location, book )
+        self.assertEqual(c.created_by.user_name, 'admin')
         
         
         
