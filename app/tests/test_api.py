@@ -108,8 +108,8 @@ class TestApi(TestCase):
         res = self.get(
             '/api/authors', query_string={'page': 1, 'page_size': 50, 'sort': 'name'})
         self.assertEqual(len(res['items']), 50)
-        self.assertEqual(res['total'], 102)
-        self.assertEqual(res['items'][0]['last_name'], 'Adornetto')
+        self.assertEqual(res['total'], 103)
+        self.assertEqual(res['items'][0]['last_name'], 'Adams')
 
         res = self.get(
             '/api/series', query_string={'page': 2, 'page_size': 14, 'sort': 'title'})
