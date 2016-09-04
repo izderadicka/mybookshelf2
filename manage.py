@@ -4,12 +4,15 @@ from flask_script import Manager, prompt_pass, prompt_bool
 from flask_script.commands import InvalidCommand
 from app import app,db
 import app.model as model
-from app.utils import hash_pwd
+import app.logic as logic
+from app.utils import hash_pwd, purge_empty_dirs
 import app.schema as schema
 import sys
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from sqlalchemy import or_
 import os.path
+import settings
+from datetime import datetime, timedelta;
 
 
 DATA_DIR='./app/data'
@@ -84,6 +87,25 @@ def update_fulltext():
 def drop_tables():
     if prompt_bool('Are you REALLY sure? You will loose all data!'):
         db.drop_all()   
+        
+@manager.command
+def cleanup(uploads_older_then=24, conversions_older_then = 24*7):
+    since = datetime.now() - timedelta(hours=float(uploads_older_then))
+    for upload in model.Upload.query.filter(model.Upload.created < since):
+        logic.delete_upload(upload)
+    db.session.commit()
+    purge_empty_dirs(settings.UPLOAD_DIR, delete_root=False)
+    since = datetime.now() - timedelta(hours=float(conversions_older_then))
+    for conversion in model.Conversion.query.filter(model.Conversion.created < since):
+        logic.delete_conversion(conversion) 
+        
+    db.session.commit()
+    purge_empty_dirs(settings.BOOKS_CONVERTED_DIR, delete_root=False)
+    
+    purge_empty_dirs(settings.BOOKS_BASE_DIR, delete_root=False)
+        
+    
+    
 
 if __name__ == "__main__":
     try:

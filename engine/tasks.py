@@ -185,6 +185,12 @@ class ConvertTask(BaseTask):
         self.source_id=source_id
         
         source_file, format = await dal.get_source_file(source_id)
+        
+        self.user_id = await dal.get_user_id(self.user)
+        
+        if not self.user_id:
+            raise TaskError('Uknown user')
+        
         if format not in CONVERTABLE_TYPES:
             raise TaskError('Cannot convert from format %s' % format)
         
@@ -193,8 +199,12 @@ class ConvertTask(BaseTask):
         if to_format not in CONVERSION_FORMATS:
             raise TaskError('Not supported target format %s', to_format)
         
-        self.out_file = os.path.splitext(source_file)[0]+'.'+to_format
-        self.out_file_full = os.path.join(BOOKS_CONVERTED_DIR, self.out_file)
+        self.out_file =  os.path.splitext(source_file)[0]+'.'+to_format
+        self.out_file_full = os.path.join(BOOKS_CONVERTED_DIR, str(self.user_id), self.out_file)
+        
+        if await aos.path.exists(self.out_file_full):
+            raise TaskError('File already exists')
+        
         out_dir = os.path.dirname(self.out_file_full)
         
         await aos.makedirs(out_dir, exist_ok=True)
@@ -230,8 +240,16 @@ class ConvertTask(BaseTask):
     async def parse_result(self, data): 
         if not (await aos.path.exists(self.out_file_full)):
             raise TaskError('Converted file does not exists')
+        if self.tmp_file:
+            try:
+                await aos.remove(self.tmp_file)
+            except IOError:
+                pass
         
-        conversion_id = await dal.add_conversion(self.out_file, self.to_format, self.source_id, self.user)
+        conversion_id = await dal.add_conversion(os.path.join(str(self.user_id),self.out_file), 
+                                                 self.to_format, 
+                                                 self.source_id, 
+                                                 self.user)
         return conversion_id
         
     

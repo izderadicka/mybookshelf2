@@ -84,7 +84,6 @@ export class WSClient {
     logger.warn(`WAMP connection closed ${reason}`);
     this.conn=null;
     this.session=null;
-
   }
 
   extractMeta(fileName, originalFileName=null) {

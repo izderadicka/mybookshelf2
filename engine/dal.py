@@ -188,7 +188,7 @@ async def get_meta(source_id):
         if not res:
             return
         ebook_id=res[0]
-        res = await conn.execute(select([ebook.c.title, language.c.code, series.c.title, ebook.c.series_index])\
+        res = await conn.execute(select([ebook.c.title, language.c.code, series.c.title, ebook.c.series_index, ebook.c.cover])\
                            .select_from(ebook.join(language).outerjoin(series)).where(ebook.c.id == ebook_id))
 
         res = await res.fetchone()
@@ -200,6 +200,8 @@ async def get_meta(source_id):
         if res [2]:
             meta['series'] = res[2]
             meta['series-index'] = res[3] or 0
+        if res[4]:
+            meta['cover']= os.path.join(settings.BOOKS_BASE_DIR, res[4])
             
         res = await conn.execute(select([author.c.first_name, author.c.last_name]).select_from(author.join(model.ebook_authors))\
                                  .where(model.ebook_authors.c.ebook_id == ebook_id))

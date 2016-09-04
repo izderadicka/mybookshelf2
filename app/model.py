@@ -156,11 +156,12 @@ class Conversion(Base, Auditable):
 
     batch_id = Column(BigInteger, ForeignKey('conversion_batch.id'))
     source_id = Column(BigInteger, ForeignKey('source.id'), nullable=False)
-    source = relationship('Source')
+    source = relationship('Source', back_populates="conversions")
     location = Column(String(512), nullable=False)
     format_id = Column(BigInteger, ForeignKey('format.id'), nullable=False)
     format = relationship('Format', lazy='joined', innerjoin=True)
     batch = relationship('ConversionBatch', back_populates='items')
+    
 
 
 class ConversionBatch(Base, Auditable):
@@ -171,6 +172,7 @@ class ConversionBatch(Base, Auditable):
     entity_id = Column(BigInteger)
     format_id = Column(BigInteger, ForeignKey('format.id'), nullable=False)
     items = relationship('Conversion', back_populates='batch')
+   
 
 
 class Ebook(Base, Auditable):
@@ -251,6 +253,10 @@ class Source(Base, Auditable):
     size = Column(Integer, nullable=False)
     hash = Column(String(128), nullable=False)
     quality = Column(Float(asdecimal=True))
+    conversions = relationship('Conversion', cascade = 'all')
+    
+    def __repr__(self):
+        return super(Source, self).__repr__(['location'])
 
 
 class Upload(Base, Auditable):
@@ -262,9 +268,10 @@ class Upload(Base, Auditable):
     size = Column(Integer, nullable=False)
     hash = Column(String(128), nullable=False)
     meta = Column(JSON)
-
+    
     def __repr__(self):
-        return super(Source, self).__repr__(['location'])
+        return super(Upload, self).__repr__(['file'])
+    
 
 
 class Genre(Base):

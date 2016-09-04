@@ -36,12 +36,14 @@ export class Notification {
 
   update(taskId, obj) {
     if (this._details.has(taskId)) {
-      Object.assign(this._details.get(taskId), obj);
+      let data = this._details.get(taskId);
+      Object.assign(data, obj);
       this._dirty = true;
       logger.debug(`Task updated ${taskId}`);
-      if (this._details.get(taskId).task === 'metadata') {
-        if (obj.status === 'success') this.event.publish('metadata-ready', {taskId, result: obj.result});
-        else if (obj.status === 'error') this.event.publish('metadata-error', {taskId, error: obj.error});
+      let task = data.task;
+      if (task) {
+        if (obj.status === 'success') this.event.publish(`${task}-ready`, {taskId, result: obj.result, data});
+        else if (obj.status === 'error') this.event.publish(`${task}-error`, {taskId, error: obj.error, data});
       }
 
     } else {

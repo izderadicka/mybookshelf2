@@ -5,17 +5,19 @@ import {Access} from 'lib/access';
 import {DialogService} from 'aurelia-dialog';
 import {ConfirmDialog} from 'components/confirm-dialog';
 import {WSClient} from 'lib/ws-client';
+import {EventAggregator} from 'aurelia-event-aggregator';
 
 let logger = LogManager.getLogger('ebooks');
 
-@inject(ApiClient, WSClient, Access, DialogService)
+@inject(ApiClient, WSClient, Access, DialogService, EventAggregator)
 export class Ebook {
   ebook
-  constructor(client, ws, access, dialog ) {
+  constructor(client, ws, access, dialog, event ) {
     this.client=client;
     this.ws = ws;
     this.access=access;
     this.dialog =  dialog;
+    this.event = event;
     this.token = access.token;
     this.canDownload=access.hasRole('user');
     this.canConvert=access.hasRole('user');
@@ -23,7 +25,31 @@ export class Ebook {
     this.cover.onload = function() {
         URL.revokeObjectURL(this.src);
       }
+    this.subscribeConvertEvents();
+  }
 
+  subscribeConvertEvents() {
+    let deactivateSource = sourceId => {
+      if (this.ebook.sources)
+        this.ebook.sources.filter(s => s.id === sourceId)
+          .forEach(s => {
+            if (s.active) --s.active;
+          })
+    }
+    this.event.subscribe('convert-ready', msg => {
+      if (this.ebook && this.ebook.id === msg.data.ebookId) {
+      deactivateSource(msg.data.sourceId);
+      this.updateConverted();
+    }
+    });
+    this.event.subscribe('convert-error', msg => {
+      if (this.ebook && this.ebook.id === msg.data.ebookId) {
+      deactivateSource(msg.data.sourceId);
+      this.ebook.sources.filter(s => s.id === msg.data.sourceId)
+        .forEach(s => s.error = msg.error);
+    }
+      logger.error('Conversion failed due to '+msg.error);
+    })
   }
 
 
@@ -51,9 +77,13 @@ export class Ebook {
   }
 
   activate(params) {
+    this.updateConverted();
+  }
+
+  updateConverted() {
     this.client.getManyUnpaged(`ebooks/${this.ebook.id}/converted`)
     .then(data => this.convertedSources = data.items)
-    .catch(err => logger.error('Cannot get converted sources',err))
+    .catch(err => logger.error('Cannot get converted sources',err));
   }
 
   attached() {
@@ -86,10 +116,12 @@ export class Ebook {
         this.client.delete('sources', source.id)
           .then(res => {
             if (res.error) {
-              logger.error('Source delete failed: ' + res.err);
+              logger.error('Source delete failed: ' + res.error + ' '+ res.error_details);
+              alert('Cannot delete: '+ res.error);
             } else {
               let idx = this.ebook.sources.findIndex(x => x === source)
               if (idx >= 0) this.ebook.sources.splice(idx, 1);
+              this.updateConverted();
             }
           })
           .catch(err => {
@@ -101,7 +133,7 @@ export class Ebook {
 
   get convertSource() {
     return (format,source) => {
-
+      source.error=undefined;
       if (format != source.format) {
         this.ws.convertSource(source, format, this.ebook).then(
           taskId => {

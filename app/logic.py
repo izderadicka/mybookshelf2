@@ -354,7 +354,13 @@ def delete_upload(upload):
         current_app.config['UPLOAD_DIR'], os.path.split(upload.file)[0])
     shutil.rmtree(dir, ignore_errors=True)
     db.session.delete(upload)
-
+    
+def delete_conversion(conversion):
+    try:
+        os.remove(os.path.join(current_app.config['BOOKS_CONVERTED_DIR'], conversion.location))
+    except IOError:
+        logger.warn('Conversion file %s cannot be deleted', conversion.location)
+    db.session.delete(conversion)
 
 def update_cover(upload, ebook):
     src = os.path.join(current_app.config['UPLOAD_DIR'], upload.cover)
