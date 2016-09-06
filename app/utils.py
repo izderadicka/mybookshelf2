@@ -139,3 +139,17 @@ def purge_empty_dirs(path, delete_root=True):
             purge_empty_dirs(full_path)
     if delete_root and not os.listdir(path):
         os.rmdir(path)
+        
+def strip(l):
+    return list(map(lambda x: x.strip(), filter(None, l)))
+        
+def parse_author(author):
+    parts = author.split(',')
+    if len(parts) > 1:
+        return {'last_name': parts[0], 'first_name': ' '.join(map(lambda x: x.strip(),parts[1:]))}
+    parts = list(
+        filter(lambda i: i, map(lambda i: i.strip(), author.split(' '))))
+    a = {'last_name': parts[-1]}
+    if len(parts) > 1:
+        a['first_name'] = ' '.join(parts[:-1])
+    return a

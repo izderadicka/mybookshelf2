@@ -246,7 +246,7 @@ def check_upload():
     file_info = request.json
     logger.debug('File info %s' % file_info)
     err = schema.FileInfoSchema().validate(file_info)
-    print(err, file_info)
+    #print(err, file_info)
     if err:
         logger.warn('Invalid file info: %s', err)
         return jsonify(error='Invalid schema')

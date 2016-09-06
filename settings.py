@@ -2,6 +2,7 @@ import os.path
 
 _base_dir = os.path.dirname(__file__)
 
+DEBUG = True
 
 DB_NAME = 'ebooks'
 DB_HOST = 'localhost'

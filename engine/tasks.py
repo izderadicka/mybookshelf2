@@ -4,7 +4,7 @@ import asyncio
 from asexor.task import BaseTask, TaskError
 from settings import UPLOAD_DIR, IMAGE_MAGIC, THUMBNAIL_SIZE, OOFFICE, CONVERSION_FORMATS, CONVERTABLE_TYPES,\
     BOOKS_CONVERTED_DIR, BOOKS_BASE_DIR
-from app.utils import file_hash
+from app.utils import file_hash, parse_author
 import logging
 import engine.dal as dal
 from .utils import AsyncProxy
@@ -36,6 +36,7 @@ class MetadataTask(BaseTask):
 
     async def validate_args(self, *args, **kwargs):
         f = args[0]
+        self.proposed_meta = args[1] if len(args)>1 else {}
         fname = os.path.join(UPLOAD_DIR, f)
         ext = os.path.splitext(fname)[1].lower()
         self.file_ext = ext
@@ -65,53 +66,58 @@ class MetadataTask(BaseTask):
         title = self.TITLE_RE.search(data)
         if title:
             meta['title'] = title.group(1).strip()
+            
         authors = self.AUTHORS_RE.search(data)
         if authors:
-            def parse_author(author):
-                parts = author.split(',')
-                if len(parts) > 1:
-                    return {'last_name': parts[0], 'first_name': ' '.join(parts[1:])}
-                parts = list(
-                    filter(lambda i: i, map(lambda i: i.strip(), author.split(' '))))
-                a = {'last_name': parts[-1]}
-                if len(parts) > 1:
-                    a['first_name'] = ' '.join(parts[:-1])
-                return a
-
             authors = re.sub(r'\[[^\]]+\]', '', authors.group(1))
             authors = map(parse_author, strip(authors.split('&')))
-            final_authors = []
-            for a in authors:
-                na = await dal.find_author(a)
-                final_authors.append(na or a)
-            meta['authors'] = final_authors
+            meta['authors'] = authors
+            
 
         tags = self.TAGS_RE.search(data)
         if tags:
             genres = strip(tags.group(1).split(','))
-            final_genres = []
-            for g in map(lambda x: {'name': x}, genres):
-                ng = await dal.find_genre(g)
-                final_genres.append(ng or g)
-
-            meta['genres'] = final_genres
+            meta['genres'] = list(map(lambda x: {'name': x}, genres))
+            
 
         languages = self.LANGUAGES_RE.search(data)
         if languages:
-            l = {'code': languages.group(1).split(',')[0].strip()}
-            nl = await dal.find_language(l)
-            meta['language'] = nl or l
+            meta['language'] = {'code': languages.group(1).split(',')[0].strip()}
 
         series = self.SERIES_RE.search(data)
         if series:
             series_re = re.match(r'(.*) #(\d+)', series.group(1))
             if series_re:
-                series = {'title': series_re.group(1)}
-                ns = await dal.find_series(series)
-                meta['series'] = ns or series
+                meta['series'] = {'title': series_re.group(1)}
                 meta['series_index'] = int(series_re.group(2))
-
+                
+        #Check against DB
+        meta.update(self.proposed_meta)
+        
+        if 'authors' in meta:
+            final_authors = []
+            for a in meta['authors']:
+                na = await dal.find_author(a)
+                final_authors.append(na or a)
+            meta['authors'] = final_authors
+            
+        if 'genres' in meta:
+            final_genres = []
+            for g in meta['genres']:
+                ng = await dal.find_genre(g)
+                final_genres.append(ng or g)
+            meta['genres'] = final_genres
+            
+        if 'language' in meta:
+            nl = await dal.find_language(meta['language'])
+            if nl: meta['language'] = nl
+            
+        if 'series' in meta:
+            ns = await dal.find_series(meta['series'])
+            if ns: meta['series'] = ns 
+            
         return meta
+        
 
     async def parse_result(self, data):
 
@@ -122,8 +128,7 @@ class MetadataTask(BaseTask):
             
         
         #meta for doc files are not reliable - replace them with extracted from file name
-        
-        if self.file_ext == '.doc':
+        if self.file_ext == '.doc' and not self.proposed_meta:
             meta ={'title' : os.path.splitext(os.path.basename(self.fname))[0]}
         
         

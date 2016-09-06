@@ -22,7 +22,7 @@ engine = None
 def init():
     global engine
     loop = asyncio.get_event_loop()
-    engine = loop.run_until_complete(create_engine(DSN))
+    engine = loop.run_until_complete(create_engine(DSN, echo=settings.DEBUG))
 
 
 def close(wait=False):
@@ -106,7 +106,7 @@ async def find_author(ain):
 async def find_series(ser):
     async with engine.acquire() as conn:
         series = model.Series.__table__
-        res = await conn.execute(select([series.c.id, series.c.title]).where(series.c.title == ser['title']))
+        res = await conn.execute(select([series.c.id, series.c.title]).where(func.lower(series.c.title) == ser['title'].lower()))
         s = await res.fetchone()
         if s:
             return {'id': s[0], 'title': s[1]}

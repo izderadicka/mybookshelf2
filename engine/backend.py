@@ -2,6 +2,7 @@ import os.path
 import sys
 import asyncio
 import logging
+import asexor
 from asexor.runner import ApplicationRunnerRawSocket
 from asexor.executor import Executor
 from asexor.config import Config
@@ -36,10 +37,14 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '-d', '--debug', action='store_true', help='enable debug')
+    parser.add_argument('--test-tasks', action='store_true', help='Add two test tasks date and sleep')
     opts = parser.parse_args()
     level = 'info'
     if opts.debug:
         level = 'debug'
+        
+    if opts.test_tasks:
+        load_tasks_from('simple_tasks', os.path.join(os.path.dirname(asexor.__file__), '../test/tasks'))
 
     Config.AUTHENTICATION_PROCEDUTE = authenticate
     Config.AUTHENTICATION_PROCEDURE_NAME = "eu.zderadicka.mybookshelf.authenticate"
