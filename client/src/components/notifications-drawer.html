@@ -1,9 +1,10 @@
 <template>
-  <require from="components/notification-metadata"></require>
+
     <div id="drawer-notifications" class="drawer drawer-right dw-xs-10 dw-sm-6 dw-md-4 fold" aria-labelledby="drawer-notifications">
         <div class="drawer-controls notifications-btn">
             <a href="#drawer-notifications" data-toggle="drawer" aria-foldedopen="false"
-            aria-controls="drawer-notifications"><i class="fa fa-comment" aria-hidden="true"></i></a>
+            aria-controls="drawer-notifications" click.delegate="drawerMove()">
+            <i id="drawer-icon" class="fa fa-comment ${attention?'attention':''}" aria-hidden="true"></i></a>
         </div>
         <div class="drawer-contents">
             <div class="drawer-heading">
@@ -14,7 +15,7 @@
                 <li repeat.for="n of notif.items & throttle" role="presentation">
                 <!--<a data-toggle="drawer" data-target="#drawer-notifications" href="#">${n.text}</a> -->
                 <compose model.bind="n" view-model="components/notification-${n.task}"></compose>
-                
+
               </li>
 
             </ul>

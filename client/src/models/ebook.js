@@ -71,7 +71,7 @@ export class Ebook {
   }
 
   dispose() {
-    this._disposers.forEach(d => d());
+    this._disposers.forEach(d => d.dispose());
   }
 
   validate(addError) {

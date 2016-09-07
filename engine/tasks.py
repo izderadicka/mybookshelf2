@@ -237,10 +237,7 @@ class ConvertTask(BaseTask):
         meta = await dal.get_meta(source_id)
         if meta:
             for key in meta:
-                params.extend(['--'+key, meta[key]])
-
-        
-        
+                params.extend(['--'+key, str(meta[key]) ])    
     
     async def parse_result(self, data): 
         if not (await aos.path.exists(self.out_file_full)):

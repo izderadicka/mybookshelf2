@@ -121,11 +121,9 @@ class Ebook(Resource):
         # check access - superuser or owner
         b = model.Ebook.query.get_or_404(id)
         can_change_object(b)
-        r = db.session.delete(b)  # @UndefinedVariable
-        # delete also series with no ebooks?
-        db.session.commit()
+        logic.delete_ebook(b)
         #TODO: delete sources files!
-        return jsonify(id=id)
+        return jsonify(id=id, success=True)
 
     def patch(self, id):
         if not request.json:
@@ -213,7 +211,8 @@ class Source(Resource):
     def delete(self,id):
         source= model.Source.query.get_or_404(id)
         can_change_object(source)
-        return logic.delete_source(source)
+        logic.delete_source(source)
+        return jsonify(id=id, success=True)
         
         
 

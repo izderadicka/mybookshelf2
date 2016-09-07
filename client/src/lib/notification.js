@@ -7,12 +7,13 @@ const MAX_SIZE=20;
 
 @inject(Configure, EventAggregator)
 export class Notification {
-  _dirty = false;
-  _ns=[];
-  _details=new Map()
 
   constructor(config, event) {
     this.event = event;
+    this._observers = new Set();
+    this._ns=[];
+    this._details=new Map()
+
     if (config.get('debug')) {
       this._ns=['aaaaa'];
       this._details.set('aaaaa',{text:'Converted ebook TEST ',
@@ -22,6 +23,16 @@ export class Notification {
             'result': 3});
     }
   }
+
+  addObserver(o) {
+    this._observers.add(o)
+    return () => this._observers.delete(0);
+    }
+
+  updateObservers(action, status) {
+    this._observers.forEach(o => o(action, status));
+  }
+
   start(taskId, taskInfo) {
 
     this._ns.unshift(taskId);
@@ -31,14 +42,14 @@ export class Notification {
       let k = this._ns.pop();
       this._details.delete(k);
     }
-    this._dirty=true;
+    this.updateObservers('start');
   }
 
   update(taskId, obj) {
     if (this._details.has(taskId)) {
       let data = this._details.get(taskId);
       Object.assign(data, obj);
-      this._dirty = true;
+      this.updateObservers('update', obj.status);
       logger.debug(`Task updated ${taskId}`);
       let task = data.task;
       if (task) {
@@ -66,15 +77,5 @@ export class Notification {
     }
     return a;
   }
-
-  get dirty() {
-    return this._dirty;
-  }
-
-  resetDirty() {
-    this._dirty=false;
-  }
-
-
 
 }

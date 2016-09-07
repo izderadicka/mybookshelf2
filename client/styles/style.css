@@ -269,3 +269,16 @@ background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAACMCAMAAAC9K
 .converted-sources-item {
   font-weight: bold;
 }
+
+@keyframes blink {
+  0% {opacity: 1}
+  50% {opacity: 0.5}
+  100% {opacity: 1}
+}
+
+.attention {
+  animation-name: blink;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+
+}

@@ -2,6 +2,11 @@ from cli.action import Action, ActionError
 from app.utils import file_hash, parse_author
 from mimetypes import guess_type
 import os
+from urllib.parse import urlencode, quote, quote_plus
+
+import logging
+
+log = logging.getLogger('mbs2.upload')
 
 
 class Upload(Action):
@@ -31,9 +36,6 @@ class Upload(Action):
         if self.opts.genre:
             meta['genres'] = list(map(lambda i : {'name': i.strip()}, self.opts.genre))
         
-        if self.opts.quality:
-            meta['quality'] = self.opts.quality
-            
         return meta
         
     def do(self):
@@ -55,10 +57,8 @@ class Upload(Action):
         
         res = self.http.post('/api/upload', files={'file':(os.path.basename(fname), open(fname, 'rb'), file_info['mime_type'])})
         res = check_response(res)
-            
-        
-        
         uploaded_file = res['file']
+        log.debug('File uploaded as %s', uploaded_file)
         proposed_meta = self._get_meta()
         res = self.client.call('metadata', uploaded_file, proposed_meta)
         upload_meta_id = res['result']
@@ -66,9 +66,35 @@ class Upload(Action):
         res = self.http.get('/api/uploads-meta/%d'%upload_meta_id)
         res = check_response(res)
         meta = res['meta']
+        log.debug('Metadata #%d for ebook - %s', upload_meta_id, meta)
+        if not ('title' in meta and meta['title'] and 'language' in meta and meta['language'].get('id')):
+            raise ActionError('We need at least title and language')
+        search = []
+        if meta['authors']:
+            search.extend(map(lambda x: x['first_name']+ ' ' + x['last_name'] if 'last_name' in x else x['last_name'], meta['authors']))
+        search.append(meta['title'])   
+        if 'series' in meta:
+            search = ' '.join(search)
+            
+        res = self.http.get('/api/search/'+quote_plus(search), params={'page':1, 'page_size':5})
+        res = check_response(res)
         
         
-        print(meta)
+        #TODO: quick sanity check of search?
+        if 'items' in  res and res['items']:
+            existing = res['items'][0]
+            res = self.http.get('/api/ebooks/%d/add-upload/%d'%(existing['id'],upload_meta_id))
+            res = check_response(res)
+            log.info('Added file to existing ebook #%d', existing['id'])  
+        else:
+            res = self.http.post('/api/ebooks', json = meta)
+            res = check_response(res)
+            new_book_id = res['id']
+            res = self.http.get('/api/ebooks/%d/add-upload/%d'%(new_book_id,upload_meta_id))
+            res = check_response(res)
+            log.info('Added file to new ebook #%d', new_book_id)  
+            
+        
         
         
         

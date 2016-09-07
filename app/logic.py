@@ -332,12 +332,8 @@ def check_ebook_entity(ebook, current_user=None):
 
 
 def delete_source(source):
-    source_id = source.id
     db.session.delete(source)
-    try:
-        db.session.commit()
-    except Exception as e:
-        return jsonify(error='DB error', error_details=str(e))
+    db.session.commit()
     full_path = os.path.join(
         current_app.config['BOOKS_BASE_DIR'], source.location)
     try:
@@ -346,7 +342,23 @@ def delete_source(source):
         pass
     # do not delete empty directory because of concurrency - other thread, process may use it
     # purging of empty dirs must be done when system is offline
-    return jsonify(id=source_id)
+    
+
+def delete_ebook(ebook):
+    files_to_delete=[os.path.join(current_app.config['BOOKS_BASE_DIR'], source.location)
+                     for source in ebook.sources]
+    r = db.session.delete(ebook)  # @UndefinedVariable
+    if ebook.cover:
+        files_to_delete.append(os.path.join(current_app.config['BOOKS_BASE_DIR'], ebook.cover))
+    files_to_delete.append(os.path.join(
+            current_app.config['THUMBS_DIR'], '%d.jpg'%ebook.id))
+    db.session.commit()
+    
+    for fname in files_to_delete:
+        try:
+            os.remove(fname)
+        except IOError as e:
+            logger.warn('Cannot delete file %s',fname)
 
 
 def delete_upload(upload):

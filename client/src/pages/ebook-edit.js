@@ -84,6 +84,10 @@ export class EditEbook {
       if (this.meta) this.prefill()});
   }
 
+  deactivate() {
+    if (this.ebook) this.ebook.dispose();
+  }
+
   prefill() {
     if (this.meta.title) this.ebook.title = this.meta.title;
     if (this.meta.authors && this.meta.authors.length) {
@@ -131,7 +135,7 @@ export class EditEbook {
         if (res.error) {
           this.error={error:res.error, errorDetail:res.error_details}
         } else if (res.id) {
-          let action = this.uploadId ? this.client.addUploadToEbook(res.id, this.uploadId) : Promise.resole({})
+          let action = this.uploadId ? this.client.addUploadToEbook(res.id, this.uploadId) : Promise.resolve({})
            action.then(res2 => {
               if (res2.error) this.error = {
                 error: res2.error,

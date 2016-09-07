@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 import argparse
 import requests
-from autobahn.asyncio.wamp import ApplicationSession
+from requests.packages.urllib3.util import Retry
 import logging
 import sys
 import os
@@ -61,6 +61,7 @@ def main():
     token = resp.json().get('access_token')
     if token:
         http = MySession(prefix_url=opts.api_url)
+        http.mount('http', requests.adapters.HTTPAdapter(max_retries=Retry(total=5, status_forcelist=[500])))
         http.headers['Authorization'] = 'bearer '+token
         client = WAMPClient(token, opts)
         try:
