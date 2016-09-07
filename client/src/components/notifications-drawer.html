@@ -1,7 +1,7 @@
 <template>
 
     <div id="drawer-notifications" class="drawer drawer-right dw-xs-10 dw-sm-6 dw-md-4 fold" aria-labelledby="drawer-notifications">
-        <div class="drawer-controls notifications-btn">
+        <div class="drawer-controls notifications-btn" css="display:${notif.empty?'none':'block'}">
             <a href="#drawer-notifications" data-toggle="drawer" aria-foldedopen="false"
             aria-controls="drawer-notifications" click.delegate="drawerMove()">
             <i id="drawer-icon" class="fa fa-comment ${attention?'attention':''}" aria-hidden="true"></i></a>

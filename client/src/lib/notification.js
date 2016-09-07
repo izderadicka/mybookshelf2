@@ -13,7 +13,7 @@ export class Notification {
     this._observers = new Set();
     this._ns=[];
     this._details=new Map()
-
+    /*
     if (config.get('debug')) {
       this._ns=['aaaaa'];
       this._details.set('aaaaa',{text:'Converted ebook TEST ',
@@ -22,6 +22,7 @@ export class Notification {
             'status':'success',
             'result': 3});
     }
+    */
   }
 
   addObserver(o) {
@@ -76,6 +77,10 @@ export class Notification {
       a.push(notif);
     }
     return a;
+  }
+
+  get empty() {
+    return ! this._ns || this._ns.length === 0
   }
 
 }
