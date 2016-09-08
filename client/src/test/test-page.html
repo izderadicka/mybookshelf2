@@ -1,9 +1,11 @@
 <template>
   <require from="components/autocomplete/autocomplete"></require>
   <require from="components/context-menu/context-menu"></require>
+  <require from="components/rating/rating"></require>
   <p click.delegate="menu1.show($event)"> Context menu Show</p>
   <context-menu  view-model.ref='menu1' items.bind="[{text:'Item 1', value:1}, {text:'Item 2', value:2}, {text:'Item 3', value:3}]"></context-menu>
-
+  <rating size="2" rating.bind="40"></rating>
+  <rating size="2" rating.bind="70" read-only="1"></rating>
   <h3> Countries (loader is an array)</h3>
   <autocomplete loader.bind="['Afghanistan','Albania','Algeria','Andorra','Angola','Anguilla','Antigua &amp; Barbuda','Argentina','Armenia','Aruba','Australia','Austria','Azerbaijan','Bahamas'
   		,'Bahrain','Bangladesh','Barbados','Belarus','Belgium','Belize','Benin','Bermuda','Bhutan','Bolivia','Bosnia &amp; Herzegovina','Botswana','Brazil','British Virgin Islands'

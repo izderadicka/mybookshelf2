@@ -12,6 +12,6 @@
     "path": "/ws",
     "realm": "realm1"
   },
-  "maxUploadSize": 104857600
+  "maxUploadSize": 104857600,
   "notificationAttentionTimeout": 20
 }

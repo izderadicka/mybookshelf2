@@ -1,0 +1,15 @@
+.rating-proposed {
+  color: #3c763d  !important;
+}
+
+.rating-rated {
+  color: #8a6d3b;
+}
+
+.rating-clear {
+ color: #a94442;
+}
+
+.rating {
+  display: inline;
+}
