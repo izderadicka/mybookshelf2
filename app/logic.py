@@ -7,7 +7,7 @@ import app.schema as schema
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm import aliased
 from sqlalchemy import inspect
-from app.utils import remove_diacritics, file_hash
+from common.utils import remove_diacritics, file_hash
 import os.path
 import filelock
 import shutil

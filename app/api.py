@@ -4,7 +4,7 @@ from flask_login import current_user
 import app.model as model
 import app.schema as schema
 import app.logic as logic
-from app.utils import success_error, mimetype_from_file_name
+from common.utils import success_error, mimetype_from_file_name
 from app import db
 from app.cors import add_cors_headers
 from app.access import role_required, can_change_object

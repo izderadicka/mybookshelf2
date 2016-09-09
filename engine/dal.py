@@ -5,9 +5,7 @@ import asyncio
 import os
 import sys
 import app.model as model
-from psycopg2.extras import Json
 from sqlalchemy.sql import select, or_, and_, func
-from app.api import Genres
 
 DSN = 'dbname={db} user={user} password={password} host={host}'.format(db=settings.DB_NAME,
                                                                        host=settings.DB_HOST,

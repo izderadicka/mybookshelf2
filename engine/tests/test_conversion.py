@@ -25,8 +25,7 @@ class TestMeta(TestCase):
     def tearDown(self):
         TestCase.tearDown(self)
         dal.close()
-        
-        #shutil.rmtree(os.path.join(BOOKS_CONVERTED_DIR, 'Kissinger, Henry'), ignore_errors=True)
+        shutil.rmtree(os.path.join(BOOKS_CONVERTED_DIR, '1/Kissinger, Henry'), ignore_errors=True)
         
     
     def test_convert(self):
@@ -35,7 +34,7 @@ class TestMeta(TestCase):
         t = ConvertTask(user='admin@example.com')
         loop = asyncio.get_event_loop()
         
-        book = 'Kissinger, Henry/Roky v Bilem dome/Kissinger, Henry - Roky v Bilem dome (1).epub'
+        book = '1/Kissinger, Henry/Roky v Bilem dome/Kissinger, Henry - Roky v Bilem dome (1).epub'
         conv_id = loop.run_until_complete(t.run(86063, 'epub'))
         self.assertTrue(os.path.exists(os.path.join(BOOKS_CONVERTED_DIR, book)))
         

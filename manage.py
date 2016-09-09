@@ -5,7 +5,7 @@ from flask_script.commands import InvalidCommand
 from app import app,db
 import app.model as model
 import app.logic as logic
-from app.utils import hash_pwd, purge_empty_dirs
+from common.utils import hash_pwd, purge_empty_dirs
 import app.schema as schema
 import sys
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound

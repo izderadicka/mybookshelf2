@@ -17,3 +17,8 @@ class Test(Action):
         now=time()
         res=self.client.call('date', '%d-%m-%Y %H:%M %Z')
         print("Done result is %s took %f"%(res['result'], time()-now))
+        
+        print("Calling remote method sleep 1 with no_wait")
+        now =time()
+        res=self.client.call_no_wait('sleep',1)
+        print("Done task id is is %s took %f"%(res, time()-now))

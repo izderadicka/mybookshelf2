@@ -13,8 +13,13 @@ SQLALCHEMY_DATABASE_URI = 'postgresql://{user}:{password}@{host}/{db}'.format(db
                                                                               host=DB_HOST,
                                                                               user=DB_USER,
                                                                               password=DB_PASSWORD)
+WAMP_HOST = 'localhost'
+WAMP_PORT = 8080
+WAMP_URI ='ws://{host}:{port}/ws'.format(host=WAMP_HOST, port=WAMP_PORT)
+
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 SECRET_KEY = 'Pjk5EzGOcCOG5Rf1deqpZAvz17uUdZmWxJa3X/izSns'
+TOKEN_VALIDITY_HOURS = 4
 MAX_CONTENT_LENGTH = 100 * 1024 * 1024
 
 CACHE_CONTROL = 'max-age=20'

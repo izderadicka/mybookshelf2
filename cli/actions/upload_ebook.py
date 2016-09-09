@@ -1,5 +1,5 @@
 from cli.action import Action, ActionError
-from app.utils import file_hash, parse_author
+from common.utils import file_hash, parse_author
 from mimetypes import guess_type
 import os
 from urllib.parse import urlencode, quote, quote_plus

@@ -4,7 +4,7 @@ Created on Apr 18, 2016
 @author: ivan
 '''
 import unittest
-from app.utils import create_token, verify_token
+from common.utils import create_token, verify_token
 from app.model import User
 from .basecase import TestCase
 

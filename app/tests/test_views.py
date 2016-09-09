@@ -2,7 +2,7 @@ from .basecase import TestCase
 from flask import current_app
 import app
 import app.model as model
-from app.utils import hash_pwd
+from common.utils import hash_pwd
 
 
 class TestViews(TestCase):

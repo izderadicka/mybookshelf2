@@ -1,7 +1,7 @@
 from app import db, app
 import app.model as model
 import app.logic as logic
-import app.utils as utils
+import common.utils as utils
 from .basecase import TestCase
 import os.path
 import shutil

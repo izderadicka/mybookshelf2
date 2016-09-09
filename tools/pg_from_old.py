@@ -8,7 +8,7 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 import app.model as model
-from app.utils import hash_pwd
+from common.utils import hash_pwd
 
 
 lmap = lambda func, *iterable: list(map(func, *iterable))

@@ -4,7 +4,7 @@ import asyncio
 from asexor.task import BaseTask, TaskError
 from settings import UPLOAD_DIR, IMAGE_MAGIC, THUMBNAIL_SIZE, OOFFICE, CONVERSION_FORMATS, CONVERTABLE_TYPES,\
     BOOKS_CONVERTED_DIR, BOOKS_BASE_DIR
-from app.utils import file_hash, parse_author
+from common.utils import file_hash, parse_author
 import logging
 import engine.dal as dal
 from .utils import AsyncProxy

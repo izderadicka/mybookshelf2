@@ -5,11 +5,11 @@ from requests.packages.urllib3.util import Retry
 import logging
 import sys
 import os
+import asyncio
 from urllib.parse import urljoin
 from cli.action import load_actions
-from engine.client import WAMPClient
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-
+from engine.client import WAMPClient, run_loop_in_thread, stop_loop, join_loop
 log = logging.getLogger('mbs2')
 
 
@@ -63,15 +63,17 @@ def main():
         http = MySession(prefix_url=opts.api_url)
         http.mount('http', requests.adapters.HTTPAdapter(max_retries=Retry(total=5, status_forcelist=[500])))
         http.headers['Authorization'] = 'bearer '+token
-        client = WAMPClient(token, opts)
+        loop = asyncio.get_event_loop()
+        run_loop_in_thread(loop)
+        client = WAMPClient(token, opts.wamp_url, loop=loop)
         try:
-            client.wait_ready()
             action = action_class(http, client, opts)
             action.do()
         finally:
-            client.stop()
+            client.close()
+            stop_loop(loop)
         try:
-            client.join()
+            join_loop()
         except KeyboardInterrupt:
             log.debug('Interrupted')
             client.stop()

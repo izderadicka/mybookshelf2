@@ -7,11 +7,33 @@
 {% if ebook.series %}
 <div class="series">{{ebook.series.title}} #{{ebook.series_index}}</div>
 {%endif %}
+<div>
+{% for message in get_flashed_messages() %}
+    <div class="msg">{{ message }}</div>
+{% endfor %}
+</div>
+<div class="converted-ebooks">
+<label>Recently Converted Files:</label>
+{% for conv in converted %}
+<a href="{{url_for('api.download_converted', id=conv.id)}}" class="format-link">{{conv.format.extension}}</a>
+{%endfor%}
+</div>
 <table class="table sources">
-<thead><tr><th>Format</th><th>Quality</th><th>Size</th><th>&nbsp;</th></tr></thead>
+<thead><tr><th>Format</th><th>Quality</th><th>Size</th><th>Convert</th></tr></thead>
 {% for source in ebook.sources %}
-<tr><td><a href="{{url_for('api.download', id=source.id)}}">{{source.format.extension}}</a></td><td>{{source.quality}}</td><td>{{source.size}}</td>
-<td><span class="convert">Convert</span></td></tr>
+<tr><td><a class="format-link" href="{{url_for('api.download', id=source.id)}}">{{source.format.extension}}</a></td>
+<td>{{'%0.2f'|format(source.quality)}}%</td><td>{{source.size}}</td>
+<td><span class="convert">
+
+{%for format in formats%}
+<form class="convert-form" action="{{url_for('minimal.convert_source', id=ebook.id)}}" method="POST">
+<input type="hidden" name="source_id" value="{{source.id}}">
+<input type="hidden" name="format" value="{{format}}">
+<input type="submit" class="btn btn-black btn-sm smooth" value="{{format}}">
+</form>
+{%endfor%}
+
+</span></td></tr>
 {% endfor %}
 </table>
 {% endblock %}

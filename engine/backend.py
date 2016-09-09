@@ -12,7 +12,7 @@ import time
 import engine.dal as dal
 
 # sys.path.append(os.path.join(os.path.dirname(__file__),'..'))
-from app.utils import verify_token
+from common.utils import verify_token
 import settings
 
 log = logging.getLogger('engine')

@@ -66,3 +66,21 @@ table.sources {
 .nav a:hover {
     text-decoration: underline;
 }
+
+.format-link {
+    font-weight: bold;
+    font-size: 125%;
+}
+
+.convert-form {
+    display: inline;
+}
+
+.btn-black {
+    background-color: black;
+    font-weight: bold;
+}
+
+.converted-ebooks {
+    margin: 1em 0;
+}

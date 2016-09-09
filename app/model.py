@@ -9,10 +9,11 @@ from flask_login import UserMixin
 from sqlalchemy_utils import TSVectorType, JSONType
 # TODO - check if can use thse types instead
 from sqlalchemy.dialects.postgresql import JSON, TSVECTOR
-from app.utils import initials
+from common.utils import initials
 
+model_base = app.db.Model or declarative_base()
 
-class Base(app.db.Model):
+class Base(model_base):
     __abstract__ = True
 
     id = Column(BigInteger, primary_key=True)
