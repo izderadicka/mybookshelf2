@@ -104,10 +104,8 @@ export class ApiClient {
       .then( resp => resp.json())
   }
 
-  addUploadToEbook(ebookId, uploadId) {
-    let url=this.getUrl(`ebooks/${ebookId}/add-upload/${uploadId}`)
-    return this.http.fetch(url)
-      .then(response => response.json());
+  addUploadToEbook(ebookId, uploadId, quality) {
+    return this.post(`ebooks/${ebookId}/add-upload`, {upload_id:uploadId, quality});
   }
 
   getCover(resource, id) {

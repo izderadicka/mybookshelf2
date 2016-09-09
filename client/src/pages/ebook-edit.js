@@ -135,7 +135,7 @@ export class EditEbook {
         if (res.error) {
           this.error={error:res.error, errorDetail:res.error_details}
         } else if (res.id) {
-          let action = this.uploadId ? this.client.addUploadToEbook(res.id, this.uploadId) : Promise.resolve({})
+          let action = this.uploadId ? this.client.addUploadToEbook(res.id, this.uploadId, this.meta.quality || null) : Promise.resolve({})
            action.then(res2 => {
               if (res2.error) this.error = {
                 error: res2.error,

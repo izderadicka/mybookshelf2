@@ -73,7 +73,7 @@ export class UploadResult {
 
 get addToEbook() {
   return ebookId => {
-    this.client.addUploadToEbook(ebookId, this.id)
+    this.client.addUploadToEbook(ebookId, this.id, this.meta.quality || null)
       .then(res => {
         if (res.error) this.error = {
           error: res.error,

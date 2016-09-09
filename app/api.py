@@ -324,12 +324,17 @@ def ebooks_index(start):
                    items=serializer.dump(items).data)
 
 
-@bp.route('/ebooks/<int:id>/add-upload/<int:upload_id>')
+@bp.route('/ebooks/<int:id>/add-upload', methods=['POST'])
 @role_required('user')
-def add_upload_to_ebook(id, upload_id):
+def add_upload_to_ebook(id):
+    data = request.json
+    if not data.get('upload_id'):
+        abort(400, 'Invalid request')
+    upload_id = int(data['upload_id'])
     ebook = model.Ebook.query.get_or_404(id)
     upload = model.Upload.query.get_or_404(upload_id)
-
+    quality = data.get('quality')
+    quality = float(quality) if quality is not None else None
     existing = model.Source.query.filter_by(
         hash=upload.hash, size=upload.size).first()
     if existing:
@@ -340,6 +345,7 @@ def add_upload_to_ebook(id, upload_id):
                           format=upload.format,
                           size=upload.size,
                           hash=upload.hash,
+                          quality=quality,
                           load_source=upload.load_source
                           )
     source.location = logic.create_new_location(source, upload)

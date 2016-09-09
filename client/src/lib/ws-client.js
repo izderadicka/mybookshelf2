@@ -86,12 +86,12 @@ export class WSClient {
     this.session=null;
   }
 
-  extractMeta(fileName, originalFileName=null) {
+  extractMeta(fileName, originalFileName=null, proposedMeta={}) {
     if (! this.isConnected) {
       alert('WebSocket is not connected, reload application!');
       return;
     }
-    return this.session.call('eu.zderadicka.asexor.run_task', ['metadata',fileName])
+    return this.session.call('eu.zderadicka.asexor.run_task', ['metadata',fileName, proposedMeta])
     .then(taskId => {
       this.notif.start(taskId,
         {

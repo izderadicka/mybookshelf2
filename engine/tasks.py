@@ -128,8 +128,10 @@ class MetadataTask(BaseTask):
             
         
         #meta for doc files are not reliable - replace them with extracted from file name
-        if self.file_ext == '.doc' and not self.proposed_meta:
+        if self.file_ext == '.doc' and not 'title' in (self.proposed_meta or {}):
             meta ={'title' : os.path.splitext(os.path.basename(self.fname))[0]}
+            if self.proposed_meta and 'quality' in self.proposed_meta:
+                meta['quality'] = self.proposed_meta['quality']
         
         
         loop = asyncio.get_event_loop()

@@ -1,10 +1,10 @@
-import {bindable, LogManager} from 'aurelia-framework';
+import {bindable, bindingMode, LogManager} from 'aurelia-framework';
 
 let logger = LogManager.getLogger('rating')
 
 export class Rating {
   @bindable numStars=5;
-  @bindable rating;
+  @bindable({defaultBindingMode: bindingMode.twoWay}) rating;
   @bindable size = 1.0;
   @bindable max = 100;
   @bindable onRatingChange;

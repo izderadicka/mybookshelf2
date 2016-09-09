@@ -1,4 +1,4 @@
-import {LogManager, inject} from 'aurelia-framework';
+import {LogManager, inject, bindable} from 'aurelia-framework';
 import {ApiClient} from 'lib/api-client';
 import {Configure} from 'lib/config/index';
 import {WSClient} from 'lib/ws-client';
@@ -33,6 +33,7 @@ export class Upload {
   checking=false;
   uploadError=null;
   uploadId=null;
+  @bindable rating = null;
 
   constructor(client, wsClient, config, event, notif, router) {
     this.client=client;
@@ -57,7 +58,7 @@ export class Upload {
         } else {
           logger.debug(`File uploaded ${JSON.stringify(data)}`);
           let origName =  document.getElementById('file-input').value;
-          this.wsClient.extractMeta(data.file, origName)
+          this.wsClient.extractMeta(data.file, origName, {quality:this.rating})
             .then(taskId => {
               logger.debug(`Task ID ${taskId} for file ${data.file}`);
               this.event.subscribe('metadata-ready', result => {

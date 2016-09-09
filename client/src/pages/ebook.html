@@ -2,6 +2,7 @@
   <require from="components/authors"></require>
    <require from="components/genres-converter"></require>
    <require from="components/context-menu/context-menu"></require>
+   <require from="components/rating/rating"></require>
   <section>
     <h2 class="page-title">
       <span class="title">${ebook.title}</span>
@@ -29,7 +30,7 @@
       </li>
       <li class="list-group-item">
         <label class="ebook-detail-label">Rating:</label>
-        <span class="ebook-rating">${ebook.rating}</span>
+        <span class="ebook-rating"><rating size=2 rating.bind="ebook.rating"></rating></span>
       </li>
       <li class="list-group-item">
         <label class="ebook-detail-label">Created:</label>
@@ -54,7 +55,7 @@
       <tr repeat.for="source of ebook.sources">
         <td>${source.format}</td>
         <td>${source.size}</td>
-        <td>${source.quality}</td>
+        <td><rating rating.bind="source.quality" read-only="1"></rating></td>
         <td><a if.bind="canDownload" href="${client.baseUrl}/api/download/${source.id}?bearer_token=${token}" title="Download File">
             <i class="fa fa-download source-action"></i></a>
           <a if.bind="canConvert" href="#" click.delegate="menuConvert.show($event, source)"

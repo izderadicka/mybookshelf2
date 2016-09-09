@@ -83,14 +83,14 @@ class Upload(Action):
         #TODO: quick sanity check of search?
         if 'items' in  res and res['items']:
             existing = res['items'][0]
-            res = self.http.get('/api/ebooks/%d/add-upload/%d'%(existing['id'],upload_meta_id))
+            res = self.http.post('/api/ebooks/%d/add-upload'%(existing['id'],), json={'upload_id':upload_meta_id, 'quality':self.opts.quality})
             res = check_response(res)
             log.info('Added file to existing ebook #%d', existing['id'])  
         else:
             res = self.http.post('/api/ebooks', json = meta)
             res = check_response(res)
             new_book_id = res['id']
-            res = self.http.get('/api/ebooks/%d/add-upload/%d'%(new_book_id,upload_meta_id))
+            res = self.http.post('/api/ebooks/%d/add-upload'%(new_book_id,), json={'upload_id':upload_meta_id, 'quality':self.opts.quality})
             res = check_response(res)
             log.info('Added file to new ebook #%d', new_book_id)  
             

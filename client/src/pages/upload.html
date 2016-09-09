@@ -1,4 +1,5 @@
 <template>
+  <require from="components/rating/rating"></require>
   <div class="container">
   <h2 class="page-title">Upload Ebook</h2>
   <p>Upload ebook file - it'll be analyzed and you'll be notified when it'll be
@@ -7,8 +8,14 @@
   <div class='form-group'>
   <input type="file" name="file" id="file-input" change.trigger="checkFile()">
 </div>
-<div class='form-group' if.bind="fileOK">
+<div if.bind="fileOK">
+  <div class='form-group'>
+    <label>File Quality (spellling, formatting, pictures, etc.)</label>
+    <rating size=2 rating.bind="rating"></rating>
+  </div>
+  <div class='form-group'>
   <button class="btn btn-primary" click.trigger="upload()">Upload</button>
+  </div>
 </div>
 </form>
 <div class='uploading-progress' if.bind="checking">
