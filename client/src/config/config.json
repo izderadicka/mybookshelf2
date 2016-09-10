@@ -2,12 +2,12 @@
   "version":"0.1",
   "debug": true,
   "api": {
-    "host":"localhost",
+    "host":"",
     "port": 6006,
     "path": "/api"
   },
   "wamp": {
-    "host":"localhost",
+    "host":"",
     "port": 8080,
     "path": "/ws",
     "realm": "realm1"

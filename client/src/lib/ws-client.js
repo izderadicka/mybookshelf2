@@ -28,7 +28,7 @@ export class WSClient {
     if (this.conn) {
       logger.warn('Connection already exists');
     }
-    let connUrl = `ws://${this.config.get('wamp.host')}:${this.config.get('wamp.port')}${this.config.get('wamp.path')}`;
+    let connUrl = `ws://${this.config.get('wamp.host', window.location.hostname)}:${this.config.get('wamp.port')}${this.config.get('wamp.path')}`;
     this.conn = new autobahn.Connection({
       url: connUrl,
       realm: this.config.get('wamp.realm'),

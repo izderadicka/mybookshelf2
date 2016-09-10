@@ -26,7 +26,7 @@ export class Configure {
   get(key, defval = undefined) {
     var parent = this._config;
     for (var k of key.split('.')) {
-      if (parent.hasOwnProperty(k)) {
+      if (parent.hasOwnProperty(k) && parent[k]) {
         parent = parent[k];
       } else {
         return defval;

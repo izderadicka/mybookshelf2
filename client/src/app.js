@@ -14,7 +14,7 @@ export class App {
     this.access=access;
     fetchConfig.configure();
     client.configure(conf => conf
-      .withBaseUrl(`http://${this.config.get('api.hostname',window.location.hostname)}:${this.config.get('api.port', 80)}`)
+      .withBaseUrl(`http://${this.config.get('api.host',window.location.hostname)}:${this.config.get('api.port', 80)}`)
 
       .withInterceptor({
         response: response => {

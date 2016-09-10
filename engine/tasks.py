@@ -3,7 +3,7 @@ import re
 import asyncio
 from asexor.task import BaseTask, TaskError
 from settings import UPLOAD_DIR, IMAGE_MAGIC, THUMBNAIL_SIZE, OOFFICE, CONVERSION_FORMATS, CONVERTABLE_TYPES,\
-    BOOKS_CONVERTED_DIR, BOOKS_BASE_DIR
+    BOOKS_CONVERTED_DIR, BOOKS_BASE_DIR, CALIBRE_META_TOOL, CALIBRE_CONVERT_TOOL
 from common.utils import file_hash, parse_author
 import logging
 import engine.dal as dal
@@ -31,7 +31,7 @@ async def convert_file(fname, format, outdir=None):
     
 class MetadataTask(BaseTask):
     NAME = 'metadata'
-    COMMAND = 'ebook-meta'
+    COMMAND = CALIBRE_META_TOOL
     MAX_TIME = 60
 
     async def validate_args(self, *args, **kwargs):
@@ -172,7 +172,7 @@ class MetadataTask(BaseTask):
     
 class ConvertTask(BaseTask):
     NAME = 'convert'
-    COMMAND = 'ebook-convert'
+    COMMAND = CALIBRE_CONVERT_TOOL
     MAX_TIME = 300
     
     NEED_PRECONVERSION =['doc']

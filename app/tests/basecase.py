@@ -13,12 +13,13 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 class TestCase(BaseTestCase):
-
-    INIT_FILES = ['../data/create_ts.sql',  # text search config
+    
+    SQL_DIR = '../../sql'
+    INIT_FILES = ['create_ts.sql',  # text search config
                   # create other sql  procedures
-                  '../data/create_functions.sql',
-                  '../data/dump/basic.sql',  # basic stuff
-                  '../data/dump/test_data.sql'  # test data = random 100 ebooks
+                  'create_functions.sql',
+                  'dump/basic.sql',  # basic stuff
+                  'dump/test_data.sql'  # test data = random 100 ebooks
                   ]
 
     def create_app(self):
@@ -34,7 +35,7 @@ class TestCase(BaseTestCase):
 
             for f in self.INIT_FILES:
                 script = open(
-                    os.path.join(os.path.dirname(__file__), f), 'rt', encoding='utf-8-sig').read()
+                    os.path.join(os.path.dirname(__file__), self.SQL_DIR, f), 'rt', encoding='utf-8-sig').read()
                 # print(script)
                 res = c.execute(script)
                 connection.commit()
