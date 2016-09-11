@@ -1,0 +1,24 @@
+version: '2'
+services:
+  db:
+    build:
+      context: .
+      dockerfile: Dockerfile-db
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile-app
+    image: mbs2-ubuntu
+    command: python3 server.py VISIBLE
+    volumes:
+      - ..:/code
+    ports:
+      - 6006:6006
+    depends_on:
+      - db
+    environment:
+      MBS2_DB_HOST: db
+      MBS2_DB_NAME: postgres

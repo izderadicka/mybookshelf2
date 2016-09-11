@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from flask_script import Manager, prompt_pass, prompt_bool
 from flask_script.commands import InvalidCommand
@@ -79,7 +79,7 @@ def test_database():
         print('database is not properly initialized: %s'%issue)
 
 @manager.command
-def create_tables():
+def create_tables(add_data=False, create_directories=False):
     if database_issue():
         print('Before running this command database must be initialized by superuser with these commands:\n')
         cmds = os.path.join(SQL_DIR, 'init_db.sql')
@@ -94,8 +94,18 @@ def create_tables():
             # print(script)
             res = c.execute(script)
         connection.commit()
+        if add_data:
+            script = open(os.path.join(SQL_DIR, 'dump/basic.sql'), 'rt', encoding='utf-8-sig').read()
+            res = c.execute(script)
+            connection.commit()
+            print('Default admin user with password admin was created - change it manage.py change_password admin')
     finally:
         connection.close()
+        
+    if create_directories:
+        for d in [settings.BOOKS_BASE_DIR, settings.BOOKS_CONVERTED_DIR, settings.UPLOAD_DIR, settings.THUMBS_DIR]:
+            os.makedirs(d, exist_ok=True)
+        print('Created directories')
 
 
 @manager.command

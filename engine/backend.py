@@ -9,9 +9,8 @@ from asexor.config import Config
 from asexor.task import load_tasks_from
 from autobahn.wamp.exception import ApplicationError
 import time
+sys.path.append(os.path.join(os.path.dirname(__file__),'..'))
 import engine.dal as dal
-
-# sys.path.append(os.path.join(os.path.dirname(__file__),'..'))
 from common.utils import verify_token
 import settings
 
