@@ -8,7 +8,8 @@ module.exports = {
         "**/*.html!text",
         "*.json!text",
         "**/*.json!text",
-        "*.css!text"
+        "*.css!text",
+        "**/*.css!text"
       ],
       "options": {
         "inject": true,
@@ -32,6 +33,12 @@ module.exports = {
         "aurelia-history-browser",
         "aurelia-logging-console",
         "aurelia-auth",
+        "aurelia-dialog",
+        "bootstrap-drawer",
+        "bootstrap",
+        "bootstrap/css/bootstrap.css!text",
+        "jquery"
+
       ],
       "options": {
         "inject": true,
@@ -39,7 +46,9 @@ module.exports = {
         "depCache": false,
         "rev": false
       }
-    },
+    }
+/*
+    ,
 
     "dist/bootstrap": {
       "includes": [
@@ -49,11 +58,11 @@ module.exports = {
       ],
       "options": {
         "inject": true,
-        "minify": false,
+        "minify": true,
         "depCache": false,
         "rev": false
       }
     }
-
+*/
   }
 };
