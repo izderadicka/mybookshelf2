@@ -9,7 +9,7 @@ body {
 }
 
 .splash .message {
-  font-size: 72px;
+  font-size: 42px;
   line-height: 72px;
   text-shadow: rgba(0, 0, 0, 0.5) 0 0 15px;
   text-transform: uppercase;
@@ -283,3 +283,6 @@ background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAACMCAMAAAC9K
 
 }
 
+.ebook-actions {
+  font-size: 200%;
+}

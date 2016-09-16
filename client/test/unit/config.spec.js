@@ -8,20 +8,18 @@ let loader = new DefaultLoader();
 var conf = null;
 
 beforeEach(() => {
-  conf = new Configure(loader);
+  conf = new Configure();
 })
 it('it should contain default instance properties', () => {
 expect(conf._config).toBeDefined();
-expect(conf.loader).not.toBeNull();
-expect(conf.loader).not.toBeNull();
 });
 
-it('it should load config with values', (done) =>{
-  conf.loadFile().then(() => {
+it('it should load config with values', () =>{
+
     expect(conf.get('version')).toEqual(jasmine.stringMatching(/^[\d.]+$/));
-    expect(conf.get('api.host')).toBeDefined();
-    expect(typeof(conf.get('api.host'))).toEqual('string');
-    done();
-  });
+    expect(conf.get('api.path')).toBeDefined();
+    expect(typeof(conf.get('api.path'))).toEqual('string');
+    expect(conf.get('api.host')).toBeUndefined();
+
 });
 });

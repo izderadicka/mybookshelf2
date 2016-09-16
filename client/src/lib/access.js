@@ -40,7 +40,7 @@ export class Access {
 
   canEdit(userId) {
     let token = this.auth.getTokenPayload();
-    if (this.checkRoles(['superuser'], token.roles)) return true
+    if (this.checkRoles(['superuser', 'admin'], token.roles)) return true
     else if (this.checkRoles(['user'], token.roles) && userId && userId == token.id ) return true;
     return false;
   }

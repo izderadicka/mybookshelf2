@@ -30,8 +30,14 @@ describe('When using Access class', () => {
      expect(access.currentUser).toEqual('email');
    });
 
+   it('superuser can edit everything', () => {
+     spyOn(auth, 'getTokenPayload').and.returnValue({roles:['user', 'superuser', 'admin'], id:99});
+     expect(access.canEdit(33)).toBeTruthy();
+   });
+
    it('admin can edit everything', () => {
-     spyOn(auth, 'getTokenPayload').and.returnValue({roles:['user', 'admin'], id:99});
+     spyOn(auth, 'getTokenPayload').and.returnValue({roles:['user',  'admin'], id:99});
+     expect(access.checkRoles(['superuser', 'admin'],['user', 'admin'])).toBeTruthy();
      expect(access.canEdit(33)).toBeTruthy();
    });
 

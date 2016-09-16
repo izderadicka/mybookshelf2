@@ -2,13 +2,9 @@ module.exports = {
   "bundles": {
     "dist/app-build": {
       "includes": [
-        "[*.js]",
         "[**/*.js]",
-        "*.html!text",
         "**/*.html!text",
-        "*.json!text",
         "**/*.json!text",
-        "*.css!text",
         "**/*.css!text"
       ],
       "options": {
@@ -37,8 +33,10 @@ module.exports = {
         "bootstrap-drawer",
         "bootstrap",
         "bootstrap/css/bootstrap.css!text",
+        "bootstrap-drawer/dist/css/bootstrap-drawer.css!text",
+        "font-awesome/css/font-awesome.css!text",
+        "fetch",
         "jquery"
-
       ],
       "options": {
         "inject": true,

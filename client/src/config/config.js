@@ -1,4 +1,5 @@
-{
+
+var config = {
   "version":"0.1",
   "debug": true,
   "api": {
@@ -15,3 +16,5 @@
   "maxUploadSize": 104857600,
   "notificationAttentionTimeout": 20
 }
+
+export default config;

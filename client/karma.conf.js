@@ -14,11 +14,10 @@ module.exports = function(config) {
     jspm: {
       // Edit this to your needs
       loadFiles: ['test/unit/setup.js', 'test/unit/**/*.js'],
-      serveFiles: ['src/**/*.js', 'src/**/*.json', 'mins/*.js'],
+      serveFiles: ['src/**/*.*'],
       paths: {
-        'test/unit/*': 'test/unit/*',
-        '*.min': 'mins/*.min',
         '*': 'src/*',
+        'test/*': 'test/*',
         'github:*': 'jspm_packages/github/*',
         'npm:*': 'jspm_packages/npm/*'
       }

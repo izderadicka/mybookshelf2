@@ -9,8 +9,6 @@ export function configure(aurelia, cb) {
   if (cb && typeof cb=='function') {
     cb(instance);
   }
-
-  return instance.loadFile()
 }
 
 export {Configure}

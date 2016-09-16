@@ -1,26 +1,16 @@
 import {
   inject,
-  LogManager,
-  Loader
+  LogManager
 } from 'aurelia-framework';
+
+import config from 'config/config';
 
 let logger = LogManager.getLogger('config');
 
-@inject(Loader)
 export class Configure {
-  _config = null;
-  constructor(loader) {
-    this.loader = loader;
-  }
 
-  loadFile() {
-    return this.loader.loadText(`config/config.json`)
-      .then(txt => {
-        let data = JSON.parse(txt);
-        this._config = data;
-        logger.debug('Loaded my config file');
-      })
-      .catch((err) => Promise.reject(new Error(`Error loading config ${err}`)))
+  constructor() {
+    this._config = config;
   }
 
   get(key, defval = undefined) {

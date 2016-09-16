@@ -4,7 +4,7 @@ import {inject,LogManager} from 'aurelia-framework';
 import {Configure} from 'lib/config/index';
 import {EventAggregator} from 'aurelia-event-aggregator';
 
-import autobahn from 'autobahn.min';
+import autobahn from 'mins/autobahn.min';
 
 const logger = LogManager.getLogger('ws-client');
 

@@ -56,7 +56,7 @@
         <td>${source.format}</td>
         <td>${source.size}</td>
         <td><rating rating.bind="source.quality" read-only="1"></rating></td>
-        <td><a if.bind="canDownload" href="${client.baseUrl}/api/download/${source.id}?bearer_token=${token}" title="Download File">
+        <td class="ebook-actions"><a if.bind="canDownload" href="${client.baseUrl}/api/download/${source.id}?bearer_token=${token}" title="Download File">
             <i class="fa fa-download source-action"></i></a>
           <a if.bind="canConvert" href="#" click.delegate="menuConvert.show($event, source)"
             title.bind="source.error || 'Convert'"><i class="fa fa-cog source-action ${source.active? 'fa-spin':''} ${source.error?'text-danger':''}"></i></a>
