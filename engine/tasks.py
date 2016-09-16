@@ -46,7 +46,7 @@ class MetadataTask(BaseTask):
         self.base_dir = os.path.split(f)[0]
         self.cover_name = os.path.join(self.base_dir, 'cover_tmp.jpg')
         if not os.access(fname, os.R_OK):
-            raise TaskError('File %s does not exists or is not readable')
+            raise TaskError('File %s does not exists or is not readable', fname)
         self.fname = f
         self.fname_full = fname
         return ('--get-cover=%s' % os.path.join(UPLOAD_DIR, self.cover_name), self.tmp_name or fname)

@@ -270,6 +270,8 @@ def clear_ebook_data(data):
         del data[key]
 
     def shrink(d, id_mandatory=False):
+        if not d:
+            return None
         if (d.get('id')):
             return {'id': d['id']}
         elif id_mandatory:

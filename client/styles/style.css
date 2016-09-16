@@ -2,6 +2,10 @@ body {
   margin: 0;
 }
 
+label {
+  margin-right: 0.5em;
+}
+
 .splash {
   text-align: center;
   margin: 10% 0 0 0;
@@ -285,4 +289,8 @@ background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAACMCAMAAAC9K
 
 .ebook-actions {
   font-size: 200%;
+}
+
+.button-after {
+  margin-left: 10px;
 }
