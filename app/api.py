@@ -274,6 +274,7 @@ def download_converted(id):
 def cover_meta(id, size='normal'):
     upload = model.Upload.query.get_or_404(id)
     if not upload.cover:
+        logger.warn('Upload cover for %d is empty', id)
         abort(404, 'No cover')
 
     fname = os.path.join(current_app.config['UPLOAD_DIR'], upload.cover)

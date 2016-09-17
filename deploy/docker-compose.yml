@@ -6,19 +6,54 @@ services:
       dockerfile: Dockerfile-db
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      
+  crossbar:
+    build:
+      context: .
+      dockerfile: Dockerfile-crossbar
+    image: mbs2-ubuntu
+    volumes:
+      - ..:/code
+    ports:
+      - 8080:8080
+    command: crossbar start --cbdir engine/.crossbar
+      
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile-backend
+    volumes:
+      - ..:/code
+      - mbs2_data:/data
+    depends_on:
+      - crossbar
+      - db
+    environment:
+      MBS2_CROSSBAR_HOST: crossbar
+      MBS2_DB_HOST: db
+      MBS2_DB_NAME: postgres
+      MBS2_DATA_DIR: /data
+    command: python3 engine/backend.py
 
   app:
     build:
       context: .
       dockerfile: Dockerfile-app
-    image: mbs2-ubuntu
     command: python3 server.py VISIBLE
     volumes:
       - ..:/code
+      - mbs2_data:/data
     ports:
       - 6006:6006
     depends_on:
       - db
+      - backend
     environment:
       MBS2_DB_HOST: db
       MBS2_DB_NAME: postgres
+      MBS2_WAMP_HOST: crossbar
+      MBS2_DATA_DIR: /data
+      
+volumes:
+  mbs2_data:
+    external: false

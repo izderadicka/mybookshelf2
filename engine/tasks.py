@@ -22,12 +22,14 @@ async def convert_file(fname, format, outdir=None):
         out_file = os.path.splitext(fname)[0] +'.'+format
     else:
         out_file=os.path.join(outdir, os.path.splitext(os.path.basename(fname))[0]+'.'+format)
-    proc = await asyncio.create_subprocess_exec(OOFFICE, '--headless', '--convert-to', 
-                                                format,'--outdir', outdir, fname)
+    cmd=(OOFFICE, '--headless', '--convert-to', format,'--outdir', outdir, fname)
+    proc = await asyncio.create_subprocess_exec(*cmd)
     return_code = await proc.wait()
-    
-    if return_code == 0 and await aos.path.exists(out_file):
+    #older version of LibreOffice are returning non return code even if file is created
+    if await aos.path.exists(out_file):
         return out_file
+    else:
+        logger.error('Failed %s with code %d',' '.join(cmd), return_code)
     
 class MetadataTask(BaseTask):
     NAME = 'metadata'

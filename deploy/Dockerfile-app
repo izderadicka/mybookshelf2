@@ -1,25 +1,6 @@
-FROM ubuntu:12.04
+FROM mbs2-ubuntu
 
 MAINTAINER ivan
 
-RUN apt-get update &&\
-    apt-get install -y python-software-properties wget libffi-dev  git build-essential &&\
-		add-apt-repository -y  ppa:fkrull/deadsnakes &&\
-		sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-pgdg main" >> /etc/apt/sources.list.d/pgdg.list' &&\
-		wget -q https://www.postgresql.org/media/keys/ACCC4CF8.asc -O - | apt-key add - &&\
-		apt-get update &&\
-		apt-get install -y python3.5 libpq-dev python3.5-dev &&\
-		ln -s /usr/bin/python3.5 /usr/bin/python3 &&\
-		wget https://bootstrap.pypa.io/get-pip.py &&\
-    python3 get-pip.py &&\
-    rm get-pip.py
-    
-    
-#FOR backend
-RUN apt-get install -y imagemagick libreoffice &&\
-		wget -nv -O- https://raw.githubusercontent.com/kovidgoyal/calibre/master/setup/linux-installer.py | python -c "import sys; main=lambda:sys.stderr.write('Download failed\n'); exec(sys.stdin.read()); main()"
-		
-RUN mkdir /code
 WORKDIR /code
-ADD requirements.txt /code/
-RUN pip3 install -r requirements.txt
+

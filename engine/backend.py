@@ -9,6 +9,7 @@ from asexor.config import Config
 from asexor.task import load_tasks_from
 from autobahn.wamp.exception import ApplicationError
 import time
+from urllib.parse import urlunsplit
 sys.path.append(os.path.join(os.path.dirname(__file__),'..'))
 import engine.dal as dal
 from common.utils import verify_token
@@ -48,9 +49,12 @@ if __name__ == '__main__':
     Config.AUTHENTICATION_PROCEDUTE = authenticate
     Config.AUTHENTICATION_PROCEDURE_NAME = "eu.zderadicka.mybookshelf.authenticate"
 
-    path = os.path.join(os.path.dirname(__file__), '.crossbar/socket1')
+    #path = os.path.join(os.path.dirname(__file__), '.crossbar/socket1')
+    host = os.getenv('MBS2_CROSSBAR_HOST', 'localhost')
+    port = int(os.getenv('MBS2_CROSSBAR_PORT', 9080))
+    url = 'tcp://%s:%d' % (host,port)
     runner = ApplicationRunnerRawSocket(
-        path,
+        url,
         u"realm1",
     )
     dal.init()
