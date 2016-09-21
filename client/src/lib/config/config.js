@@ -3,14 +3,16 @@ import {
   LogManager
 } from 'aurelia-framework';
 
-import config from 'config/config';
-
 let logger = LogManager.getLogger('config');
 
 export class Configure {
 
   constructor() {
-    this._config = config;
+    this._config = {};
+  }
+
+  configure(val) {
+    this._config = val;
   }
 
   get(key, defval = undefined) {

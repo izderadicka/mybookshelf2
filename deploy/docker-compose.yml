@@ -47,7 +47,7 @@ services:
       - 6006:6006
     depends_on:
       - db
-      - backend
+      - crossbar
     environment:
       MBS2_DB_HOST: db
       MBS2_DB_NAME: postgres

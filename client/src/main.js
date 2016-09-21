@@ -1,14 +1,14 @@
 import  'bootstrap';
 import 'bootstrap-drawer';
-import authConfig from 'config/auth-config';
+import config from 'config';
+import env from 'environment';
 
 export function configure(aurelia) {
   aurelia.use
     .standardConfiguration()
-    .developmentLogging()
     .feature('components/pagination')
-    .plugin('aurelia-auth', baseConfig => baseConfig.configure(authConfig))
-    .feature('lib/config')
+    .plugin('aurelia-auth', baseConfig => baseConfig.configure(config.authentication))
+    .feature('lib/config', conf => conf.configure(config))
     .plugin('aurelia-dialog', config => {
       config.useDefaults();
       config.settings.lock = false;
@@ -16,6 +16,10 @@ export function configure(aurelia) {
       config.settings.startingZIndex = 1045;
     });
     //.plugin('aurelia-configuration');
+
+  if (env.debug) aurelia.use.developmentLogging();
+
+
 
 
 

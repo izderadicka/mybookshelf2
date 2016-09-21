@@ -272,6 +272,7 @@ background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAACMCAMAAAC9K
 
 .converted-sources-item {
   font-weight: bold;
+  margin-right: 0.5em;
 }
 
 @keyframes blink {

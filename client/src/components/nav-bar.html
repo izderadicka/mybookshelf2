@@ -16,7 +16,7 @@
       </div>
 
       <div class="collapse navbar-collapse" id="skeleton-navigation-navbar-collapse">
-        <search execute.call="searchSubmitted(query)"></search>
+        <search if.bind="isAuthenticated" execute.call="searchSubmitted(query)"></search>
         <ul class="nav navbar-nav">
           <li repeat.for="row of router.navigation | authFilter: isAuthenticated" class="${row.isActive ? 'active' : ''}">
             <a data-toggle="collapse" data-target="#skeleton-navigation-navbar-collapse.in" href.bind="row.href">${row.title}</a>
@@ -25,7 +25,7 @@
 
         <ul class="nav navbar-nav navbar-right">
           <li if.bind="!isAuthenticated"><a data-toggle="collapse" data-target="#skeleton-navigation-navbar-collapse.in"
-            href='/#/login'>Login</a>
+            route-href='route:login'>Login</a>
           </li>
           <li if.bind="isAuthenticated"><a click.delegate="" data-toggle="collapse"
             data-target="#skeleton-navigation-navbar-collapse.in" href='#'>

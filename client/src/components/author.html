@@ -1,5 +1,5 @@
 <template>
-  <a class="author-link" href="${link}" if.bind="linked">${fullName}</a>
+  <a class="author-link" route-href="route: author; params.bind: {id : author.id}" if.bind="linked">${fullName}</a>
   <span if.bind="!linked">${fullName}</span>
   ${!last?', ':''}
 </template>
