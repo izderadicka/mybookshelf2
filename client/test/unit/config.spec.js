@@ -1,4 +1,5 @@
 import {Configure} from 'lib/config/index';
+import config from 'config';
 import {DefaultLoader} from 'aurelia-loader-default';
 
 
@@ -9,6 +10,7 @@ var conf = null;
 
 beforeEach(() => {
   conf = new Configure();
+  conf.configure(config);
 })
 it('it should contain default instance properties', () => {
 expect(conf._config).toBeDefined();
