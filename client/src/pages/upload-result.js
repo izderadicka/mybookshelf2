@@ -34,9 +34,10 @@ export class UploadResult {
       this.metaId = meta.id;
       this.file = meta.load_source;
       logger.debug(`Got meta ${JSON.stringify(meta)}`);
+      if (meta.cover) {
       this.client.getCover('uploads-meta', model.id)
         .then(blob => this.cover.src = URL.createObjectURL(blob))
-
+      }
       return meta.meta
     })
     .then(meta => {

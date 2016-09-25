@@ -61,6 +61,7 @@ export class Ebook {
     return this.client.getOne('ebooks', params.id)
       .then(b => {
         this.ebook=b;
+        if (!b.cover) return true;
         return this.client.getCover('ebooks', b.id)
           .then (blob => {
             this.cover.src = URL.createObjectURL(blob);
@@ -142,7 +143,7 @@ export class Ebook {
             logger.debug(`Converting ${JSON.stringify(source)} to ${format} in task ${taskId}`);
           })
           .catch(err => {
-            alert('Conversion submission error');
+            source.error=err.toString();
             logger.error('Conversion submission error: '+JSON.stringify(err));
           });
         };

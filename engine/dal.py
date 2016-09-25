@@ -171,6 +171,18 @@ async def get_source_file(id):
             return res.as_tuple()
         else:
             return None,None
+
+async def get_conversion_id(source_id, user_id, format):
+    async with engine.acquire() as conn:
+        conversion = model.Conversion.__table__
+        format_id = await get_format_id(format)
+        res = await conn.execute(select([conversion.c.id]).where(and_(conversion.c.source_id==source_id,
+                                                                      conversion.c.created_by_id == user_id,
+                                                                      conversion.c.format_id == format_id)))
+        res= await res.fetchone()
+        if res:
+            return res[0]
+        
         
 async def get_meta(source_id):
     async with engine.acquire() as conn:

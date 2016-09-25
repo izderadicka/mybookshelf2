@@ -208,11 +208,15 @@ class ConvertTask(BaseTask):
         if to_format not in CONVERSION_FORMATS:
             raise TaskError('Not supported target format %s', to_format)
         
+        conv_id = await dal.get_conversion_id(source_id, self.user_id, to_format)
+        if conv_id:
+            raise TaskError('This conversion already exists under id %d'%conv_id)
+        
         self.out_file =  os.path.splitext(source_file)[0]+'.'+to_format
         self.out_file_full = os.path.join(BOOKS_CONVERTED_DIR, str(self.user_id), self.out_file)
         
-        if await aos.path.exists(self.out_file_full):
-            raise TaskError('File already exists')
+#         if await aos.path.exists(self.out_file_full):
+#             raise TaskError('File already exists')
         
         out_dir = os.path.dirname(self.out_file_full)
         

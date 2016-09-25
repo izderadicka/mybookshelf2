@@ -1,7 +1,6 @@
 import  'bootstrap';
 import 'bootstrap-drawer';
 import config from 'config';
-import env from 'environment';
 
 export function configure(aurelia) {
   aurelia.use
@@ -14,10 +13,11 @@ export function configure(aurelia) {
       config.settings.lock = false;
       config.settings.centerHorizontalOnly = false;
       config.settings.startingZIndex = 1045;
-    });
+    })
+    .globalResources('components/error-alert');
     //.plugin('aurelia-configuration');
 
-  if (env.debug) aurelia.use.developmentLogging();
+  if (config.debug) aurelia.use.developmentLogging();
 
 
 

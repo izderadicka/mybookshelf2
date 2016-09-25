@@ -144,3 +144,7 @@ class TestDAL(TestCase):
         self.assertEqual(meta['series-index'], 1)
         self.assertEqual(meta['tags'], 'Fantasy')
         
+        q = dal.get_conversion_id(2, 1, 'epub')
+        conv_id = loop.run_until_complete(q)
+        self.assertTrue(conv_id is None)
+        

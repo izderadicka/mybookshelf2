@@ -25,6 +25,7 @@ export class WSClient {
   }
 
   connect(userEmail) {
+    if (! this.access.authenticated) throw new Error('Not Authenticated');
     if (this.conn) {
       logger.warn('Connection already exists');
     }
@@ -81,7 +82,7 @@ export class WSClient {
   }
 
   onConnectionClose(reason, details) {
-    logger.warn(`WAMP connection closed ${reason}`);
+    logger.warn(`WAMP connection closed ${reason} : ${JSON.stringify(details)}`);
     this.conn=null;
     this.session=null;
   }
@@ -89,7 +90,7 @@ export class WSClient {
   extractMeta(fileName, originalFileName=null, proposedMeta={}) {
     if (! this.isConnected) {
       alert('WebSocket is not connected, reload application!');
-      return;
+      return Promise.reject(new Error('Websocket is not connected'));
     }
     return this.session.call('eu.zderadicka.asexor.run_task', ['metadata',fileName, proposedMeta])
     .then(taskId => {
@@ -109,7 +110,7 @@ export class WSClient {
   convertSource(source, format, ebook) {
     if (! this.isConnected) {
       alert('WebSocket is not connected, reload application!');
-      return;
+      return Promise.reject(new Error('Websocket is not connected'));
     }
     return this.session.call('eu.zderadicka.asexor.run_task', ['convert', source.id, format])
       .then(taskId => {

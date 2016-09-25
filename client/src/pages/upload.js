@@ -43,18 +43,25 @@ export class Upload {
     this.notif = notif;
     this.router = router;
   }
+
+  setError(txt, err) {
+    let msg=txt+' '+err;
+    this.uploadError={error:txt, errorDetail:err};
+    logger.error(msg);
+    this.uploading = false;
+    this.checking=false;
+  }
+
   upload() {
     this.fileOK=false;
     this.checking=false;
     this.uploading =  true;
     logger.debug(`Uploading file`);
-    let formData= new FormData(document.getElementById('file-upload-form'))
+    let formData= new FormData(document.getElementById('file-upload-form'));
     this.client.upload(formData)
       .then(data => {
         if (data.error) {
-          this.uploadError=`Upload error: ${data.error}`;
-          logger.error(`Upload error: ${data.error}`);
-          this.uploading = false;
+          this.setError('Upload error:',data.error);
         } else {
           logger.debug(`File uploaded ${JSON.stringify(data)}`);
           let origName =  document.getElementById('file-input').value;
@@ -71,18 +78,18 @@ export class Upload {
               });
               this.event.subscribe('metadata-error', result => {
                 if (taskId === result.taskId) {
-                this.uploading = false;
-                this.uploadError = `Error in metadata: ${result.error}`;
+                this.setError('Error in metadata:', result.error);
               }
               });
             })
             .catch(err => {
-              logger.error(`Error when extracting metadata: ${err}`);
-              this.uploading = false;
-              this.uploadError = `Error in metadata: ${err}`;
+              this.setError('Error in metadata',err);
             });
         }
       })
+      .catch(err => {
+        this.setError('Upload error:',err);
+      });
   }
 
   checkFile() {
@@ -99,7 +106,7 @@ export class Upload {
     }
     let file=files.files[0]
     if (file.size > this.config.get('maxUploadSize')) {
-      this.uploadError='Are you mad? This file is just too big for ebook!';
+      this.setError('File Error', 'This file is just too big for ebook!');
       this.checking=false;
       return
     }
@@ -119,9 +126,7 @@ export class Upload {
             this.fileOK=true;
           })
           .catch( err => {
-            this.checking=false;
-            logger.error(`File check error`, err);
-            this.uploadError=`Check error: ${err}`
+            this.setError(`File check error`, err);
           })
       });
     reader.readAsArrayBuffer(file);

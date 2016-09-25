@@ -31,6 +31,7 @@ CACHE_CONTROL = 'max-age=20'
 CACHE_EXPIRES = 20
 
 # CORS
+DISABLE_CORS=bool(os.getenv('MBS2_DISABLE_CORS', False)) # disable CORS -consider for  production
 CORS_HOSTS = '*'  # or list of hosts ['localhost']
 CORS_PORTS = None  # or (lower, upper) or []
 CORS_SECURE = False  # if cors is allowed only for https

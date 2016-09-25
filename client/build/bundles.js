@@ -35,6 +35,7 @@ module.exports = {
         "bootstrap/css/bootstrap.css!text",
         "bootstrap-drawer/dist/css/bootstrap-drawer.css!text",
         "font-awesome/css/font-awesome.css!text",
+        "diacritic",
         "fetch",
         "jquery"
       ],

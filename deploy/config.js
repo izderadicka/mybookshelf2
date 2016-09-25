@@ -3,7 +3,7 @@ var config = {
   "debug": true,
   "api": {
     "host":"",
-    "port": 6006,
+    "port": null,
     "path": "/api"
   },
   "wamp": {

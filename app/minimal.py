@@ -50,6 +50,9 @@ def ebook_detail(id):
 @bp.route('/ebooks/<int:id>/convert', methods=['POST'])
 @access.role_required('user')
 def convert_source(id):
+    
+    if not loop.is_running():
+        abort(500, 'Event loop is not running')
     token = create_token(current_user, current_app.config['SECRET_KEY'], current_app.config['TOKEN_VALIDITY_HOURS'])
     source_id = int(request.form['source_id'])
     format = request.form['format']

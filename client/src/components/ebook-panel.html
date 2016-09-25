@@ -1,7 +1,8 @@
 <template>
   <require from="components/authors"></require>
-  <section>
-    <div class='container-fluid items-header'>
+
+  <section class="ebook-panel">
+    <div class="container-fluid items-header" css="display: ${paginator.lastPage===0?'none':'block'}">
       <h3 class="page-title">Ebooks (Page ${paginator.page} of ${paginator.lastPage})
     <div class='sorter' if.bind="sortings.length">
       <label class="sorter-label"><i class="fa fa-sort"></i></label>
@@ -9,14 +10,20 @@
     </div>
     </h2>
   </div>
-  <page-controller view-model.ref='paginator' loader.bind="loader" sort.bind="sorter.sort" page-size="12" no-sort.bind="!sortings.length"></page-controller>
+
+  <div class="alert alert-warning" role="alert" if.bind="paginator.lastPage === 0">
+    <b>No ebooks found!</b>
+  </div>
+
+<page-controller view-model.ref='paginator' loader.bind="loader" sort.bind="sorter.sort" page-size="12" no-sort.bind="!sortings.length"></page-controller>
 
     <div class="container-fluid">
       <div class="row">
         <div class="col-sm-6 col-md-4 col-lg-3" repeat.for="ebook of paginator.data">
           <div class='ebook-detail'>
-              <div class="ebook-cover"><a route-href="route: ebook; params.bind: {id:ebook.id}"><img src.bind="getThumbSource(ebook)"
-                error.trigger="handleImgError($event)" load.trigger="handleImgLoad($event)"></a></div>
+              <a route-href="route: ebook; params.bind: {id:ebook.id}"><div class="ebook-cover missing">
+                <img src.bind="getThumbSource(ebook)" if.bind="ebook.cover"
+                error.trigger="handleImgError($event)" load.trigger="handleImgLoad($event)"></div></a>
             <div class="ebook-info">
             <authors authors.one-time="ebook.authors" compact.bind="true"></authors>
             <div class="ebook-title"><a route-href="route: ebook; params.bind: {id:ebook.id}">${ebook.title}</a></div>
@@ -28,6 +35,10 @@
     </div>
 
   <pager page.two-way="paginator.page" last-page.bind="paginator.lastPage" loading.bind="paginator.loading"></pager>
-    </section>
+</section>
+
+<div class=container>
+<error-alert error.bind="paginator.error" dismissible.one-time="false"></error-alert>
+</div>
 
 </template>

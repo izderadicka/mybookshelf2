@@ -5,6 +5,8 @@ export class ErrorAlert {
     defaultBindingMode: bindingMode.twoWay
   }) error;
 
+  @bindable dismissible = true;
+
   clearError() {
     this.error=undefined;
   }

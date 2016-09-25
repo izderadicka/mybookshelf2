@@ -26,6 +26,7 @@ export class Autocomplete {
   @bindable suggestionTemplate = null; // template to display a suggestion - if none string value of suggestion is shown
   @bindable additionalClass; // additional classes for input control
   @bindable placeholder = ''; // placeholder for input control
+  @bindable resetAfterSelect = false; // after value is selected and event is fired reset value to empty string;
 
   _suggestions = [];
   _selected = null;
@@ -56,6 +57,8 @@ export class Autocomplete {
       this._suggestions = suggestions;
       if (this._suggestions.length) {
         this.showSuggestions();
+      } else {
+        this.hideSuggestions();
       }
 
     });
@@ -112,9 +115,9 @@ export class Autocomplete {
 
 
   keyPressed(evt) {
-    logger.debug(`Key pressed ${evt.keyCode}`);
+    let key = evt.keyCode;
+    //logger.debug(`Key pressed ${key}`);
     if (this._suggestionsShown) {
-      let key = evt.keyCode;
       switch (key) {
         case 13: // Enter
           if (this._selected !== null) this.select(this._selected)
@@ -132,10 +135,35 @@ export class Autocomplete {
         case 27: // Escape
           this.hideSuggestions();
           break;
+        }
+      } else {
+        if (key === 13 && this.value)
+          this.fireSelectedEvent(this.value, this.selectedValue);
       }
-    }
+
     return true;
   }
+
+  fireSelectedEvent(value, selectedValue) {
+    let selectEvent;
+
+    if (window.CustomEvent) {
+        selectEvent = new CustomEvent('selected', {
+            detail: {displayValue:value, selectedValue},
+            bubbles: true
+        });
+    } else {
+        selectEvent = document.createEvent('CustomEvent');
+        selectEvent.initCustomEvent('select', true, true, {
+            detail: {displayValue:value, selectedValue}
+
+        });
+    }
+    this.elem.dispatchEvent(selectEvent);
+    if (this.resetAfterSelect) this.value="";
+
+  }
+
   makeVisible(idx) {
     let item = $(`a[data-index="${idx}"]`, this.elem);
     if (item && item.position()) {
@@ -150,7 +178,11 @@ export class Autocomplete {
     if (this.value !== newValue) this._ignoreChange = true;
     this.value = newValue;
     this.selectedValue = this._suggestions[idx];
-    this.hideSuggestions()
+    this.hideSuggestions();
+    this._suggestions = [this.selectedValue];
+    if (this.selectedValue) {
+      this.fireSelectedEvent(this.value, this.selectedValue)
+    }
   }
 
   hideSuggestions() {
@@ -160,10 +192,12 @@ export class Autocomplete {
   }
 
   showSuggestions() {
+    if (this._suggestions) {
     this._suggestionsShown = true;
     this._selected = this._suggestions.length ? 0 : null;
     this.suggestionsList.show();
     this.makeVisible(this._selected);
+  }
   }
 
 

@@ -94,7 +94,7 @@ class RoleSchema(ModelSchema):
 
 
 class UploadSchema(ModelSchema):
-
+    cover = fields.Function(serialize=lambda o: bool(o.cover))
     class Meta:
         model = model.Upload
         exclude = ('version_id',)
@@ -118,6 +118,7 @@ class EbookSchema(ModelSchema):
     language = fields.Nested(LanguageSchema, required=True)
 #     language = fields.Function(
 #         serialize=lambda o: o.language.name, deserialize=lang_from_code)
+    cover = fields.Function(serialize=lambda o: bool(o.cover))
     genres = fields.Nested(GenreSchema, many=True, allow_none=True)
     sources = fields.Nested(SourceSchema, many=True, only=(
         'id', 'format', 'location', 'quality', 'modified', 'size', 'created_by'), allow_none=True)
@@ -141,7 +142,7 @@ ebook_serializer = lambda: EbookSchema()
 ebook_deserializer_update = lambda: PartialSchemaFactory(EbookSchema, partial=True)
 ebook_deserializer_insert = lambda: PartialSchemaFactory(EbookSchema, exclude=('version_id',))
 ebooks_list_serializer = lambda: EbookSchema(many=True, only=(
-    'id', 'title', 'authors', 'series', 'series_index', 'language', 'genres'))
+    'id', 'title', 'authors', 'series', 'series_index', 'language', 'cover'))
 
 authors_list_serializer = lambda: AuthorSchema(
     many=True, only=('id', 'first_name', 'last_name'))

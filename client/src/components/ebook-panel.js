@@ -21,13 +21,13 @@ export class EbookPanel {
 
   handleImgError(evt) {
       logger.debug('Missing thumb');
-      $(evt.target).parent().parent().addClass('missing');
+      $(evt.target).parent().addClass('missing');
 
   }
 
   handleImgLoad(evt) {
       logger.debug('Load thumb');
-      $(evt.target).parent().parent().removeClass('missing');
+      $(evt.target).parent().removeClass('missing');
 
   }
 

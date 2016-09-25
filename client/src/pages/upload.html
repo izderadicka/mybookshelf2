@@ -25,14 +25,7 @@
 <div class='uploading-progress' if.bind="uploading">
   <i class="fa fa-spinner fa-spin fa-fw"></i> Uploading file please wait ...
 </div>
-<div class="panel panel-danger" if.bind="uploadError">
-  <div class="panel-heading">
-    <h3 class="panel-title">Upload Error!</h3>
-  </div>
-  <div class="panel-body">
-    ${uploadError}
-  </div>
-</div>
+<error-alert error.bind="uploadError"></error-alert>
 <div class="" if.bind="uploadId">
   <p>File was successfully upload to server.  Now file has to be analyzed, it can take a while.
     Wait for notification.

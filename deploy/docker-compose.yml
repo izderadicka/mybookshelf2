@@ -39,15 +39,17 @@ services:
     build:
       context: .
       dockerfile: Dockerfile-app
-    command: python3 server.py VISIBLE
+    command: /run_app.sh
     volumes:
       - ..:/code
       - mbs2_data:/data
     ports:
       - 6006:6006
+      - "8088:80"
     depends_on:
       - db
       - crossbar
+      - backend
     environment:
       MBS2_DB_HOST: db
       MBS2_DB_NAME: postgres

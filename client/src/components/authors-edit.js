@@ -31,20 +31,31 @@ export class AuthorsEdit {
     }
   }
 
-  addAuthor() {
-    let addIfNotExists = (author) => {
-      for (var item of this.authors) {
-        if (item.last_name === author.last_name && item.first_name === author.first_name) return;
-      }
-      this.authors.push(author);
-      this._author = '';
-    };
 
+  _addIfNotExists(author) {
+    for (var item of this.authors) {
+      if (item.last_name === author.last_name && item.first_name === author.first_name) return;
+    }
+    this.authors.push(author);
+    }
+
+  addAuthor() {
     if (! this.authors) this.authors = [];
     if (this._authorSelected) {
-      addIfNotExists(this._authorSelected);
+      this._addIfNotExists(this._authorSelected);
+      this._author = '';
     } else if (this._author) {
-      addIfNotExists(this.splitFullName(this._author));
+      this._addIfNotExists(this.splitFullName(this._author));
+      this._author = '';
+    }
+  }
+
+  onSelect(evt) {
+    let {displayValue, selectedValue} = evt.detail;
+    if (selectedValue) {
+      this._addIfNotExists(selectedValue);
+    } else if (displayValue) {
+      this._addIfNotExists(this.splitFullName(displayValue));
     }
   }
 

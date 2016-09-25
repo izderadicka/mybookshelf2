@@ -48,10 +48,14 @@ export class PageController {
     //if (this.loading) return Promise.resolve(null);
     logger.debug(`Loading page ${page}, ${this.sort} by ${this.loader.name}`);
     this.loading=true;
+    this.error=null;
     return this.loader(page, this.pageSize, this.sort)
       .then(({data,lastPage}) => { this.data=data;
                                 this.lastPage=lastPage },
-            err => logger.error(`Page load error: ${err}`))
+            err => {
+              logger.error(`Page Load Error: ${err}`);
+              this.error={error:'Page Load Error', errorDetail:err};
+            })
       .then(() => this.loading=false);
   }
 

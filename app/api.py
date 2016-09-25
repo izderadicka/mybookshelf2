@@ -23,7 +23,11 @@ api = Api(bp)
 
 @bp.after_request
 def after_request(response):
-    return add_cors_headers(response)
+    if current_app.config.get('DISABLE_CORS'):
+        return response
+    else:
+        return add_cors_headers(response)
+    
 
 
 class Resource(BaseResource):
@@ -140,8 +144,8 @@ class Ebook(Resource):
         data['id'] = int(id)
 
         try:
-            version_id = data.pop('version_id')
-        except KeyError:
+            version_id = int(data.pop('version_id'))
+        except (KeyError,ValueError):
             db.session.rollback()
             return jsonify(error="Version_id missing", error_details="")
 
