@@ -160,8 +160,10 @@ export class Autocomplete {
         });
     }
     this.elem.dispatchEvent(selectEvent);
-    if (this.resetAfterSelect) this.value="";
-
+    if (this.resetAfterSelect) {
+      this._ignoreChange = false;
+      this.value="";
+    }
   }
 
   makeVisible(idx) {
