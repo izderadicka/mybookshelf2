@@ -150,5 +150,18 @@ export class Ebook {
       }
   }
 
+  get conversionFormats() {
+    return [{text:'epub', value:'epub'}, {text:'mobi', value:'mobi'}];
+  }
+
+  get enableFormats() {
+    let ebook = this;
+    return function(item) {
+    if (!this.context) return true;
+    let converted = ebook.convertedSources && ebook.convertedSources.filter(c => c.source === this.context.id).length
+    return item.value != this.context.format && ! converted;
+  }
+  }
+
 
 }

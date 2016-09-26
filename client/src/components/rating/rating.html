@@ -2,7 +2,7 @@
   <require from="./rating.css"></require>
   <div class="rating" css="font-size: ${size}em">
     <i class="fa fa-minus-circle rating-clear" aria-hidden="true" click.delegate="resetRating()" if.bind="!readOnly"></i>
-    <span mouseleave.trigger="clearProposed()">
+    <span mouseleave.trigger="clearProposed()" class="rating-stars">
     <i class="fa ${star.rated || star.proposed ? 'fa-star':'fa-star-o'} ${star.proposed ? 'rating-proposed' : ''} ${star.rated ? 'rating-rated' : ''}""
      aria-hidden="true" click.delegate="rate($index)"
     repeat.for="star of stars" mouseover.delegate="propose($index)"></i>

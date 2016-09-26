@@ -64,8 +64,8 @@
         </td>
       </tr>
     </table>
-    <context-menu items.bind="[{text:'epub', value:'epub'}, {text:'mobi', value:'mobi'}]" title="Convert to"
-    view-model.ref="menuConvert" action.bind="convertSource"></context-menu>
+    <context-menu items.bind="conversionFormats" header="Convert to"
+    view-model.ref="menuConvert" action.bind="convertSource" is-enabled.one-time="enableFormats"></context-menu>
   </section>
 
 </template>

@@ -17,3 +17,8 @@
   color: #337ab7;
   cursor: pointer;
 }
+
+.context-menu a.item.disabled {
+  color: #777;
+
+}

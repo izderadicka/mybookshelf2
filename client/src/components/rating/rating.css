@@ -13,3 +13,7 @@
 .rating {
   display: inline;
 }
+
+.rating-stars {
+  white-space: nowrap;
+}

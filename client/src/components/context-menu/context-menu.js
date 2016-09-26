@@ -6,17 +6,21 @@ let logger = LogManager.getLogger('context-menu');
 inject(Element)
 export class ContextMenu {
   @bindable items;
-  @bindable title = 'Context Menu';
+  @bindable header = 'Context Menu';
   @bindable width = 128;
   @bindable action;
+  @bindable filter = ()=>true;
+  @bindable isEnabled = ()=>true;
 
   constructor(elem) {
-    this.elem = elem
+    this.elem = elem;
   }
 
   attached() {
     this.root = $('div.context-menu', this.elem);
-    $(window).click(() => this.hide());
+    $(window).click((evt) => {
+      if ($(evt.target).hasClass('disabled')) return;
+      this.hide()});
 
   }
 
@@ -43,6 +47,7 @@ export class ContextMenu {
   }
 
   select(item) {
+    if (! this.isEnabled(item)) return false;
     if (this.action) this.action(item.value, this.context)
     else alert(`Selected ${item.value}`);
     this.hide();
