@@ -73,7 +73,7 @@ module.exports = function(config) {
     customLaunchers: {
       Chrome_headless: {
         base: 'Chrome',
-        flags: ['--disable-gpu']
+        flags: ['--disable-gpu','--no-sandbox']
       }},
 
     // Continuous Integration mode

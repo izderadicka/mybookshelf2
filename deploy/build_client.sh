@@ -8,5 +8,5 @@ VOLUME=`pwd`/$VOLUME
 fi
 
 docker build -t $IMAGE -f Dockerfile-build-client .
-docker run --env-file .env --rm  -it -v $VOLUME:/code -v `pwd`/config.js:/code/client/src/config.js $IMAGE /build_client_cmd.sh 
-docker rmi $IMAGE
+docker run --env-file .env --rm  -it -v $VOLUME:/code $IMAGE /build_client_cmd.sh 
+#docker rmi $IMAGE
