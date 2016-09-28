@@ -12,6 +12,7 @@ RUN wget http://nginx.org/keys/nginx_signing.key &&\
 ADD nginx.conf /etc/nginx/conf.d/default.conf
 ADD uwsgi.ini /etc/
 ADD run_app.sh /
+ADD loop.sh /
     
 WORKDIR /code
 

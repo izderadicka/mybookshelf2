@@ -6,7 +6,6 @@ from uwsgidecorators import postfork
 loop = asyncio.get_event_loop()
 @postfork
 def start_loop():
-    print("POSTFORK")
     run_loop_in_thread(loop)
 
 

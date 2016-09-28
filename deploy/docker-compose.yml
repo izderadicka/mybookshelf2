@@ -13,7 +13,7 @@ services:
       dockerfile: Dockerfile-crossbar
     image: mbs2-ubuntu
     volumes:
-      - ..:/code
+      - ${CODE_VOLUME}:/code
     ports:
       - 8080:8080
     command: crossbar start --cbdir engine/.crossbar
@@ -22,8 +22,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile-backend
+      args:
+        - http_proxy
+        - https_proxy
+        - no_proxy
     volumes:
-      - ..:/code
+      - ${CODE_VOLUME}:/code
       - mbs2_data:/data
     depends_on:
       - crossbar
@@ -33,7 +37,7 @@ services:
       MBS2_DB_HOST: db
       MBS2_DB_NAME: postgres
       MBS2_DATA_DIR: /data
-    command: python3 engine/backend.py
+    command: /loop.sh python3 engine/backend.py
 
   app:
     build:
@@ -41,11 +45,11 @@ services:
       dockerfile: Dockerfile-app
     command: /run_app.sh
     volumes:
-      - ..:/code
+      - ${CODE_VOLUME}:/code
       - mbs2_data:/data
     ports:
       - 6006:6006
-      - "8088:80"
+      - "${MBS2_WEB_PORT}:80"
     depends_on:
       - db
       - crossbar
@@ -55,7 +59,10 @@ services:
       MBS2_DB_NAME: postgres
       MBS2_WAMP_HOST: crossbar
       MBS2_DATA_DIR: /data
+      MBS2_ENVIRONMENT:
       
 volumes:
   mbs2_data:
     external: false
+  code:
+    external: true

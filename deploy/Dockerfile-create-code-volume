@@ -1,0 +1,4 @@
+FROM mbs2-ubuntu
+ADD create_code_volume_cmd.sh /
+
+CMD /create_code_volume_cmd.sh
