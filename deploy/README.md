@@ -46,6 +46,11 @@ In case of development environment you'll need to serve client with browserSync 
 ./watch_client.sh
 ```
 
+You also might want to change default password for admin user:
+```
+docker-compose run --rm app python3 manage.py change_password -p your_secret_password admin
+```
+
 Then you can try application in browser - for staging http://localhost:8088 (or whatever host and port you've chosen for deployment), development http://locahost:6006 (simple client) and http://localhost:9000 - SPA Javascript client.
 
 For direct deployment (on OS, VM) study Docker Scripts - basically you'll need to install similar dependencies on that machine.
