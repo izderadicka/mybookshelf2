@@ -55,7 +55,7 @@ export class Autocomplete {
 
     this.getSuggestions(this.value).then(suggestions => {
       this._suggestions = suggestions;
-      if (this._suggestions.length) {
+      if (this._suggestions.length && this.input.is(':focus')) {
         this.showSuggestions();
       } else {
         this.hideSuggestions();
@@ -68,6 +68,11 @@ export class Autocomplete {
     this.suggestionsList = $('div.autocomplete-suggestion', this.elem)
     this._attached = true;
     this.hideSuggestions()
+    this.input = $('#autocomplete-input-id', this.elem);
+  }
+
+  get immediateValue() {
+    return this.input.val()
   }
 
   getSuggestionValue(item) {
@@ -81,20 +86,21 @@ export class Autocomplete {
   }
 
   getSuggestions(forValue) {
-    logger.debug(`Get suggestions for ${forValue}`);
     if (Array.isArray(this.loader)) {
       return Promise.resolve(this.loader.filter(item =>
         startsWith(this.getSuggestionValue(item), forValue)));
     } else if (typeof this.loader === 'function') {
       if (this._cache && startsWith(forValue, this._cache.search) &&
         new Date() - this._cache.ts <= CACHE_DURATION) {
+        logger.debug('Using cache');
         return Promise.resolve(this._cache.items.filter(
           item => startsWith(this.getSuggestionValue(item), forValue)
         ))
       }
+      logger.debug('Looking for '+forValue);
       return this.loader(forValue)
         .then(res => {
-
+          logger.debug(`Loaded suggestions for ${forValue}`);
           if (res.items.length === res.total) {
             // we have all results, can cache
             this._cache = {
@@ -105,8 +111,7 @@ export class Autocomplete {
           }
 
           // if inputed value already changed do not return these suggestions
-          if (this.value !== forValue) return [];
-
+          if (forValue !== this.immediateValue) return [];
           return res.items;
         });
     }
@@ -137,8 +142,14 @@ export class Autocomplete {
           break;
         }
       } else {
-        if (key === 13 && this.value)
+        if (key === 13)
+          if (this.immediateValue && this.immediateValue !== this.value) {
+            //enable enter for fast typing - before delayed value changes
+            this.fireSelectedEvent(this.immediateValue);
+
+          } else if (this.value) {
           this.fireSelectedEvent(this.value, this.selectedValue);
+        }
       }
 
     return true;
@@ -160,9 +171,13 @@ export class Autocomplete {
         });
     }
     this.elem.dispatchEvent(selectEvent);
+
     if (this.resetAfterSelect) {
+      //this is bit hack, ideally it should be done immediatelly, but could be overwritten by binding
+      setTimeout(()=> {
       this._ignoreChange = false;
-      this.value="";
+      this.value="";},
+      800);
     }
   }
 
@@ -194,7 +209,7 @@ export class Autocomplete {
   }
 
   showSuggestions() {
-    if (this._suggestions) {
+    if (this._suggestions && this._suggestions.length) {
     this._suggestionsShown = true;
     this._selected = this._suggestions.length ? 0 : null;
     this.suggestionsList.show();

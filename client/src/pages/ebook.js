@@ -61,16 +61,10 @@ export class Ebook {
     return this.client.getOne('ebooks', params.id)
       .then(b => {
         this.ebook=b;
-        if (!b.cover) return true;
-        return this.client.getCover('ebooks', b.id)
-          .then (blob => {
-            this.cover.src = URL.createObjectURL(blob);
-            return true })
-          .catch(err => {
-            logger.warn(`Cannot load cover for ebook ${b.id}: ${err}`);
-            return true
-          })
-        return true;})
+        if (b.cover)
+          this.coverLoader = this.client.getCover('ebooks', b.id);
+        return true;
+        })
       .catch(err => {
         logger.error(`Failed to load ${err}`);
         return false;
@@ -88,8 +82,15 @@ export class Ebook {
   }
 
   attached() {
-    if (this.cover.src)
+    if (this.coverLoader)
+    .then (blob => {
+      this.cover.src = URL.createObjectURL(blob);
       document.getElementById('cover-holder').appendChild(this.cover);
+      })
+    .catch(err => {
+      logger.warn(`Cannot load cover for ebook ${this.ebook.id}: ${err}`);
+    });
+
   }
 
   get searchString() {

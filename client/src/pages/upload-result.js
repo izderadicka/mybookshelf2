@@ -35,8 +35,7 @@ export class UploadResult {
       this.file = meta.load_source;
       logger.debug(`Got meta ${JSON.stringify(meta)}`);
       if (meta.cover) {
-      this.client.getCover('uploads-meta', model.id)
-        .then(blob => this.cover.src = URL.createObjectURL(blob))
+      this.coverLoader= this.client.getCover('uploads-meta', model.id);
       }
       return meta.meta
     })
@@ -64,8 +63,14 @@ export class UploadResult {
   }
 
   attached() {
-    if (this.cover.src)
-      document.getElementById('cover-holder').appendChild(this.cover);
+    if (this.coverLoader)
+      this.coverLoader.then(blob => {
+        this.cover.src = URL.createObjectURL(blob);
+        document.getElementById('cover-holder').appendChild(this.cover);
+      })
+      .catch(err => {
+        logger.warn(`Cannot load cover for upload ${this.metaId}: ${err}`);
+      });
   }
 
   createNew() {
