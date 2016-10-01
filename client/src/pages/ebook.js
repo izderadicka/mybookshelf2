@@ -158,7 +158,7 @@ export class Ebook {
     let ebook = this;
     return function(item) {
     if (!this.context) return true;
-    let converted = ebook.convertedSources && ebook.convertedSources.filter(c => c.source === this.context.id).length
+    let converted = ebook.convertedSources && ebook.convertedSources.filter(c => c.source === this.context.id && c.format === item.value).length
     return item.value != this.context.format && ! converted;
   }
   }

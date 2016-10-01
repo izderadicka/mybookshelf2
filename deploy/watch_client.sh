@@ -9,4 +9,4 @@ fi
 
 docker build -t $IMAGE -f Dockerfile-build-client .
 docker run --rm  -it -v $VOLUME:/code -p 9000:9000  $IMAGE /watch_client_cmd.sh 
-docker rmi $IMAGE
+#docker rmi $IMAGE

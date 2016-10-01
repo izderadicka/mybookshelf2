@@ -7,9 +7,27 @@ from common.utils import create_token
 from engine.client import WAMPClient
 import os.path
 import asyncio
+from sqlalchemy import desc
+
+IN_UWSGI = False
+try:
+    import uwsgi
+    import uwsgidecorators
+    IN_UWSGI = True
+except ImportError:
+    pass
 
 bp = Blueprint('minimal', __name__)
 loop = asyncio.get_event_loop()
+
+@bp.route('/')
+#@login_required
+def main():
+    ebooks=None
+    if not current_user.is_anonymous and current_user.has_role('user'):
+        ebooks=model.Ebook.query.order_by(desc(model.Ebook.created)).paginate(1,24).items
+        
+    return render_template('main.html', ebooks=ebooks)
 
 
 @bp.route('/thumb/<int:id>')
@@ -50,21 +68,25 @@ def ebook_detail(id):
 @bp.route('/ebooks/<int:id>/convert', methods=['POST'])
 @access.role_required('user')
 def convert_source(id):
-    
-    if not loop.is_running():
-        abort(500, 'Event loop is not running')
     token = create_token(current_user, current_app.config['SECRET_KEY'], current_app.config['TOKEN_VALIDITY_HOURS'])
     source_id = int(request.form['source_id'])
     format = request.form['format']
+    if IN_UWSGI:
+        uwsgi.mule_msg(token +'|'+str(source_id)+'|'+format)
+        task_id=''
+    else:
+        if not loop.is_running():
+            abort(500, 'Event loop is not running')
+        client = WAMPClient(token, current_app.config['WAMP_URI'], loop=loop)
+        try:
+            task_id=client.call_no_wait('convert', source_id, format )
+        finally:
+            client.close()
+        if not task_id:
+            abort(500, 'No task id')
     
-    
-    client = WAMPClient(token, current_app.config['WAMP_URI'], loop=loop)
-    task_id=client.call_no_wait('convert', source_id, format )
-    if not task_id:
-        abort(500, 'No task id')
-    client.close()
     url = url_for('minimal.ebook_detail', id=id)
-    flash(Markup('File was send for conversion ref. %s- it\'ll take a while - <a href="%s">reload this page</a> later to load converted file' %\
-                 (task_id, url)))
+    flash(Markup('File was send for conversion %s- it\'ll take a while - <a href="%s">reload this page</a> later to view link to converted file' %\
+                 ('' if not task_id else 'ref. %s '%task_id, url)))
     return redirect(url)
 

@@ -12,12 +12,14 @@
     <div class="msg">{{ message }}</div>
 {% endfor %}
 </div>
+{%if converted%}
 <div class="converted-ebooks">
 <label>Recently Converted Files:</label>
 {% for conv in converted %}
 <a href="{{url_for('api.download_converted', id=conv.id)}}" class="format-link">{{conv.format.extension}}</a>
 {%endfor%}
 </div>
+{%endif%}
 <table class="table sources">
 <thead><tr><th>Format</th><th>Quality</th><th>Size</th><th>Convert</th></tr></thead>
 {% for source in ebook.sources %}
@@ -26,11 +28,13 @@
 <td><span class="convert">
 
 {%for format in formats%}
+{%if format != source.format.extension %}
 <form class="convert-form" action="{{url_for('minimal.convert_source', id=ebook.id)}}" method="POST">
 <input type="hidden" name="source_id" value="{{source.id}}">
 <input type="hidden" name="format" value="{{format}}">
 <input type="submit" class="btn btn-black btn-sm smooth" value="{{format}}">
 </form>
+{%endif%}
 {%endfor%}
 
 </span></td></tr>

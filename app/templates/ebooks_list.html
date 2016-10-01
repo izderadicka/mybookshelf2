@@ -1,0 +1,14 @@
+{% import 'macros.html' as m %}
+<div id="ebooks_list">
+{% for book in ebooks %}
+<div class="row">
+<div class="c12">
+<div class="title"><a href="{{url_for('minimal.ebook_detail', id=book.id)}}">{{book.title}}</a></div>
+{% if book.series %}
+<div class="series">{{book.series.title}} #{{book.series_index}}</div>
+{%endif%} 
+<div class="authors">{{m.render_authors(book.authors)}}</div>
+</div>
+</div>
+{% endfor %}
+</div>

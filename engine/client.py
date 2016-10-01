@@ -18,7 +18,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 log = logging.getLogger('client')
 
 MAX_TIMEOUT = 300
-WAIT_TIMEOUT = 5000
+WAIT_TIMEOUT = 10
 
 
 class ClientSession(ApplicationSession):
@@ -93,12 +93,10 @@ class WAMPClient():
         self._ready = threading.Event()
 
         async def run_client(loop):
-
             def fact():
                 self.session = ClientSession(
                     realm='realm1', user=user, token=token, task_cb=self.task_callback)
                 return self.session
-
             transport_factory = WampWebSocketClientFactory(
                 fact, url=wamp_url)
 
@@ -114,15 +112,13 @@ class WAMPClient():
                 host, port = hp[0], int(hp[1])
             else:
                 raise ValueError('Invalid URL %s' % wamp_url)
-
             conn = loop.create_connection(
                 transport_factory, host, port, ssl=ssl)
             (transport, protocol) = await conn
-
             self.protocol = protocol
             self.transport = transport
             self._ready.set()
-            
+
         fut = asyncio.run_coroutine_threadsafe(run_client(self.loop), self.loop)
         fut.result(WAIT_TIMEOUT)
         self.wait_ready()

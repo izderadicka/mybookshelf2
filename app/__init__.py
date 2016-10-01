@@ -15,11 +15,6 @@ def decimal_default(obj):
     raise TypeError
 app.config['RESTFUL_JSON']={'default': decimal_default }
 
-@app.route('/')
-#@login_required
-def main():
-    return render_template('main.html')
-
 
 #blueprints
 def register_blueprints():

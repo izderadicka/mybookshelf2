@@ -16,7 +16,7 @@ services:
       - ${CODE_VOLUME}:/code
     ports:
       - 8080:8080
-    command: crossbar start --cbdir engine/.crossbar
+    command: crossbar start --cbdir engine/.crossbar --loglevel=info
       
   backend:
     build:
