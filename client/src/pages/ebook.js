@@ -83,7 +83,7 @@ export class Ebook {
 
   attached() {
     if (this.coverLoader)
-    .then (blob => {
+    this.coverLoader.then (blob => {
       this.cover.src = URL.createObjectURL(blob);
       document.getElementById('cover-holder').appendChild(this.cover);
       })

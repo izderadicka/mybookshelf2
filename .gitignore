@@ -149,3 +149,4 @@ jspm_packages
 /cover/
 
 Untitled*.ipynb
+/deploy.stage/
