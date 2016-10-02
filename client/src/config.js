@@ -2,8 +2,9 @@ var config = {
   "version":"0.1",
   "debug": true,
   "api": {
+    "protocol": "",
     "host":"",
-    "port": 6006,
+    "port": null, //6006,
     "path": "/api"
   },
   "wamp": {

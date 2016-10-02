@@ -3,6 +3,7 @@ import logging
 import sys
 import os
 import asyncio
+import ssl as ssllib
 from asyncio import get_event_loop, set_event_loop
 import threading
 from autobahn.wamp.types import ComponentConfig
@@ -102,8 +103,10 @@ class WAMPClient():
 
             parsed_url = urlparse(wamp_url)
             ssl = False
-            if parsed_url.scheme == 'https':
-                ssl = True
+            if parsed_url.scheme == 'wss':
+                #TODO: This is not good solution, rather consider either providing additional 
+                #CA certs - or for internal communication using plain TCP socket
+                ssl = ssllib._create_unverified_context()
 
             hp = parsed_url.netloc.split(':')
             if len(hp) == 1:
