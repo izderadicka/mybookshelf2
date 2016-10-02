@@ -197,6 +197,7 @@ INSERT INTO user_roles VALUES (1, 5);
 --
 INSERT INTO synonym (category, other_name, our_name, version_id) VALUES ('LNG', 'eng', 'en', 1);
 INSERT INTO synonym (category, other_name, our_name, version_id) VALUES ('LNG', 'ces', 'cs', 1);
+INSERT INTO synonym (category, other_name, our_name, version_id) VALUES ('LNG', 'slk', 'sk', 1);
 INSERT INTO synonym (category, other_name, our_name, version_id) VALUES ('GNR', 'Sci-Fi', 'Science Fiction', 1);
 INSERT INTO synonym (category, other_name, our_name, version_id) VALUES ('GNR', 'Humor', 'Humor/Satire', 1);
 INSERT INTO synonym (category, other_name, our_name, version_id) VALUES ('GNR', 'Satire', 'Humor/Satire', 1);
