@@ -2,6 +2,7 @@ var config = {
   "version":"0.1",
   "debug": true,
   "api": {
+    "protocol": "",
     "host":"",
     "port": null,
     "path": "/api"

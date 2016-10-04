@@ -186,7 +186,7 @@ export class EditEbook {
   }
 
   canDelete() {
-    return this.ebook.id && this.access.canEdit(this.ebook.created_by);
+    return this.ebook.id && this.access.canDelete(this.ebook.created_by);
   }
 
   delete() {

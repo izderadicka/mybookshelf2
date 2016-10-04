@@ -57,6 +57,10 @@ export class Ebook {
     return this.ebook && this.access.canEdit(this.ebook.created_by);
   }
 
+  canDeleteSource(source) {
+    this.access.canDelete(source.created_by);
+  }
+
   canActivate(params) {
     return this.client.getOne('ebooks', params.id)
       .then(b => {

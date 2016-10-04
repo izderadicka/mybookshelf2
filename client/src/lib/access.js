@@ -45,6 +45,11 @@ export class Access {
     return false;
   }
 
+  canDelete(userId) {
+    //maybe later we can decide for more restrictive permission
+    return this.canEdit(userId);
+  }
+
   get authenticated() {
     return this.auth.isAuthenticated();
   }

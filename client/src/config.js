@@ -4,7 +4,7 @@ var config = {
   "api": {
     "protocol": "",
     "host":"",
-    "port": null, //6006,
+    "port": 6006,
     "path": "/api"
   },
   "wamp": {
