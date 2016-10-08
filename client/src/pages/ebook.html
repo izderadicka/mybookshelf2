@@ -3,6 +3,7 @@
    <require from="components/genres-converter"></require>
    <require from="components/context-menu/context-menu"></require>
    <require from="components/rating/rating"></require>
+   <require from="components/size-converter"></require>
   <section>
     <h2 class="page-title">
       <span class="title">${ebook.title}</span>
@@ -54,7 +55,7 @@
       <tr><th>Format</th><th>Size</th><th>Quality</th><th>Action</th></tr>
       <tr repeat.for="source of ebook.sources">
         <td>${source.format}</td>
-        <td>${source.size}</td>
+        <td>${source.size | size}</td>
         <td><rating rating.bind="source.quality" read-only="1"></rating></td>
         <td class="ebook-actions"><a if.bind="canDownload" href="${client.baseUrl}/api/download/${source.id}?bearer_token=${token}" title="Download File">
             <i class="fa fa-download source-action"></i></a>
