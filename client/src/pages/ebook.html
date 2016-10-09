@@ -4,6 +4,7 @@
    <require from="components/context-menu/context-menu"></require>
    <require from="components/rating/rating"></require>
    <require from="components/size-converter"></require>
+   <require from="components/date-converter"></require>
   <section>
     <h2 class="page-title">
       <span class="title">${ebook.title}</span>
@@ -35,7 +36,7 @@
       </li>
       <li class="list-group-item">
         <label class="ebook-detail-label">Created:</label>
-        <span class="ebook-date">${ebook.created}</span>
+        <span class="ebook-date">${ebook.created | date}</span>
       </li>
       <li class="list-group-item">
         <label class="ebook-detail-label">Find Details On:</label>

@@ -14,7 +14,8 @@ var config = {
     "realm": "realm1"
   },
   "maxUploadSize": 104857600,
-  "notificationAttentionTimeout": 20
+  "notificationAttentionTimeout": 20,
+  "locale": undefined
 }
 
 var authConfig = {
