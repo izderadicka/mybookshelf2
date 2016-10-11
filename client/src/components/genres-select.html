@@ -1,0 +1,6 @@
+<template>
+  <require from="select2/css/select2.css"></require>
+  <select class="form-control" multiple="true" style="width:100%">
+    <option repeat.for="option of options" value.bind="option.value" selected.bind="isSelected(option)">${option.label}</option>
+  </select>
+</template>

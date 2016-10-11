@@ -1,6 +1,7 @@
 import {bindable, bindingMode, inject, LogManager, computedFrom} from 'aurelia-framework';
 import $ from 'jquery';
 import diacritic from 'diacritic'; // npm:diacritic package
+import {dispatchCustomEvent} from 'lib/utils';
 
 let logger = LogManager.getLogger('autocomplete');
 
@@ -157,20 +158,7 @@ export class Autocomplete {
 
   fireSelectedEvent(value, selectedValue) {
     let selectEvent;
-
-    if (window.CustomEvent) {
-        selectEvent = new CustomEvent('selected', {
-            detail: {displayValue:value, selectedValue},
-            bubbles: true
-        });
-    } else {
-        selectEvent = document.createEvent('CustomEvent');
-        selectEvent.initCustomEvent('select', true, true, {
-            detail: {displayValue:value, selectedValue}
-
-        });
-    }
-    this.elem.dispatchEvent(selectEvent);
+    dispatchCustomEvent('selected', this.elem, {displayValue:value, selectedValue});
 
     if (this.resetAfterSelect) {
       //this is bit hack, ideally it should be done immediatelly, but could be overwritten by binding

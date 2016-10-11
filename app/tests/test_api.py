@@ -130,6 +130,9 @@ class TestApi(TestCase):
         res = self.get('/api/ebooks/author/8015')
         self.assertEqual(res['total'], 4)
         self.assertEqual(len(res['items']), 4)
+        
+        res = self.get('/api/ebooks?genres=9,16')
+        self.assertEqual(res['total'],2)
 
     def test_api2(self):
         #---------------

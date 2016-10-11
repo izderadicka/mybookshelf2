@@ -65,4 +65,10 @@ Then you can try application in browser - for staging https://localhost:8088 (or
 For direct deployment (on OS, VM) study Docker Scripts - basically you'll need to install similar dependencies on that machine.
 
 For development alternatively  you can use python virtualenv and run db and other services locally (that's how I'm developing).
+
+To run tests you should also initialize test database( run as postgres superuser):
+```
+psql ebooks_test < ../sql/create_test_db.sql
+psql ebooks_test < init_db.sql
+```
  

@@ -1,5 +1,6 @@
 import {inject, bindable, computedFrom, LogManager} from 'aurelia-framework';
 import {ApiClient} from 'lib/api-client';
+import {rewriteURLParam} from 'lib/utils';
 const logger = LogManager.getLogger('search');
 
 @inject(ApiClient)
@@ -14,14 +15,16 @@ export class Author {
 
   activate(params)  {
     logger.debug('Author activated with '+JSON.stringify(params));
-    this.id=decodeURIComponent(params.id);
+    this.id=params.id;
     this.client.getOne('authors', params.id). then(data => {this.author=data; logger.debug('Loaded author'+JSON.stringify(data))})
+    if (params.filter) this.filter=params.filter;
 
     this.updateLoader()
   }
 
   filterChanged() {
     logger.debug('Filter changed to '+ this.filter);
+    rewriteURLParam('filter', this.filter);
     this.updateLoader()
   }
 

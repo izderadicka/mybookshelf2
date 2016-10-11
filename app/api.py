@@ -42,7 +42,12 @@ class Ebooks(Resource):
 
     @logic.paginated(sortings=model.sortings['ebook'])
     def get(self, page=1, page_size=20, sort=None, **kwargs):
+        genres=request.args.get('genres')
+        if genres:
+            genres=list(map(int,  genres.split(',')))
         q = model.Ebook.query
+        if genres:
+            q= logic.filter_ebooks_by_genres(q, genres)
         return logic.paginate(q, page, page_size, sort, schema.ebooks_list_serializer())
 
     def post(self):

@@ -1,5 +1,7 @@
-import {inject} from 'aurelia-framework';
+import {inject, LogManager} from 'aurelia-framework';
 import {ApiClient} from 'lib/api-client';
+
+let logger = LogManager.getLogger('genres-select');
 
 @inject(ApiClient)
 export class TestPage {
@@ -30,5 +32,10 @@ export class TestPage {
 
   getFullName(item) {
     return item.first_name ? item.last_name + ', ' + item.first_name : item.last_name
+  }
+
+  onChanged(evt) {
+    logger.debug('Genres are: '+evt.detail.value)
+
   }
 }

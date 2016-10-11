@@ -400,4 +400,9 @@ def query_converted_sources_for_ebook(ebook_id, user=None):
         q = q.filter(model.Conversion.created_by_id == user.id)
         
     return q.order_by(desc(model.Conversion.created))
+
+def filter_ebooks_by_genres(q,genres):
+    return q.join(model.Ebook.genres).filter(model.Genre.id.in_(genres)).group_by(model.Ebook.id)\
+            .having(func.count(model.Ebook.id) == len(genres))
+    
         

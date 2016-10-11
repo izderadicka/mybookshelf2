@@ -1,4 +1,8 @@
 <template>
   <require from="components/ebook-panel"></require>
-  <ebook-panel loader.one-time="loader"></ebook-panel>
+  <require from="components/genres-select"></require>
+  <div class="container-fluid ebook-panel">
+  <genres-select genres.bind="genres" placeholder="Select genres to filter ebooks ..."></genres-select>
+  </div>
+  <ebook-panel loader.bind="loader"></ebook-panel>
 </template>
