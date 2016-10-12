@@ -37,7 +37,8 @@ module.exports = {
         "font-awesome/css/font-awesome.css!text",
         "diacritic",
         "fetch",
-        "jquery"
+        "jquery",
+        "select2"
       ],
       "options": {
         "inject": true,
