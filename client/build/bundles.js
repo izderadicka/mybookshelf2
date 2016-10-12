@@ -38,7 +38,8 @@ module.exports = {
         "diacritic",
         "fetch",
         "jquery",
-        "select2"
+        "select2",
+        "select2/css/select2.css!text"
       ],
       "options": {
         "inject": true,
