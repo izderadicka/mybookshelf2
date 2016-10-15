@@ -3,7 +3,7 @@ import $ from 'jquery';
 
 let logger = LogManager.getLogger('context-menu');
 
-inject(Element)
+@inject(Element)
 export class ContextMenu {
   @bindable items;
   @bindable header = 'Context Menu';

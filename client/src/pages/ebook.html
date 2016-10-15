@@ -9,7 +9,7 @@
     <h2 class="page-title">
       <span class="title">${ebook.title}</span>
       <span class="actions">
-      <a route-href="route: ebook-edit; params.bind: {id:ebook.id}" if.bind="isEditable"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
+      <a click.delegate="menuEdit.show($event)" if.bind="isEditable"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
     </span>
     </h2>
     <authors authors.bind="ebook.authors"></authors>
@@ -68,6 +68,7 @@
     </table>
     <context-menu items.bind="conversionFormats" header="Convert to"
     view-model.ref="menuConvert" action.bind="convertSource" is-enabled.one-time="enableFormats"></context-menu>
+    <context-menu items.bind="editActions" header="Edit" view-model.ref="menuEdit" action.bind="editAction"></context-menu>
   </section>
 
 </template>

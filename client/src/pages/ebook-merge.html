@@ -1,0 +1,28 @@
+<template>
+  <require from="components/autocomplete/autocomplete"></require>
+  <section>
+    <h2 class="page-title">Merge Ebook "${ebook.title}"</h2>
+    <error-alert error.bind="error"></error-alert>
+    <div class="">
+      <div class="form-group" id="title-input-group">
+        <label>
+        <input type="radio" name="direction" model.bind="true" checked.bind="mergeTo">
+        Merge this ebook to other ebook
+        </label>
+        <label>
+        <input type="radio" name="direction" model.bind="false" checked.bind="mergeTo">
+        Merge other ebook to this ebook
+        </label>
+      </div>
+      <div class="form-group">
+        <label class="control-label">Other Ebook</label>
+        <autocomplete loader.bind="loaderEbooks" value-key="title" suggestion-template="./autocomplete-ebooks.html"
+        selected-value.bind="otherEbook" additional-class="form-control"></autocomplete>
+      </div>
+      <div class="form-group">
+         <button type="button" class="btn btn-primary btn-lg" click.delegate="merge()" disabled.bind="!ready">Merge</button>
+        <button type="button" class="btn btn-default btn-lg" click.delegate="cancel()">Cancel</button>
+      </div>
+    </div>
+  </section>
+</template>

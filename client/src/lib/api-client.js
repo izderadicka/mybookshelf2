@@ -108,6 +108,10 @@ export class ApiClient {
     return this.post(`ebooks/${ebookId}/add-upload`, {upload_id:uploadId, quality});
   }
 
+  mergeEbooks(ebookId, otherEbookId) {
+    return this.post(`ebooks/${ebookId}/merge`, {other_ebook: otherEbookId})
+  }
+
   getCover(resource, id) {
     let url =  this.getUrl(resource+'/'+id+'/cover')
     return this.http.fetch(url)

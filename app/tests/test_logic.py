@@ -9,21 +9,22 @@ import settings
 
 
 ebook_file = os.path.join(settings.BOOKS_BASE_DIR,
-    'Kissinger, Henry/Roky v Bilem dome/Kissinger, Henry - Roky v Bilem dome.epub')
+                          'Kissinger, Henry/Roky v Bilem dome/Kissinger, Henry - Roky v Bilem dome.epub')
 
 downloaded_file = os.path.join(settings.UPLOAD_DIR, 'kissinger.epub')
 
+
 class TestLogic(TestCase):
-    
+
     def setUp(self):
         TestCase.setUp(self)
         shutil.copy(ebook_file, downloaded_file)
-        
+
     def tearDown(self):
         TestCase.tearDown(self)
         shutil.rmtree(downloaded_file, ignore_errors=True)
         shutil.rmtree(os.path.join(settings.BOOKS_BASE_DIR, 'Kissinger Henry'))
-        
+
     def test_logic(self):
 
         b1 = model.Ebook.query.get(33837)
@@ -54,27 +55,34 @@ class TestLogic(TestCase):
 
         res = logic.check_uploaded_file('application/epub+zip', ebook_file)
         self.assertEqual(res['error'], 'file already exists')
-        
+
         size = os.stat(downloaded_file).st_size
         hash = utils.file_hash(downloaded_file)
-        
-        s=model.Source.query.get(86060)
-        
-        new_loc=logic.create_new_location(s, downloaded_file)
-        self.assertEqual(new_loc, 'Kissinger Henry/Roky v Bilem dome/Kissinger Henry - Roky v Bilem dome.epub')
-        
+
+        s = model.Source.query.get(86060)
+
+        new_loc = logic.create_new_location(s, downloaded_file)
+        self.assertEqual(
+            new_loc, 'Kissinger Henry/Roky v Bilem dome/Kissinger Henry - Roky v Bilem dome.epub')
+
         shutil.copy(ebook_file, downloaded_file)
-        new_loc=logic.create_new_location(s, downloaded_file)
-        self.assertEqual(new_loc, 'Kissinger Henry/Roky v Bilem dome/Kissinger Henry - Roky v Bilem dome(1).epub')
-        
+        new_loc = logic.create_new_location(s, downloaded_file)
+        self.assertEqual(
+            new_loc, 'Kissinger Henry/Roky v Bilem dome/Kissinger Henry - Roky v Bilem dome(1).epub')
+
         admin = model.User.query.get(1)
         conv = model.Conversion(source=source, format=model.Format.query.filter_by(extension='epub').one(),
-                                location = 'bla.epub', created_by=admin, modified_by=admin )
+                                location='bla.epub', created_by=admin, modified_by=admin)
         db.session.add(conv)
         db.session.commit()
-        
-        res=logic.query_converted_sources_for_ebook(source.ebook.id, admin).all()
+
+        res = logic.query_converted_sources_for_ebook(
+            source.ebook.id, admin).all()
         self.assertEqual(len(res), 1)
         self.assertEqual(res[0].location, 'bla.epub')
-        
-        
+
+        b1 = model.Ebook.query.get(33837)
+        b2 = model.Ebook.query.get(37157)
+        tot = len(b1.sources) + len(b2.sources)
+        logic.merge_ebook(b1, b2)
+        self.assertEqual(len(b1.sources), tot)

@@ -6,18 +6,20 @@ import {DialogService} from 'aurelia-dialog';
 import {ConfirmDialog} from 'components/confirm-dialog';
 import {WSClient} from 'lib/ws-client';
 import {EventAggregator} from 'aurelia-event-aggregator';
+import {Router} from 'aurelia-router';
 
 let logger = LogManager.getLogger('ebooks');
 
-@inject(ApiClient, WSClient, Access, DialogService, EventAggregator)
+@inject(ApiClient, WSClient, Access, DialogService, EventAggregator, Router)
 export class Ebook {
   ebook
-  constructor(client, ws, access, dialog, event ) {
+  constructor(client, ws, access, dialog, event, router ) {
     this.client=client;
     this.ws = ws;
     this.access=access;
     this.dialog =  dialog;
     this.event = event;
+    this.router = router;
     this.token = access.token;
     this.canDownload=access.hasRole('user');
     this.canConvert=access.hasRole('user');
@@ -165,6 +167,27 @@ export class Ebook {
     if (!this.context) return true;
     let converted = ebook.convertedSources && ebook.convertedSources.filter(c => c.source === this.context.id && c.format === item.value).length
     return item.value != this.context.format && ! converted;
+  }
+  }
+
+  get editActions() {
+    return [{text:"Information",value:'edit', icon:'info-circle'}, {text:'Cover', value:'cover', icon:'file-image-o' },
+      {text:'Merge', value:'merge', icon:'compress'}];
+
+  }
+
+  get editAction() {
+    return action => {
+    switch (action) {
+      case 'edit':
+        this.router.navigateToRoute('ebook-edit', {id:this.ebook.id})
+      break;
+      case 'cover':
+      break;
+      case 'merge':
+      this.router.navigateToRoute('ebook-merge', {id: this.ebook.id});
+      break;
+    }
   }
   }
 

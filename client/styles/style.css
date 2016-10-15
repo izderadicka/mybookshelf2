@@ -170,7 +170,7 @@ section {
 }
 
 .autocomplete-container {
-  /* width: 305px; */
+  width: 305px;
   display: inline-block;
 }
 

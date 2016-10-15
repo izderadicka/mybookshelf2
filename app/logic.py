@@ -405,4 +405,12 @@ def filter_ebooks_by_genres(q,genres):
     return q.join(model.Ebook.genres).filter(model.Genre.id.in_(genres)).group_by(model.Ebook.id)\
             .having(func.count(model.Ebook.id) == len(genres))
     
-        
+
+def merge_ebook(ebook, other):   
+    with db.session.no_autoflush:     
+        for s in other.sources:
+            other.sources.remove(s)
+            ebook.sources.append(s)
+            
+        delete_ebook(other)
+    

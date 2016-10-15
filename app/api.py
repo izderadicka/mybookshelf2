@@ -379,6 +379,18 @@ def converted_sources(ebook_id):
     q = logic.query_converted_sources_for_ebook(ebook_id, current_user)
     serializer = schema.conversions_list_serializer()
     return jsonify( total=q.count(), items=serializer.dump(q.limit(100).all()).data)
+
+@bp.route('/ebooks/<int:ebook_id>/merge', methods=['POST'])
+@role_required('superuser')
+def merge_ebook(ebook_id):
+    data=request.json
+    if not data['other_ebook']:
+        abort(400, 'Invalid Request')
+    ebook = model.Ebook.query.get_or_404(ebook_id)
+    other = model.Ebook.query.get_or_404(data['other_ebook'])    
+    logic.merge_ebook(ebook, other)
+    return jsonify(id=ebook_id)
+    
     
 
 

@@ -58,6 +58,13 @@ export const ROUTES =
     auth: true
   },
   {
+    route: 'ebook-merge/:id',
+    name: 'ebook-merge',
+    moduleId: 'pages/ebook-merge',
+    title: 'Merge Ebook',
+    auth: true
+  },
+  {
     route: 'ebook-create',
     name: 'ebook-create',
     moduleId: 'pages/ebook-edit',
