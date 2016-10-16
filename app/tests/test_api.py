@@ -187,6 +187,9 @@ class TestApi(TestCase):
         res = self.post('/api/ebooks/%d/merge'%33837, data='{"other_ebook":37157}',
                         content_type='application/json')
         self.assertTrue(res['id'])
+        
+        res = self.get('/api/ebooks/series/1633')
+        self.assertEqual(res['total'], 4)
 
     def test_api_create_edit(self):
         self.login()

@@ -207,6 +207,12 @@ class AuthorEbooks(Resource):
             q = logic.filter_ebooks(q, request.args.get('filter'))
         return logic.paginate(q, page, page_size, sort, schema.ebooks_list_serializer())
 
+class SeriesEbooks(Resource):
+    @logic.paginated(sortings=model.sortings['ebook_in_series'])
+    def get(self, id, page=1, page_size=20, sort=None):
+        q=model.Ebook.query.filter(model.Ebook.series_id == id)
+        return logic.paginate(q, page, page_size, sort, schema.ebooks_list_serializer())
+
 
 class UploadMeta(Resource):
 
@@ -398,6 +404,7 @@ api.add_resource(Ebooks, '/ebooks')
 api.add_resource(Ebook, '/ebooks/<int:id>')
 api.add_resource(Source, '/sources/<int:id>')
 api.add_resource(AuthorEbooks, '/ebooks/author/<int:id>')
+api.add_resource(SeriesEbooks, '/ebooks/series/<int:id>')
 api.add_resource(Authors, '/authors')
 api.add_resource(Author, '/authors/<int:id>')
 api.add_resource(Series, '/series')

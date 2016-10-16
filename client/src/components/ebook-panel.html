@@ -28,7 +28,8 @@
             <div class="ebook-info">
             <authors authors.one-time="ebook.authors" compact.bind="true"></authors>
             <div class="ebook-title"><a route-href="route: ebook; params.bind: {id:ebook.id}">${ebook.title}</a></div>
-            <div class="ebook-series" if.bind="ebook.series">${ebook.series.title} #${ebook.series_index}</div>
+            <div class="ebook-series" if.bind="ebook.series">
+              <a route-href="route: series; params.bind: {id:ebook.series.id}">${ebook.series.title}</a> #${ebook.series_index}</div>
           </div>
           </div>
         </div>

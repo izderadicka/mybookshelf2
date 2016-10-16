@@ -35,6 +35,12 @@ export const ROUTES =
     title: 'Authors books',
     auth: true
   }, {
+    route: ['series/:id'],
+    name: 'series',
+    moduleId: 'pages/series',
+    title: 'Books in series',
+    auth: true
+  }, {
     route: 'upload',
     name: 'upload',
     moduleId: 'pages/upload',

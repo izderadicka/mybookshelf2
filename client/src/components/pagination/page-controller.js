@@ -45,7 +45,7 @@ export class PageController {
   }
 
   loadPage(page, unbinded=false) {
-    //if (this.loading) return Promise.resolve(null);
+    //if (! this.loader) return Promise.resolve(null);
     logger.debug(`Loading page ${page}, ${this.sort} by ${this.loader.name}`);
     this.loading=true;
     this.error=null;
