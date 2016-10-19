@@ -7,7 +7,7 @@ import app.schema as schema
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm import aliased
 from sqlalchemy import inspect
-from common.utils import remove_diacritics, file_hash
+from common.utils import remove_diacritics, file_hash, copy_cover
 import os.path
 import filelock
 import shutil
@@ -30,7 +30,7 @@ def safe_int(v, for_=''):
 
 
 def preprocess_search_query(text):
-    text = re.sub('[:.;_-]', ' ', text, re.UNICODE)
+    text = re.sub(r'\W', ' ', text, re.UNICODE)
     tokens = text.split()
     tokens = map(lambda t: t.strip(), tokens)
     return ' & '.join(['%s:*' % t for t in tokens])
@@ -87,7 +87,8 @@ def create_new_location(source, upload):
         new_file = os.path.join(current_app.config['UPLOAD_DIR'], upload.file)
     else:
         new_file = upload
-    new_location = norm_file_name(source)
+    new_location = os.path.join(source.ebook.base_dir, os.path.basename(norm_file_name(source)))
+    #if source.ebook.base_dir else norm_file_name(source) #TODO: Remove this WA
     ebook_dir = os.path.join(base_dir, os.path.split(new_location)[0])
     if not os.path.exists(ebook_dir):
         os.makedirs(ebook_dir, exist_ok=True)
@@ -122,15 +123,18 @@ def norm_file_name(source, ext=''):
 
 def norm_file_name_base(ebook):
     config = current_app.config
+    data = {'author': ebook.authors_str,
+            'title': ebook.title,
+            'language': ebook.language.code,
+            }
+    if ebook.series:
+        data.update({'serie': ebook.series.title,
+                    'serie_index': ebook.series_index or 0})
     if ebook.series and config.get('BOOKS_FILE_SCHEMA_SERIE'):
-        new_name_rel = config.get('BOOKS_FILE_SCHEMA_SERIE') % {'author': ebook.authors_str,
-                                                                'title': ebook.title,
-                                                                'serie': ebook.series.title,
-                                                                'serie_index': ebook.series_index or 0}
+        new_name_rel = config.get('BOOKS_FILE_SCHEMA_SERIE') % data
         # TODO: might need to spplit base part
     else:
-        new_name_rel = config.get('BOOKS_FILE_SCHEMA') % {'author': ebook.authors_str,
-                                                          'title': ebook.title}
+        new_name_rel = config.get('BOOKS_FILE_SCHEMA') % data
     new_name_rel = remove_diacritics(new_name_rel)
     assert(len(new_name_rel) < 4096)
     return new_name_rel
@@ -331,7 +335,19 @@ def check_ebook_entity(ebook, current_user=None):
                      replace_author)
 
     # deduplicate authors
-
+    if len(ebook.authors)>1: 
+        duplicates=set()
+        
+        for i, author in enumerate(ebook.authors):
+            dups = list(filter(lambda a: a.last_name == author.last_name and\
+                                      a.first_name == author.first_name, ebook.authors[i+1:] ))
+            duplicates.update(dups)
+            
+        for dup in duplicates:
+            ebook.authors.remove(dup)
+        
+def update_ebook_base_dir(ebook):
+    ebook.base_dir= os.path.split(norm_file_name(ebook))[0]
 
 def delete_source(source):
     db.session.delete(source)
@@ -375,22 +391,16 @@ def delete_conversion(conversion):
     except IOError:
         logger.warn('Conversion file %s cannot be deleted', conversion.location)
     db.session.delete(conversion)
+    
 
-def update_cover(upload, ebook):
-    src = os.path.join(current_app.config['UPLOAD_DIR'], upload.cover)
-    cover_file = os.path.split(upload.cover)[1]
-    dst_dir = os.path.split(norm_file_name(ebook))[0]
-    dst = os.path.join(
-        current_app.config['BOOKS_BASE_DIR'], dst_dir, cover_file)
-    shutil.copy(src, dst)
-    ebook.cover = os.path.join(dst_dir, cover_file)
-    thumb = "thumbnail.jpg"
-    thumb_file = os.path.join(os.path.split(upload.cover)[0], thumb)
-    src = os.path.join(current_app.config['UPLOAD_DIR'], thumb_file)
-    if os.access(src, os.R_OK):
-        dst = os.path.join(
-            current_app.config['THUMBS_DIR'], '%d.jpg'%ebook.id)
-        shutil.copy(src, dst)
+def update_cover(upload, ebook, config=None):
+    if not config:
+        config = current_app.config
+    dst_dir = ebook.base_dir #if ebook.base_dir else os.path.split(norm_file_name(ebook))[0]
+    cover_file = upload.cover
+    ebook_id=ebook.id
+    cover_out = copy_cover(cover_file, dst_dir, ebook_id, config)
+    ebook.cover = cover_out
         
 def query_converted_sources_for_ebook(ebook_id, user=None):
     q = model.Conversion.query.join(model.Conversion.source)\

@@ -183,6 +183,7 @@ export class Ebook {
         this.router.navigateToRoute('ebook-edit', {id:this.ebook.id})
       break;
       case 'cover':
+        this.router.navigateToRoute('cover-edit', {id:this.ebook.id})
       break;
       case 'merge':
       this.router.navigateToRoute('ebook-merge', {id: this.ebook.id});

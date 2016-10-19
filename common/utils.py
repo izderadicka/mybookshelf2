@@ -7,12 +7,16 @@ import hashlib
 import logging
 import mimetypes
 import os.path
+import shutil
 
 logger = logging.getLogger('utils')
 
 
 def mimetype_from_file_name(fname):
     return mimetypes.guess_type(fname, False)[0]
+
+def ext_from_mimetype(mimetype):
+    return mimetypes.guess_extension(mimetype)
 
 
 def success_error(fn):
@@ -153,3 +157,20 @@ def parse_author(author):
     if len(parts) > 1:
         a['first_name'] = ' '.join(parts[:-1])
     return a
+
+def copy_cover(cover_file, dst_dir, ebook_id, config):
+    src = os.path.join(config['UPLOAD_DIR'], cover_file)
+    cover_out = os.path.join(dst_dir, os.path.split(cover_file)[1])
+    dst = os.path.join(
+        config['BOOKS_BASE_DIR'], cover_out)
+    os.makedirs(os.path.dirname(dst), exist_ok=True)
+    shutil.copy(src, dst)
+    
+    thumb = config['THUMBNAIL_FILE']
+    thumb_file = os.path.join(os.path.split(cover_file)[0], thumb)
+    src = os.path.join(config['UPLOAD_DIR'], thumb_file)
+    if os.access(src, os.R_OK):
+        dst = os.path.join(
+            config['THUMBS_DIR'], '%d.jpg'%ebook_id)
+        shutil.copy(src, dst)
+    return cover_out

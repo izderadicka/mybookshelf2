@@ -183,6 +183,18 @@ async def get_conversion_id(source_id, user_id, format):
         if res:
             return res[0]
         
+async def get_ebook_dir(ebook_id):  
+    async with engine.acquire() as conn:
+        ebook = model.Ebook.__table__
+        res = await conn.execute(select([ebook.c.base_dir]).where(ebook.c.id == ebook_id))   
+        res = await res.fetchone()
+        if res:
+            return res[0]
+        
+async def update_ebook_cover(ebook_id, cover):  
+    async with engine.acquire() as conn:
+        ebook = model.Ebook.__table__   
+        res = await conn.execute(ebook.update().values(cover=cover).where(ebook.c.id == ebook_id))
         
 async def get_meta(source_id):
     async with engine.acquire() as conn:

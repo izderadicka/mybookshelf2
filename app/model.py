@@ -191,6 +191,7 @@ class Ebook(Base, Auditable):
     authors = relationship(
         'Author', secondary=ebook_authors, order_by='Author.id', lazy='joined')
     cover = Column(String(512))
+    base_dir = Column(String(512))
     full_text = deferred(Column(TSVectorType(regconfig='custom')))
 
     @property

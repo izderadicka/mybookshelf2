@@ -87,11 +87,15 @@ export class WSClient {
     this.session=null;
   }
 
-  extractMeta(fileName, originalFileName=null, proposedMeta={}) {
+  testConnected() {
     if (! this.isConnected) {
       alert('WebSocket is not connected, reload application!');
-      return Promise.reject(new Error('Websocket is not connected'));
+      throw new Error('Websocket is not connected');
     }
+  }
+
+  extractMeta(fileName, originalFileName=null, proposedMeta={}) {
+    this.testConnected();
     return this.session.call('eu.zderadicka.asexor.run_task', ['metadata',fileName, proposedMeta])
     .then(taskId => {
       this.notif.start(taskId,
@@ -108,10 +112,7 @@ export class WSClient {
   }
 
   convertSource(source, format, ebook) {
-    if (! this.isConnected) {
-      alert('WebSocket is not connected, reload application!');
-      return Promise.reject(new Error('Websocket is not connected'));
-    }
+    this.testConnected();
     return this.session.call('eu.zderadicka.asexor.run_task', ['convert', source.id, format])
       .then(taskId => {
         this.notif.start(taskId,
@@ -125,6 +126,22 @@ export class WSClient {
         });
         return taskId;
       })
+  }
+
+  changeCover(uploadedCover, ebook) {
+    this.testConnected();
+    return this.session.call('eu.zderadicka.asexor.run_task', ['cover', uploadedCover, ebook.id])
+    .then(taskId => {
+      this.notif.start(taskId,
+        {
+        text:`Update ebook ${ebook.title} cover image.`,
+        status:"submitted",
+        task:"cover",
+        taskId,
+        ebookId: ebook.id
+      });
+      return taskId;
+    })
   }
 
 }

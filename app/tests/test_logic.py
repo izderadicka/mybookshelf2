@@ -8,8 +8,8 @@ import shutil
 import settings
 
 
-ebook_file = os.path.join(settings.BOOKS_BASE_DIR,
-                          'Kissinger, Henry/Roky v Bilem dome/Kissinger, Henry - Roky v Bilem dome.epub')
+ebook_file = os.path.join(os.path.dirname(__file__),
+                          'data/Kissinger, Henry - Roky v Bilem dome.epub')
 
 downloaded_file = os.path.join(settings.UPLOAD_DIR, 'kissinger.epub')
 
@@ -46,12 +46,12 @@ class TestLogic(TestCase):
         source = model.Source.query.get(46519)
         name = logic.norm_file_name(source)
         self.assertEqual(
-            name, 'Strugackij A N, Strugackij B N/Noc na Marse/Strugackij A N, Strugackij B N - Noc na Marse.doc')
+            name, 'Strugackij A N, Strugackij B N/Noc na Marse(sk)/Strugackij A N, Strugackij B N - Noc na Marse.doc')
 
         source = model.Source.query.get(63546)
         name = logic.norm_file_name(source)
         self.assertEqual(
-            name, 'Monroe Lucy/Nevesty od Stredozemniho more/Nevesty od Stredozemniho more 2 - Spanelova milenka/Monroe Lucy - Nevesty od Stredozemniho more 2 - Spanelova milenka.doc')
+            name, 'Monroe Lucy/Nevesty od Stredozemniho more/Nevesty od Stredozemniho more 2 - Spanelova milenka(cs)/Monroe Lucy - Nevesty od Stredozemniho more 2 - Spanelova milenka.doc')
 
         res = logic.check_uploaded_file('application/epub+zip', ebook_file)
         self.assertEqual(res['error'], 'file already exists')
@@ -63,12 +63,12 @@ class TestLogic(TestCase):
 
         new_loc = logic.create_new_location(s, downloaded_file)
         self.assertEqual(
-            new_loc, 'Kissinger Henry/Roky v Bilem dome/Kissinger Henry - Roky v Bilem dome.epub')
+            new_loc, 'Kissinger Henry/Roky v Bilem dome(cs)/Kissinger Henry - Roky v Bilem dome.epub')
 
         shutil.copy(ebook_file, downloaded_file)
         new_loc = logic.create_new_location(s, downloaded_file)
         self.assertEqual(
-            new_loc, 'Kissinger Henry/Roky v Bilem dome/Kissinger Henry - Roky v Bilem dome(1).epub')
+            new_loc, 'Kissinger Henry/Roky v Bilem dome(cs)/Kissinger Henry - Roky v Bilem dome(1).epub')
 
         admin = model.User.query.get(1)
         conv = model.Conversion(source=source, format=model.Format.query.filter_by(extension='epub').one(),

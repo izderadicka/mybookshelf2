@@ -2,12 +2,14 @@ import os.path
 import re
 import asyncio
 from asexor.task import BaseTask, TaskError
+import settings
 from settings import UPLOAD_DIR, IMAGE_MAGIC, THUMBNAIL_SIZE, OOFFICE, CONVERSION_FORMATS, CONVERTABLE_TYPES,\
-    BOOKS_CONVERTED_DIR, BOOKS_BASE_DIR, CALIBRE_META_TOOL, CALIBRE_CONVERT_TOOL
-from common.utils import file_hash, parse_author
+    BOOKS_CONVERTED_DIR, BOOKS_BASE_DIR, CALIBRE_META_TOOL, CALIBRE_CONVERT_TOOL, COVER_SIZE
+from common.utils import file_hash, parse_author, copy_cover
 import logging
 import engine.dal as dal
 from .utils import AsyncProxy
+import shutil
 
 aos = AsyncProxy(os)
 
@@ -16,7 +18,6 @@ logger = logging.getLogger('tasks')
 #'/usr/bin/soffice --headless --convert-to %(format)s --outdir "%(out_dir)s" "%(in_file)s"'
 
 async def convert_file(fname, format, outdir=None): 
-    proc_params = []
     if not outdir:
         outdir=os.path.dirname(fname)
         out_file = os.path.splitext(fname)[0] +'.'+format
@@ -30,6 +31,34 @@ async def convert_file(fname, format, outdir=None):
         return out_file
     else:
         logger.error('Failed %s with code %d',' '.join(cmd), return_code)
+        
+async def resize_cover(cover_in, base_dir):
+    cover = None
+    if await aos.path.exists(cover_in):
+        cover_file = os.path.join(base_dir, 'cover.jpg')
+        cover_file_full = os.path.join(UPLOAD_DIR, cover_file)
+
+        proc = await asyncio.create_subprocess_exec(IMAGE_MAGIC, cover_in, '-fuzz', '7%',
+                                                    '-trim', '-resize', '%dX%d'%COVER_SIZE, cover_file_full)
+        return_code = await proc.wait()
+
+        if return_code == 0 and await aos.path.exists(cover_file_full):
+            await aos.remove(cover_in)
+        else:
+            logger.warn(
+                'Image Magic failed triming/scaling file %s with code %d', cover_in, return_code)
+            os.rename(cover_in, cover_file_full)
+        cover = cover_file
+        thumb_out_full = os.path.join(UPLOAD_DIR, base_dir, 'thumbnail.jpg')
+        proc = await asyncio.create_subprocess_exec(IMAGE_MAGIC, cover_file_full, '-resize', '%dX%d'%THUMBNAIL_SIZE, thumb_out_full)
+        return_code = await proc.wait()
+        
+        if return_code != 0 or not await aos.path.exists(thumb_out_full):
+            logger.warn('Error creating thumbnail')
+        
+    else:
+        logger.warn('Cannot get cover image')
+    return cover
     
 class MetadataTask(BaseTask):
     NAME = 'metadata'
@@ -141,36 +170,35 @@ class MetadataTask(BaseTask):
         size = await loop.run_in_executor(None, lambda f: os.stat(f).st_size, self.fname_full)
         
         cover_in = os.path.join(UPLOAD_DIR, self.cover_name)
-        cover = None
-        if await aos.path.exists(cover_in):
-            cover_file = os.path.join(self.base_dir, 'cover.jpg')
-            cover_file_full = os.path.join(UPLOAD_DIR, cover_file)
-
-            proc = await asyncio.create_subprocess_exec(IMAGE_MAGIC, cover_in, '-fuzz', '7%',
-                                                        '-trim', cover_file_full)
-            return_code = await proc.wait()
-
-            if return_code == 0 and await aos.path.exists(cover_file_full):
-                await aos.remove(cover_in)
-            else:
-                logger.warn(
-                    'Image Magic failed triming file %s with code %d', cover_in, return_code)
-                os.rename(cover_in, cover_file_full)
-            cover = cover_file
-            thumb_out_full = os.path.join(UPLOAD_DIR, self.base_dir, 'thumbnail.jpg')
-            proc = await asyncio.create_subprocess_exec(IMAGE_MAGIC, cover_file_full, '-resize', '%dX%d'%THUMBNAIL_SIZE, thumb_out_full)
-            return_code = await proc.wait()
-            
-            if return_code != 0 or not await aos.path.exists(thumb_out_full):
-                logger.warn('Error creating thumbnail')
-            
-        else:
-            logger.warn('Cannot get cover image')
+        cover = await resize_cover(cover_in, self.base_dir)
 
         upload_id = await dal.add_upload(self.fname, cover, meta, size, hash, self.user)
 
         return upload_id
 
+class CoverTask(BaseTask):
+    NAME='cover'
+    MAX_TIME=10
+    
+    async def validate_args(self, *args, **kwargs):
+        cover_file = os.path.join(UPLOAD_DIR,args[0])
+        self.ebook_id = args[1]
+        base_dir = os.path.split(cover_file)[0]
+        return (cover_file, base_dir)
+        
+    async def execute(self, *args):
+        return await asyncio.wait_for(resize_cover(*args), self.MAX_TIME)
+        
+    async def parse_result(self, data):
+        if not data:
+            raise TaskError('Cover resizing failed')
+        config = settings.__dict__ #TODO: check if there is better safer way
+        dst_dir=await dal.get_ebook_dir(self.ebook_id)
+        loop=asyncio.get_event_loop()
+        cover= await loop.run_in_executor(None, copy_cover, data, dst_dir, self.ebook_id, config)
+        await dal.update_ebook_cover(self.ebook_id, cover)
+        await loop.run_in_executor(None, shutil.rmtree, os.path.dirname(data))
+        return self.ebook_id
     
 class ConvertTask(BaseTask):
     NAME = 'convert'

@@ -5,7 +5,7 @@ import asyncio
 from app.tests.basecase import TestCase
 from engine import dal
 from settings import Testing
-from settings import BOOKS_CONVERTED_DIR
+from settings import BOOKS_CONVERTED_DIR, BOOKS_BASE_DIR
 from engine.tasks import ConvertTask
 import app.model as model
 
@@ -15,17 +15,22 @@ dal.DSN = 'dbname={db} user={user} password={password} host={host}'.format(db=Te
                                                                            password=Testing.DB_PASSWORD
                                                                            )
 
+ebook_file=os.path.join(BOOKS_BASE_DIR, 'Kissinger, Henry/Roky v Bilem dome/Kissinger, Henry - Roky v Bilem dome (1).docx')
+
 class TestMeta(TestCase):
 
     def setUp(self):
         TestCase.setUp(self)
         dal.init()
+        os.makedirs(os.path.dirname(ebook_file), exist_ok=True)
+        shutil.copy(os.path.join(os.path.dirname(__file__), 'files/Kissinger, Henry - Roky v Bilem dome (1).docx'), ebook_file)
         
        
     def tearDown(self):
         TestCase.tearDown(self)
         dal.close()
         shutil.rmtree(os.path.join(BOOKS_CONVERTED_DIR, '1/Kissinger, Henry'), ignore_errors=True)
+        shutil.rmtree(os.path.join(BOOKS_BASE_DIR, 'Kissinger, Henry'), ignore_errors=True)
         
     
     def test_convert(self):

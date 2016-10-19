@@ -49,8 +49,8 @@ BOOKS_CONVERTED_DIR = os.path.join(DATA_BASE_DIR, 'converted')
 # be RW for both web server and console user
 BOOKS_DIR_UMASK = 0
 
-BOOKS_FILE_SCHEMA = "%(author)s/%(title)s/%(author)s - %(title)s"
-BOOKS_FILE_SCHEMA_SERIE = "%(author)s/%(serie)s/%(serie)s %(serie_index)d - %(title)s/%(author)s - %(serie)s %(serie_index)d - %(title)s"
+BOOKS_FILE_SCHEMA = "%(author)s/%(title)s(%(language)s)/%(author)s - %(title)s"
+BOOKS_FILE_SCHEMA_SERIE = "%(author)s/%(serie)s/%(serie)s %(serie_index)d - %(title)s(%(language)s)/%(author)s - %(serie)s %(serie_index)d - %(title)s"
 
 # Conversion related
 CONVERSION_FORMATS = ['epub', 'mobi', 'fb2']
@@ -64,8 +64,10 @@ OOFFICE = '/usr/bin/soffice'  # OPEN OFFICE BINARY
 CALIBRE_META_TOOL = '/usr/bin/ebook-meta'
 CALIBRE_CONVERT_TOOL = '/usr/bin/ebook-convert'
 
+THUMBNAIL_FILE="thumbnail.jpg"
 THUMBNAIL_SIZE = (100, 140)  # width, height
 COVER_SIZE = (320, 452)
+MAX_COVER_FILE_SIZE = 10*1024*1024
 
 
 class Testing:

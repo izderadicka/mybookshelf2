@@ -147,4 +147,12 @@ class TestDAL(TestCase):
         q = dal.get_conversion_id(2, 1, 'epub')
         conv_id = loop.run_until_complete(q)
         self.assertTrue(conv_id is None)
+        q = dal.get_ebook_dir(61944)
+        base_dir = loop.run_until_complete(q)
+        self. assertEqual(base_dir, 'Kissinger Henry/Roky v Bilem dome(cs)')
+        q =dal.update_ebook_cover(61944, 'Kissinger Henry/Roky v Bilem dome(cs)/cover.jpg')
+        loop.run_until_complete(q)
+        
+        eb = model.Ebook.query.get(61944)
+        self.assertEqual(eb.cover, 'Kissinger Henry/Roky v Bilem dome(cs)/cover.jpg')
         

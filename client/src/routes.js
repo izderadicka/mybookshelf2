@@ -71,6 +71,13 @@ export const ROUTES =
     auth: true
   },
   {
+    route: 'cover-edit/:id',
+    name: 'cover-edit',
+    moduleId: 'pages/cover-edit',
+    title: 'Edit Cover',
+    auth: true
+  },
+  {
     route: 'ebook-create',
     name: 'ebook-create',
     moduleId: 'pages/ebook-edit',

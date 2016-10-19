@@ -24,7 +24,7 @@
       </li>
       <li class="list-group-item" if.bind="ebook.series">
         <label class="ebook-detail-label">Series:</label>
-        <span class="ebook-detail-value">${ebook.series.title} #${ebook.series_index}</span>
+        <span class="ebook-detail-value"><a route-href="route:series; params.bind: {id: ebook.series.id}">${ebook.series.title}</a> #${ebook.series_index}</span>
       </li>
       <li class="list-group-item">
         <label class="ebook-detail-label">Genres:</label>

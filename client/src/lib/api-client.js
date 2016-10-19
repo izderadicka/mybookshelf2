@@ -99,10 +99,11 @@ export class ApiClient {
       });
   }
 
-  upload(formData) {
-    return this.http.fetch(this.getUrl('upload'), {method:'post', body: formData})
+  upload(formData, resource='upload') {
+    return this.http.fetch(this.getUrl(resource), {method:'post', body: formData})
       .then( resp => resp.json())
   }
+
 
   addUploadToEbook(ebookId, uploadId, quality) {
     return this.post(`ebooks/${ebookId}/add-upload`, {upload_id:uploadId, quality});

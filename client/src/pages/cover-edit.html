@@ -1,0 +1,21 @@
+<template>
+  <section>
+    <h2 class="page-title">Change Cover of "${ebook.title}"</h2>
+    <error-alert error.bind="error"></error-alert>
+    <div class="panel-body">
+    <div class="ebook-cover-big" id="cover-holder"></div>
+    <form id="file-upload-form" enctype="multipart/form-data">
+      <div class='form-group'>
+        <label>New Cover File</label>
+      <input type="file" name="file" id="file-input" change.trigger="showFile()">
+    </div>
+
+  <div if.bind="fileOK" class="form-group">
+    <button class="btn btn-primary btn-lg" click.delegate="uploadCover()">Change Cover</button>
+    <button type="button" class="btn btn-default btn-lg" click.delegate="cancel()">Cancel</button>
+  </div>
+  <div class='uploading-progress' if.bind="uploading">
+    <i class="fa fa-spinner fa-spin fa-fw"></i> Uploading file please wait ...
+  </div>
+  </section>
+</template>

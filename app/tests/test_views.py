@@ -3,9 +3,24 @@ from flask import current_app
 import app
 import app.model as model
 from common.utils import hash_pwd
+from .test_api import ebook_file, test_file
+import settings
+import os.path
+import shutil
 
 
 class TestViews(TestCase):
+    
+    def setUp(self):
+        TestCase.setUp(self)
+        os.makedirs(os.path.dirname(ebook_file), exist_ok=True)
+        shutil.copy(test_file, ebook_file)
+        
+        
+    def tearDown(self):
+        TestCase.tearDown(self)
+        shutil.rmtree(os.path.join(settings.BOOKS_BASE_DIR, 'Kissinger, Henry'), ignore_errors=True)
+
 
     def test_login(self):
         with self.client as c:

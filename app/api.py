@@ -4,7 +4,7 @@ from flask_login import current_user
 import app.model as model
 import app.schema as schema
 import app.logic as logic
-from common.utils import success_error, mimetype_from_file_name
+from common.utils import success_error, mimetype_from_file_name, ext_from_mimetype
 from app import db
 from app.cors import add_cors_headers
 from app.access import role_required, can_change_object
@@ -71,7 +71,8 @@ class Ebooks(Resource):
         ebook.modified_by = current_user
 
         logic.check_ebook_entity(ebook, current_user)
-
+        logic.update_ebook_base_dir(ebook)
+        
         db.session.add(ebook)
 
         try:
@@ -252,6 +253,25 @@ def upload():
             return jsonify(**result)
         return jsonify(result='ok', file=os.path.join(tdir, filename))
     return jsonify(error='no file')
+
+@bp.route('/upload-cover', methods=['POST'])
+@role_required('user')
+def upload_cover():
+    file=request.files['file']
+    if file:
+        
+        if not file.mimetype.startswith('image/'):
+            return jsonify(error='Invalid file type %s'%file.mimetype)
+        if file.content_length > current_app.config['MAX_COVER_FILE_SIZE']:
+            return jsonify(error='File too big (%d)'%file.content_length)
+        filename = 'cover_in'+ext_from_mimetype(file.mimetype)
+        temp_dir = tempfile.mkdtemp(dir=current_app.config['UPLOAD_DIR'])
+        tdir = os.path.split(temp_dir)[1]
+        ext=os.path.split
+        full_name = os.path.join(temp_dir, filename)
+        file.save(full_name)
+        return jsonify(result='ok', file=os.path.join(tdir, filename))
+        
 
 
 @bp.route('/upload/check', methods=['POST'])

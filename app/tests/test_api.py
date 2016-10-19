@@ -3,7 +3,13 @@ from urllib.parse import quote
 import flask
 from flask_login import current_user
 import app
+import settings
+import os.path
+import shutil
 
+test_file = os.path.join(os.path.dirname(__file__),
+                          'data/Kissinger, Henry - Roky v Bilem dome.epub')
+ebook_file = os.path.join(settings.BOOKS_BASE_DIR, 'Kissinger, Henry/Roky v Bilem dome/Kissinger, Henry - Roky v Bilem dome.epub')
 
 class TestApi(TestCase):
 
@@ -11,6 +17,16 @@ class TestApi(TestCase):
         super(TestApi, self).__init__(*args, **kwargs)
         self.headers = None
         self.token = None
+        
+    def setUp(self):
+        TestCase.setUp(self)
+        os.makedirs(os.path.dirname(ebook_file), exist_ok=True)
+        shutil.copy(test_file, ebook_file)
+        
+        
+    def tearDown(self):
+        TestCase.tearDown(self)
+        shutil.rmtree(os.path.join(settings.BOOKS_BASE_DIR, 'Kissinger, Henry'), ignore_errors=True)
 
     def login(self, user='admin', pwd='admin'):
         res = self.client.post('/login', data='{"username":"%s", "password":"%s"}' % (user, pwd),
@@ -193,7 +209,7 @@ class TestApi(TestCase):
 
     def test_api_create_edit(self):
         self.login()
-        data = '{"title":"Testovací kniha","authors":[{"id":5222},{"last_name":"Novy","first_name":"Autor"}],"genres":[{"id":43}],"language":{"id":1},"series":{"title":"Nejaka"},"series_index":"1"}'
+        data = '{"title":"Testovací kniha","authors":[{"id":5222},{"last_name":"Novy","first_name":"Autor"}, {"last_name":"Novy","first_name":"Autor"}],"genres":[{"id":43}],"language":{"id":1},"series":{"title":"Nejaka"},"series_index":"1"}'
         res = self.post(
             '/api/ebooks', data=data, content_type="application/json")
 
@@ -207,6 +223,7 @@ class TestApi(TestCase):
         
         ebook = self.get('/api/ebooks/%d'%id)
         
+        self.assertEqual(ebook['base_dir'], 'King S E, Novy A/Nejaka/Nejaka 1 - Testovaci kniha(cs)')
         self.assertEqual(ebook['title'], "Testovací kniha")
         self.assertEqual(len(ebook['authors']), 2)
         self.assertEqual(ebook['series_index'], 1)
