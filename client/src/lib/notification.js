@@ -70,6 +70,20 @@ export class Notification {
     }
   }
 
+  clearFinished() {
+    let a =[];
+    for (let taskId of this._ns) {
+      let status = this._details.get(taskId).status;
+      if (status == 'success' || status == 'error') {
+        this._details.delete(taskId)
+      } else {
+        a.push(taskId)
+      }
+    }
+
+    this._ns = a;
+  }
+
   get items() {
     let a = [];
     for (let taskId of this._ns) {

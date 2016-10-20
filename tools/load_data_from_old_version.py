@@ -9,6 +9,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 import app.model as model
 from common.utils import hash_pwd
+import settings
 
 
 lmap = lambda func, *iterable: list(map(func, *iterable))
@@ -52,20 +53,42 @@ def update_seq(e, table_name):
         "select setval('{0}_id_seq',(select max(id) from {0}), true);".format(table_name))
 
 
+
+def prepare_db(engine):
+    SQL_DIR = os.path.join(os.path.dirname(__file__), '../sql')
+    
+    connection = engine.raw_connection()  # @UndefinedVariable
+    try:
+        c = connection.cursor()
+        for fname in ('create_ts.sql', 'create_functions.sql'):
+            script = open(os.path.join(SQL_DIR, fname), 'rt', encoding='utf-8-sig').read()
+            # print(script)
+            res = c.execute(script)
+        connection.commit()
+    finally:
+        connection.close()
+    
+
 def export_data(args):
+    
+# MySql connections
     conn = mysql.connect(host=args.host, port=args.port, user=args.user, password=args.pwd,
                          database=args.db, charset='utf8')
     conn2 = mysql.connect(host=args.host, port=args.port, user=args.user, password=args.pwd,
                           database=args.db,  charset='utf8')
     c = conn.cursor()
+#########################################################
 
-    engine = create_engine(args.pg)
+# Postgresql - create session and clear and initialize DB
+    engine = create_engine(settings.SQLALCHEMY_DATABASE_URI)
     Session = sessionmaker(bind=engine)
-
     model.Base.metadata.drop_all(bind=engine)  # @UndefinedVariable
     model.Base.metadata.create_all(bind=engine)  # @UndefinedVariable
-
+    prepare_db(engine)
     session = Session()
+#########################################################
+    
+# Codelists genre, language format
     load_model(c, session, 'select id,name from ebook_subject',
                model.Genre, {'name': 'name'})
     load_model(c, session, 'select id, code, name from ebook_language',
@@ -81,7 +104,9 @@ def export_data(args):
     f = model.Format.query.filter_by(extension='pdb').one()
     f.mime_type = 'application/x-aportisdoc'
     session.commit()
+#############################################################################    
 
+# New user admin and standard roles
     now = datetime.now()
     parent = None
     for r in ['guest', 'user', 'trusted_user', 'superuser', 'admin']:
@@ -95,13 +120,15 @@ def export_data(args):
     admin.roles.append(role)
     session.commit()
     print("Created user roles")
+###################################################################################
 
     def auditable_attrs(data):
         return {'created_by': admin, 'modified_by': admin,
                 'created': data['created'], 'modified': data['modified'],
                 'id': data['id']
                 }
-
+        
+# Authors
     no_author_id = None
     q = 'select id, created, modified, name, description from ebook_author'
     c.execute(q)
@@ -118,6 +145,7 @@ def export_data(args):
 
     session.commit()
     print('Loaded Authors: %d records' % session.query(model.Author).count())
+##################################################################
 
     q = 'select id, created, modified, title, rating from ebook_serie'
     c.execute(q)
@@ -165,6 +193,7 @@ def export_data(args):
                 model.Genre.id.in_(genres)).all()  # @UndefinedVariable
             o.genres.extend(genres)
         c2.close()
+        #TBD: Set base directory
         session.add(o)
         count += 1
         if not count % 1000:
@@ -182,6 +211,9 @@ def export_data(args):
         ebook = session.query(model.Ebook).get(data['ebook_id'])
         o = model.Source(ebook=ebook, format=format, location=data['location'], size=data['size'],
                          hash=data['crc'], quality=data['quality'], **auditable_attrs(data))
+        
+        #TBD copy files
+        #TBD extract cover
         session.add(o)
         count += 1
         if not count % 1000:
@@ -248,7 +280,7 @@ def export_data(args):
 
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument('--pg', required=True, help='Postgresql db URI')
+    
     p.add_argument('-H', '--host', default='localhost', help='MySQL host')
     p.add_argument('-p', '--port', type=int, default=3306, help='MySQL port')
     p.add_argument('--user', default='ebooks', help='db user')
@@ -256,6 +288,11 @@ def main():
     p.add_argument('--db', default='ebooks', help='db name')
     p.add_argument('--limit', type=int, help='limit number of records to')
     args = p.parse_args()
+    print('This tool will migrate data from Mybookshelf (previous version)')
+    print("It'll delete all data from existing DB")
+    answer=input('Continue [Y/N]?: ')
+    if answer.lower != 'y':
+        return
     export_data(args)
 
     print('Done')

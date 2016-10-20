@@ -315,3 +315,8 @@ background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAACMCAMAAAC9K
 .navbar-form {
   display: inline-block;
 }
+
+.action-btn-right {
+  width: 1.1em;
+  float: right;
+}

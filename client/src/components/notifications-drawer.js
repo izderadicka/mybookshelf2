@@ -34,7 +34,7 @@ export class NotificationsDrawer {
   }
 
   get fold() {
-    return this.root.hasClass('fold')
+    return ! this.root.hasClass('open')
 
   }
 
@@ -43,5 +43,12 @@ export class NotificationsDrawer {
     return true;
   }
 
+hide() {
+  this.root.drawer('hide');
+}
 
+clearFinished() {
+  this.notif.clearFinished();
+  if (this.notif.empty) this.hide();
+}
 }
