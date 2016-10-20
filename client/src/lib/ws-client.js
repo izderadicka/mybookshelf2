@@ -8,6 +8,20 @@ import autobahn from 'mins/autobahn.min';
 
 const logger = LogManager.getLogger('ws-client');
 
+function connected(target, prop, descriptor) {
+  let fn = descriptor.value;
+  let wrapped = function() {
+    if (! this.isConnected) {
+      alert('WebSocket is not connected, reload application!');
+      return Promise.reject(new Error('Websocket is not connected'));
+    } else {
+      return fn.apply(this,arguments)
+    }
+  }
+  descriptor.value = wrapped;
+  return descriptor;
+}
+
 @inject(Configure, Notification, EventAggregator, Access)
 export class WSClient {
   conn = null;
@@ -87,15 +101,8 @@ export class WSClient {
     this.session=null;
   }
 
-  testConnected() {
-    if (! this.isConnected) {
-      alert('WebSocket is not connected, reload application!');
-      throw new Error('Websocket is not connected');
-    }
-  }
-
+  @connected
   extractMeta(fileName, originalFileName=null, proposedMeta={}) {
-    this.testConnected();
     return this.session.call('eu.zderadicka.asexor.run_task', ['metadata',fileName, proposedMeta])
     .then(taskId => {
       this.notif.start(taskId,
@@ -111,8 +118,8 @@ export class WSClient {
     });
   }
 
+  @connected
   convertSource(source, format, ebook) {
-    this.testConnected();
     return this.session.call('eu.zderadicka.asexor.run_task', ['convert', source.id, format])
       .then(taskId => {
         this.notif.start(taskId,
@@ -128,8 +135,8 @@ export class WSClient {
       })
   }
 
+  @connected
   changeCover(uploadedCover, ebook) {
-    this.testConnected();
     return this.session.call('eu.zderadicka.asexor.run_task', ['cover', uploadedCover, ebook.id])
     .then(taskId => {
       this.notif.start(taskId,

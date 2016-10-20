@@ -2,17 +2,19 @@ import {inject, LogManager, computedFrom} from 'aurelia-framework';
 import {ApiClient} from 'lib/api-client';
 import {WSClient} from 'lib/ws-client';
 import {Router} from 'aurelia-router';
+import {EventAggregator} from 'aurelia-event-aggregator';
 import $ from 'jquery';
 
 const logger = LogManager.getLogger('cover-edit');
 
-@inject(Element, ApiClient, WSClient, Router)
+@inject(Element, ApiClient, WSClient, Router, EventAggregator)
 export class CoverEdit {
-  constructor(elem, client, wsClient, router) {
+  constructor(elem, client, wsClient, router, event) {
     this.elem = elem;
     this.client = client;
     this.router = router;
     this.wsClient = wsClient;
+    this.event = event;
 
     this.cover=new Image();
     this.cover.onload = function() {
@@ -82,7 +84,20 @@ export class CoverEdit {
           this.wsClient.changeCover(data.file, this.ebook)
           .then(taskId => {
             logger.debug('Cover update send as task '+taskId);
+            this.event.subscribe('cover-ready', result =>{
+              if (taskId == result.taskId) {
+                this.uploading=false;
+                this.router.navigateToRoute('ebook', {id: this.ebook.id});
+              }
+            });
+            this.event.subscribe('cover-error', result => {
+              if (taskId == result.taskId) {
+                this.setError('Cover resize error', result.error);
+              }
+            });
+
           })
+          .catch(err => this.setError('WS error', err));
         }
       })
       .catch(err => this.setError('Upload error', err));
