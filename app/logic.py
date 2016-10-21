@@ -196,11 +196,13 @@ def check_file(mime_type, size, hash, extension=None):
                     current_app.config['MAX_CONTENT_LENGTH'])
         return {'error': 'file too big'}
     if not mime_type and extension:
-        mime_type = mimetype_from_file_name('x.'+extension)
+        mime_type = mimetype_from_file_name('x.'+extension) or ''
     t = model.Format.query.filter_by(mime_type=mime_type.lower()).all()
+    if not t and extension:
+        t = model.Format.query.filter_by(extension=extension).all()
     if not t:
-        logger.warn('Unsupported mime type %s', mime_type)
-        return {'error': 'unsupported file type %s'%mime_type}
+        logger.warn('Unsupported mime type %s ext %s', mime_type, extension)
+        return {'error': 'unsupported file type %s, extension %s'%(mime_type, extension)}
 
     sources = model.Source.query.filter_by(size=size, hash=hash).all()
     if sources:
