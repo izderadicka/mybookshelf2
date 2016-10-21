@@ -22,6 +22,7 @@ reload() {
   kill `cat /data/local/mbs2/backend.pid`
   kill -HUP `cat /data/local/mbs2/uwsgi.pid`
   python3.5 engine/backend.py --crossbar-uri=/data/local/mbs2/crossbar/socket1 --log-file=$LOG_DIR/backend.log 1>/dev/null 2>&1 &
+  echo $! > /data/local/mbs2/backend.pid
   }
 case $1 in
   start)

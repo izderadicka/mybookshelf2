@@ -115,19 +115,27 @@ export class Upload {
       size:file.size,
       hash: null
     }
-    let reader=new FileReader()
+    let reader=new FileReader();
+    let checkFile = () => {
+      this.client.checkUpload(fileInfo)
+        .then( () => {
+          this.checking=false;
+          this.fileOK=true;
+        })
+        .catch( err => {
+          this.setError(`File check error`, err);
+        });
+    }
     reader.onload = () => crypto.subtle.digest("SHA-1", reader.result)
       .then(val => {
         fileInfo.hash=hex(val);
         logger.debug('File info '+JSON.stringify(fileInfo));
-        this.client.checkUpload(fileInfo)
-          .then( () => {
-            this.checking=false;
-            this.fileOK=true;
-          })
-          .catch( err => {
-            this.setError(`File check error`, err);
-          })
+        checkFile();
+
+      })
+      .catch(err=> {
+        logger.warn('Hashing error, can be due to unsecure access, we can continue without prior file check', err);
+        checkFile();
       });
     reader.readAsArrayBuffer(file);
     logger.debug(`Checking file ${file.name}`)
