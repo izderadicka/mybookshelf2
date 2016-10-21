@@ -199,7 +199,7 @@ def check_file(mime_type, size, hash):
     t = model.Format.query.filter_by(mime_type=mime_type.lower()).all()
     if not t:
         logger.warn('Unsupported mime type %s', mime_type)
-        return {'error': 'unsupported file type'}
+        return {'error': 'unsupported file type %s'%mime_type}
 
     sources = model.Source.query.filter_by(size=size, hash=hash).all()
     if sources:
