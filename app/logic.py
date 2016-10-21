@@ -7,7 +7,7 @@ import app.schema as schema
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm import aliased
 from sqlalchemy import inspect
-from common.utils import remove_diacritics, file_hash, copy_cover
+from common.utils import remove_diacritics, file_hash, copy_cover, mimetype_from_file_name
 import os.path
 import filelock
 import shutil
@@ -190,12 +190,13 @@ def download_converted(conversion):
     return response
 
 
-def check_file(mime_type, size, hash):
+def check_file(mime_type, size, hash, extension=None):
     if size > current_app.config['MAX_CONTENT_LENGTH']:
         logger.warn('File too big %d (limit is %d)', size,
                     current_app.config['MAX_CONTENT_LENGTH'])
         return {'error': 'file too big'}
-
+    if not mime_type and extension:
+        mime_type = mimetype_from_file_name('x.'+extension)
     t = model.Format.query.filter_by(mime_type=mime_type.lower()).all()
     if not t:
         logger.warn('Unsupported mime type %s', mime_type)

@@ -113,6 +113,7 @@ export class Upload {
     var fileInfo = {
       mime_type:file.type,
       size:file.size,
+      extension: file.name.split('.').slice(-1)[0],
       hash: null
     }
     let reader=new FileReader();
