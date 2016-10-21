@@ -283,7 +283,7 @@ def check_upload():
     #print(err, file_info)
     if err:
         logger.warn('Invalid file info: %s', err)
-        return jsonify(error='Invalid schema')
+        abort(400,'Invalid schema')
     r = logic.check_file(**file_info)
     if r:
         return jsonify(**r)

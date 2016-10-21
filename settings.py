@@ -1,8 +1,14 @@
 import os.path
+import logging
 
 _base_dir = os.path.dirname(__file__)
 
 DEBUG = os.getenv('MBS2_DEBUG', False)
+
+if DEBUG:
+    logging.basicConfig(level=logging.DEBUG)
+else:
+    logging.basicConfig(level=logging.INFO)
 
 DB_NAME = os.getenv('MBS2_DB_NAME', 'ebooks')
 DB_HOST = os.getenv('MBS2_DB_HOST', 'localhost')
