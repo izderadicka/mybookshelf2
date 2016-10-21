@@ -1,7 +1,7 @@
 import os.path
 import sys
 import asyncio
-import logging
+import logging, logging.handlers
 import asexor
 from asexor.runner import ApplicationRunnerRawSocket
 from asexor.executor import Executor
