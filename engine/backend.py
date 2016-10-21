@@ -38,6 +38,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '-d', '--debug', action='store_true', help='enable debug')
     parser.add_argument('--log-file', help='log file')
+    parser.add_argument('--crossbar-uri', help='WAMP router URI - can be tcp://host:port or path to unix socket (depends on router configuration)')
     parser.add_argument('--test-tasks', action='store_true', help='Add two test tasks date and sleep')
     opts = parser.parse_args()
     level = 'info'
@@ -59,9 +60,15 @@ if __name__ == '__main__':
     Config.AUTHENTICATION_PROCEDURE_NAME = "eu.zderadicka.mybookshelf.authenticate"
 
     #path = os.path.join(os.path.dirname(__file__), '.crossbar/socket1')
-    host = os.getenv('MBS2_CROSSBAR_HOST', 'localhost')
-    port = int(os.getenv('MBS2_CROSSBAR_PORT', 9080))
-    url = 'tcp://%s:%d' % (host,port)
+    if opts.crossbar_uri:
+        url=opts.crossbar_uri
+    elif os.getenv('MBS2_CROSSBAR_URI'):
+        url = os.getenv('MBS2_CROSSBAR_URI')
+    else:
+        host = os.getenv('MBS2_CROSSBAR_HOST', 'localhost')
+        port = int(os.getenv('MBS2_CROSSBAR_PORT', 9080))
+        url = 'tcp://%s:%d' % (host,port)
+        
     runner = ApplicationRunnerRawSocket(
         url,
         u"realm1",
