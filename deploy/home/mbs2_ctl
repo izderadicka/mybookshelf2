@@ -7,7 +7,8 @@ cd /opt/mybookshelf2
 start() {
 crossbar start --cbdir /data/local/mbs2/crossbar --logdir $LOG_DIR --logtofile 1>/dev/null 2>&1 &
 uwsgi -c /etc/uwsgi.ini --daemonize=$LOG_DIR/uwsgi.log
-python3.5 engine/backend.py --log-file=$LOG_DIR/backend.log 1>/dev/null 2>&1 &
+sleep 3
+python3.5 engine/backend.py --crossbar-uri=/data/local/mbs2/crossbar/socket1 --log-file=$LOG_DIR/backend.log 1>/dev/null 2>&1 &
 echo $! > /data/local/mbs2/backend.pid
 }
 
@@ -20,7 +21,7 @@ stop() {
 reload() {
   kill `cat /data/local/mbs2/backend.pid`
   kill -HUP `cat /data/local/mbs2/uwsgi.pid`
-  python3.5 engine/backend.py --log-file=$LOG_DIR/backend.log 1>/dev/null 2>&1 &
+  python3.5 engine/backend.py --crossbar-uri=/data/local/mbs2/crossbar/socket1 --log-file=$LOG_DIR/backend.log 1>/dev/null 2>&1 &
   }
 case $1 in
   start)
