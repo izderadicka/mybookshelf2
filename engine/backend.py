@@ -37,11 +37,20 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '-d', '--debug', action='store_true', help='enable debug')
+    parser.add_argument('--log-file', help='log file')
     parser.add_argument('--test-tasks', action='store_true', help='Add two test tasks date and sleep')
     opts = parser.parse_args()
     level = 'info'
     if opts.debug:
         level = 'debug'
+    if opts.log_file:
+        handler = logging.handlers.RotatingFileHandler(opts.log_file, maxBytes=10*1024*1024, 
+                                                       backupCount=3)
+        handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s %(name)s %(message)s'))
+        root_logger=logging.getLogger()
+        root_logger.addHandler(handler)
+        if opts.debug:
+            root_logger.setLevel(logging.DEBUG)
         
     if opts.test_tasks:
         load_tasks_from('simple_tasks', os.path.join(os.path.dirname(asexor.__file__), '../test/tasks'))
