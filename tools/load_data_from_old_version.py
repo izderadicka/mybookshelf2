@@ -5,9 +5,17 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime
 import sys
+import re
+import random
+import shutil
+import tempfile
+import subprocess
+import traceback
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 import app.model as model
+import app.logic as logic
+from app import app
 from common.utils import hash_pwd
 import settings
 
@@ -65,6 +73,11 @@ def prepare_db(engine):
             # print(script)
             res = c.execute(script)
         connection.commit()
+        
+        synonyms = open(os.path.join(SQL_DIR, 'dump/basic.sql')).read()
+        for cmd in re.finditer('^insert into synonym.*$', synonyms, re.MULTILINE|re.IGNORECASE):
+            c.execute(cmd.group(0))
+        connection.commit()
     finally:
         connection.close()
     
@@ -85,7 +98,7 @@ def export_data(args):
     model.Base.metadata.drop_all(bind=engine)  # @UndefinedVariable
     model.Base.metadata.create_all(bind=engine)  # @UndefinedVariable
     prepare_db(engine)
-    session = Session()
+    session = Session(autoflush=False)
 #########################################################
     
 # Codelists genre, language format
@@ -104,6 +117,7 @@ def export_data(args):
     f = model.Format.query.filter_by(extension='pdb').one()
     f.mime_type = 'application/x-aportisdoc'
     session.commit()
+    print('Created genres, languages and formats')
 #############################################################################    
 
 # New user admin and standard roles
@@ -147,6 +161,7 @@ def export_data(args):
     print('Loaded Authors: %d records' % session.query(model.Author).count())
 ##################################################################
 
+# Series
     q = 'select id, created, modified, title, rating from ebook_serie'
     c.execute(q)
     for row in c:
@@ -158,11 +173,16 @@ def export_data(args):
 
     session.commit()
     print('Loaded Series: %d records' % session.query(model.Series).count())
+########################################################################
 
+# Ebooks
     q = 'select id, created, modified, title, rating, author_id, description, language_id, serie_id, serie_index from ebook_ebook'
     c.execute(q)
     count = 0
     for row in c:
+        if args.sample:
+            if   random.randint(1,args.sample) > 1:
+                continue
         data = dict(zip(c.column_names, row))
         language = session.query(model.Language).get(data['language_id'])
         series = session.query(model.Series).get(
@@ -193,7 +213,9 @@ def export_data(args):
                 model.Genre.id.in_(genres)).all()  # @UndefinedVariable
             o.genres.extend(genres)
         c2.close()
-        #TBD: Set base directory
+        #Set base directory
+        with app.app_context():
+            logic.update_ebook_base_dir(o)
         session.add(o)
         count += 1
         if not count % 1000:
@@ -201,19 +223,36 @@ def export_data(args):
             session.commit()
     session.commit()
     print('Loaded Ebook: %d records' % session.query(model.Ebook).count())
+####################################################
 
+# Sources
     q = 'select id, created, modified, ebook_id, location, format_id, size, crc, quality from ebook_source'
     c.execute(q)
     count = 0
     for row in c:
         data = dict(zip(c.column_names, row))
-        format = session.query(model.Format).get(data['format_id'])
         ebook = session.query(model.Ebook).get(data['ebook_id'])
+        if not ebook:
+            continue
+        format = session.query(model.Format).get(data['format_id'])
+        
         o = model.Source(ebook=ebook, format=format, location=data['location'], size=data['size'],
                          hash=data['crc'], quality=data['quality'], **auditable_attrs(data))
         
-        #TBD copy files
-        #TBD extract cover
+        #Copy files
+        if args.dir:
+            fname= os.path.join(args.dir, data['location'])
+            with app.app_context():
+                location=logic.create_new_location(o, fname)
+            o.location=location 
+            #Extract cover
+            if not o.ebook.cover:
+                try:
+                    cover=extract_cover(o)
+                    ebook.cover=cover
+                except Exception:
+                    traceback.print_exc()
+                    
         session.add(o)
         count += 1
         if not count % 1000:
@@ -222,7 +261,9 @@ def export_data(args):
 
     session.commit()
     print('Loaded Source: %d records' % session.query(model.Source).count())
+##########################################################################################
 
+# Bookshelves
     q = 'select id, created, modified, name, description, public, rating from ebook_bookshelf'
     c.execute(q)
     for row in c:
@@ -248,15 +289,15 @@ def export_data(args):
             'type'] == 2 else None
         if not type:
             print('Error invalid bookshelfitem type on %s' %
-                  row, file=sys.stderr)
+                  str(row), file=sys.stderr)
             continue
         elif type == 'EBOOK' and not ebook:
             print('Error invalid bookshelfitem, type is ebook but no book - %s' %
-                  row, file=sys.stderr)
+                  str(row), file=sys.stderr)
             continue
         elif type == 'SERIES' and not series:
             print('Error invalid bookshelfitem, type is series but no series - %s' %
-                  row, file=sys.stderr)
+                  str(row), file=sys.stderr)
             continue
 
         o = model.BookshelfItem(type=type, ebook=ebook, series=series, bookshelf=bookshelf, order=data['order'],
@@ -267,6 +308,8 @@ def export_data(args):
     session.commit()
     print('Loaded BookshelfItem: %d records' %
           session.query(model.BookshelfItem).count())
+    
+############################################################################
 
     for t in ['author', 'bookshelf', 'bookshelf_item', 'ebook', 'format', 'genre', 'language', 'series', 'source']:
         update_seq(engine, t)
@@ -277,6 +320,55 @@ def export_data(args):
     conn2.close()
     return
 
+def clear_directories():
+    for dir in [settings.UPLOAD_DIR, settings.BOOKS_CONVERTED_DIR, settings.THUMBS_DIR,
+                settings.BOOKS_BASE_DIR]:
+        shutil.rmtree(dir, ignore_errors=True)
+        os.makedirs(dir, exist_ok=True)
+        
+def extract_cover(source):
+    f = os.path.join(settings.BOOKS_BASE_DIR, source.location)
+    temp_dir=tempfile.mkdtemp(dir=settings.UPLOAD_DIR)
+    if f.endswith('.doc'):
+        OOFFICE='soffice'
+        proc= subprocess.Popen([OOFFICE, '--headless', '--convert-to', 'odt','--outdir', temp_dir, f])
+        retcode=proc.wait(120)
+        fname= os.path.basename(f)
+        out_file=os.path.splitext(fname)[0]+'.odt'
+        out_file=os.path.join(temp_dir, out_file)
+        if not os.path.exists(out_file):
+            return 
+        f= out_file
+    
+    cover_file = os.path.join(temp_dir, 'cover_in.jpg')
+    proc = subprocess.Popen(['ebook-meta', '--get-cover=%s'%cover_file, f])
+    retcode = proc.wait(timeout=30)
+    if retcode!=0 or not os.path.exists(cover_file):
+        return
+    IMAGE_MAGIC = 'convert'
+    cover_out = os.path.join(temp_dir, 'cover.jpg')
+    proc = subprocess.Popen([IMAGE_MAGIC, cover_file, '-fuzz', '7%',
+                            '-trim', '-resize', '%dX%d'%settings.COVER_SIZE, cover_out])
+    retcode=proc.wait(10)
+    if retcode!=0 or not os.path.exists(cover_out):
+        return
+    thumb_out =  os.path.join(temp_dir, settings.THUMBNAIL_FILE)
+    proc = subprocess.Popen([IMAGE_MAGIC, cover_out, '-resize', '%dX%d'%settings.THUMBNAIL_SIZE, thumb_out])
+    proc.wait()
+    
+    ebook_cover = os.path.join(source.ebook.base_dir, 'cover.jpg')
+    dst = os.path.join(settings.BOOKS_BASE_DIR, ebook_cover)
+    shutil.move(cover_out, dst)
+    if os.path.exists(thumb_out):
+        shutil.move(thumb_out, os.path.join(settings.THUMBS_DIR, '%d.jpg'%source.ebook.id))
+    return ebook_cover
+    
+    
+    
+    
+    
+    
+         
 
 def main():
     p = argparse.ArgumentParser()
@@ -286,13 +378,16 @@ def main():
     p.add_argument('--user', default='ebooks', help='db user')
     p.add_argument('--pwd', default='', help='db user password')
     p.add_argument('--db', default='ebooks', help='db name')
-    p.add_argument('--limit', type=int, help='limit number of records to')
+    p.add_argument('--dir', help='base directory with ebook files, will copy files to current ebooks directory')
+    p.add_argument('--sample', type=int, default=0, help="Sample randomly 1 of n ebooks")
+    #p.add_argument('--limit', type=int, help='limit number of records to')
     args = p.parse_args()
     print('This tool will migrate data from Mybookshelf (previous version)')
     print("It'll delete all data from existing DB")
     answer=input('Continue [Y/N]?: ')
-    if answer.lower != 'y':
+    if answer.strip().lower() != 'y':
         return
+    clear_directories()
     export_data(args)
 
     print('Done')

@@ -81,7 +81,7 @@ def paginate(q, page, page_size, sort, serializer):
             'items': serializer.dump(pager.items).data}
 
 
-def create_new_location(source, upload):
+def create_new_location(source, upload, move=False):
     base_dir = current_app.config['BOOKS_BASE_DIR']
     if isinstance(upload, model.Upload):
         new_file = os.path.join(current_app.config['UPLOAD_DIR'], upload.file)
@@ -99,8 +99,10 @@ def create_new_location(source, upload):
             name, ext = os.path.splitext(new_location)
             new_location = name + '(%d)' % index + ext
             index += 1
-        # TODO: consider copy for better safety?
-        shutil.move(new_file, os.path.join(base_dir, new_location))
+        if move:
+            shutil.move(new_file, os.path.join(base_dir, new_location))
+        else:
+            shutil.copy(new_file, os.path.join(base_dir, new_location))
 
     return new_location
 
