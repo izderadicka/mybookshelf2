@@ -3,7 +3,8 @@ export const ROUTES =
     route: ['', 'welcome'],
     name: 'welcome',
     moduleId: 'pages/welcome',
-    title: 'Welcome'
+    title: 'Welcome',
+    auth: true
   }, {
     route: 'ebooks',
     name: 'ebooks',

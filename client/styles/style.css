@@ -320,3 +320,23 @@ background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAACMCAMAAAC9K
   width: 1.1em;
   float: right;
 }
+
+.ebook-tile {
+  width:100px;
+  height: 140px;
+  float: left;
+}
+
+.ebook-tile .missing {
+   width:100px;
+  height: 140px;
+}
+
+.ebook-tiles {
+   margin: 0px 15px;
+}
+
+.ebook-tile img {
+  margin:auto;
+  display:block;
+}
