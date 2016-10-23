@@ -34,6 +34,7 @@ export class EbookTiles {
   loadEbooks(page, size, need) {
     this.client.getMany('ebooks', page, size, '-created')
     .then(res => {
+      this.lastPage = res.lastPage;
       if (need && this.ebooks && this.ebooks.length < need) {
         this.ebooks = this.ebooks.concat(res.data.slice(0, need - this.ebooks.length));
       } else {
@@ -54,7 +55,7 @@ export class EbookTiles {
       this.loadEbooks(1, need);
     } else if (this.ebooks.length > need) {
       this.ebooks = this.ebooks.slice(0, need);
-    } else if (this.ebooks.length < need) {
+    } else if (this.ebooks.length < need && this.lastPage > 1) {
       this.loadEbooks(2, this.ebooks.length, need)
     }
 

@@ -43,7 +43,7 @@ class Upload(Action):
             res.raise_for_status()
             res = res.json()
             if 'error' in res:
-                raise ActionError('Cannot upload file: %s'%res['error'])
+                raise ActionError('Cannot upload file: %s %s'%(res['error'], res.get('error_details')))
             return res
             
         fname = self.opts.file
@@ -51,7 +51,8 @@ class Upload(Action):
             raise ActionError('File %s does not exists or is not readable'%fname)
         file_info = {'size': os.stat(fname).st_size,
                      'hash': file_hash(fname),
-                     'mime_type': guess_type(fname)[0]}
+                     'mime_type': guess_type(fname)[0] or '',
+                     'extension': os.path.splitext(fname)[1].lower()[1:] or ''}
         res=self.http.post('/api/upload/check', json=file_info)
         res = check_response(res)
         
@@ -74,7 +75,9 @@ class Upload(Action):
             search.extend(map(lambda x: x['first_name']+ ' ' + x['last_name'] if 'last_name' in x else x['last_name'], meta['authors']))
         search.append(meta['title'])   
         if 'series' in meta:
-            search = ' '.join(search)
+            search.append(meta['series'])
+            
+        search = ' '.join(search)
             
         res = self.http.get('/api/search/'+quote_plus(search), params={'page':1, 'page_size':5})
         res = check_response(res)

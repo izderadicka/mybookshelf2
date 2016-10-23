@@ -215,7 +215,10 @@ def check_file(mime_type, size, hash, extension=None):
 def check_uploaded_file(mime_type, fname):
     size = os.stat(fname).st_size
     hash = file_hash(fname)
-    return check_file(mime_type, size, hash)
+    extension = os.path.splitext(fname)[1]
+    if extension:
+        extension=extension[1:]
+    return check_file(mime_type, size, hash, extension)
 
 
 def _run_query(q):
