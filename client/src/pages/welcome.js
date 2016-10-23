@@ -13,14 +13,9 @@ export class Welcome {
   }
 
   activate() {
-    this.loadEbooks(48);
+  
   }
 
-  loadEbooks(size) {
-    this.client.getMany('ebooks', 1, size, '-created')
-    .then(res => this.ebooks=res.data)
-    .catch(err => logger.error('Fetch error', err));
-  }
 
 
 }
