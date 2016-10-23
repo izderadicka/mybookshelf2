@@ -138,9 +138,9 @@ class FileInfoSchema(Schema):
 
 # schemas are probably not thread safe, better to have new instance per
 # each use
-ebook_serializer = lambda: EbookSchema()
-ebook_deserializer_update = lambda: PartialSchemaFactory(EbookSchema, partial=True)
-ebook_deserializer_insert = lambda: PartialSchemaFactory(EbookSchema, exclude=('version_id',))
+ebook_serializer = lambda: EbookSchema(exclude=('base_dir',))
+ebook_deserializer_update = lambda: PartialSchemaFactory(EbookSchema, partial=True, exclude=('base_dir',))
+ebook_deserializer_insert = lambda: PartialSchemaFactory(EbookSchema, exclude=('version_id','base_dir'))
 ebooks_list_serializer = lambda: EbookSchema(many=True, only=(
     'id', 'title', 'authors', 'series', 'series_index', 'language', 'cover'))
 

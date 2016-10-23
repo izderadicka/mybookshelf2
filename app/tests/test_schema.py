@@ -54,6 +54,7 @@ class Test(TestCase):
         # db.session.flush()
         self.assertFalse(db.session.new)
         # self.assertFalse(db.session.dirty)
+        eb.base_dir='test'
         db.session.add(eb)
         self.assertTrue(db.session.new)
         db.session.commit()
@@ -124,6 +125,7 @@ class Test(TestCase):
         eb, errors = schema.ebook_deserializer_insert().load(ns)
         self.assertFalse(errors)
         self.assertTrue(inspect(eb.series).transient)
+        eb.base_dir='test'
         db.session.add(eb)
         self.assertTrue(inspect(eb.series).pending)
         print(eb.series)
@@ -157,6 +159,7 @@ class Test(TestCase):
         eb, errors = schema.ebook_deserializer_insert().load(ns)
         self.assertFalse(errors)
         self.assertTrue(db.session.dirty)
+        eb.base_dir='test'
         db.session.add(eb)
         db.session.commit()
         ebook_id = eb.id

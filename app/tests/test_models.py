@@ -43,7 +43,8 @@ class Test(TestCase):
         
         na = model.Author(last_name='Usak', first_name='Kulisak')
         ns = model.Series(title='Voloviny')
-        nb = model.Ebook(title='Title', rating=100, language=model.Language.query.filter_by(name='Czech').one())
+        nb = model.Ebook(title='Title', rating=100, 
+                         language=model.Language.query.filter_by(name='Czech').one(), base_dir='test')
         db.session.add_all([na,ns, nb])
         nb.authors.extend([na, authors[0]])
         nb.series=ns

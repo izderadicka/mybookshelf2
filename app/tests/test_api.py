@@ -223,7 +223,6 @@ class TestApi(TestCase):
         
         ebook = self.get('/api/ebooks/%d'%id)
         
-        self.assertEqual(ebook['base_dir'], 'King S E, Novy A/Nejaka/Nejaka 1 - Testovaci kniha(cs)')
         self.assertEqual(ebook['title'], "Testovací kniha")
         self.assertEqual(len(ebook['authors']), 2)
         self.assertEqual(ebook['series_index'], 1)
