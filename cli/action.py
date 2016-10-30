@@ -6,6 +6,9 @@ import cli.actions as plugins
 class ActionError(Exception):
     pass
 
+class SoftActionError(ActionError):
+    pass
+
 
 class Action():
     DESCRIPTION = ""
@@ -24,7 +27,6 @@ class Action():
         self.http = http
         self.client = client
         self.opts = opts
-        
         
     def do(self):
         raise NotImplementedError()

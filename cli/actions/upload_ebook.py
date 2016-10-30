@@ -1,10 +1,11 @@
-from cli.action import Action, ActionError
+from cli.action import Action, ActionError, SoftActionError
 from common.utils import file_hash, parse_author
 from mimetypes import guess_type
 import os
 from urllib.parse import urlencode, quote, quote_plus
 
 import logging
+import json
 
 log = logging.getLogger('mbs2.upload')
 
@@ -14,6 +15,7 @@ class Upload(Action):
     @staticmethod
     def add_arguments(parser):
         parser.add_argument('--file', type=str, required=True, help = "ebook file")
+        parser.add_argument('--file-name', help="alternative file name to use for upload")
         parser.add_argument('--title', help='title')
         parser.add_argument('--author', nargs='*', help="author written as Last, First (can have many authors)" )
         parser.add_argument('--series', help='series title')
@@ -21,6 +23,7 @@ class Upload(Action):
         parser.add_argument('--genre', nargs='*', help='genre (can have many genres')
         parser.add_argument('--language', help='language code like cs, en ...')
         parser.add_argument('--quality', type=float, help='Quality of file 0 - 100 (spelling, pictures, formating, but not literal quality/popularity of book')
+        parser.add_argument('--json', action="store_true", help='Output JSON object representing updated/created ebook after successful upload')
         
     def _get_meta(self):
         meta ={}
@@ -39,25 +42,20 @@ class Upload(Action):
         return meta
         
     def do(self):
-        def check_response(res):
-            res.raise_for_status()
-            res = res.json()
-            if 'error' in res:
-                raise ActionError('Cannot upload file: %s %s'%(res['error'], res.get('error_details')))
-            return res
-            
         fname = self.opts.file
+        alt_name = self.opts.file_name or fname
         if not (os.access(fname, os.R_OK) and os.path.isfile(fname)):
             raise ActionError('File %s does not exists or is not readable'%fname)
         file_info = {'size': os.stat(fname).st_size,
                      'hash': file_hash(fname),
-                     'mime_type': guess_type(fname)[0] or '',
-                     'extension': os.path.splitext(fname)[1].lower()[1:] or ''}
+                     'mime_type': guess_type(alt_name)[0] or '',
+                     'extension': os.path.splitext(alt_name)[1].lower()[1:] or ''}
         res=self.http.post('/api/upload/check', json=file_info)
-        res = check_response(res)
-        
-        res = self.http.post('/api/upload', files={'file':(os.path.basename(fname), open(fname, 'rb'), file_info['mime_type'])})
-        res = check_response(res)
+        try:
+            f= open(fname, 'rb')
+            res = self.http.post('/api/upload', files={'file':(os.path.basename(alt_name), f, file_info['mime_type'])})
+        finally:
+            f.close()
         uploaded_file = res['file']
         log.debug('File uploaded as %s', uploaded_file)
         proposed_meta = self._get_meta()
@@ -65,7 +63,6 @@ class Upload(Action):
         upload_meta_id = res['result']
         
         res = self.http.get('/api/uploads-meta/%d'%upload_meta_id)
-        res = check_response(res)
         meta = res['meta']
         log.debug('Metadata #%d for ebook - %s', upload_meta_id, meta)
         if not ('title' in meta and meta['title'] and 'language' in meta and meta['language'].get('id')):
@@ -80,23 +77,24 @@ class Upload(Action):
         search = ' '.join(search)
             
         res = self.http.get('/api/search/'+quote_plus(search), params={'page':1, 'page_size':5})
-        res = check_response(res)
         
         
         #TODO: quick sanity check of search?
         if 'items' in  res and res['items']:
-            existing = res['items'][0]
-            res = self.http.post('/api/ebooks/%d/add-upload'%(existing['id'],), json={'upload_id':upload_meta_id, 'quality':self.opts.quality})
-            res = check_response(res)
-            log.info('Added file to existing ebook #%d', existing['id'])  
+            
+            book_id = res['items'][0]['id']
+            
+            res = self.http.post('/api/ebooks/%d/add-upload'%(book_id,), json={'upload_id':upload_meta_id, 'quality':self.opts.quality})
+            log.info('Added file to existing ebook #%d', book_id)  
         else:
             res = self.http.post('/api/ebooks', json = meta)
-            res = check_response(res)
-            new_book_id = res['id']
-            res = self.http.post('/api/ebooks/%d/add-upload'%(new_book_id,), json={'upload_id':upload_meta_id, 'quality':self.opts.quality})
-            res = check_response(res)
-            log.info('Added file to new ebook #%d', new_book_id)  
+            book_id = res['id']
+            res = self.http.post('/api/ebooks/%d/add-upload'%(book_id,), json={'upload_id':upload_meta_id, 'quality':self.opts.quality})
+            log.info('Added file to new ebook #%d', book_id)  
             
+        if self.opts.json:
+            res=self.http.get('/api/ebooks/%d'%book_id)
+            print(json.dumps(res))
         
         
         

@@ -194,6 +194,8 @@ class CoverTask(BaseTask):
             raise TaskError('Cover resizing failed')
         config = settings.__dict__ #TODO: check if there is better safer way
         dst_dir=await dal.get_ebook_dir(self.ebook_id)
+        if not dst_dir:
+            raise TaskError('Ebook directory is null, probably wrong ebook id')
         loop=asyncio.get_event_loop()
         cover= await loop.run_in_executor(None, copy_cover, data, dst_dir, self.ebook_id, config)
         await dal.update_ebook_cover(self.ebook_id, cover)
