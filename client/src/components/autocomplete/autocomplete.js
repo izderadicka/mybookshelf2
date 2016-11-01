@@ -28,6 +28,7 @@ export class Autocomplete {
   @bindable additionalClass; // additional classes for input control
   @bindable placeholder = ''; // placeholder for input control
   @bindable resetAfterSelect = false; // after value is selected and event is fired reset value to empty string;
+  @bindable filter // function to filter out suggestions
 
   _suggestions = [];
   _selected = null;
@@ -94,9 +95,10 @@ export class Autocomplete {
       if (this._cache && startsWith(forValue, this._cache.search) &&
         new Date() - this._cache.ts <= CACHE_DURATION) {
         logger.debug('Using cache');
-        return Promise.resolve(this._cache.items.filter(
-          item => startsWith(this.getSuggestionValue(item), forValue)
-        ))
+        let data = this._cache.items.filter(
+          item => startsWith(this.getSuggestionValue(item), forValue));
+        if (this.filter) data = data.filter(this.filter);
+        return Promise.resolve(data)
       }
       logger.debug('Looking for '+forValue);
       return this.loader(forValue)
@@ -113,7 +115,11 @@ export class Autocomplete {
 
           // if inputed value already changed do not return these suggestions
           if (forValue !== this.immediateValue) return [];
+          if (this.filter) {
+            return res.items.filter(this.filter);
+          } else {
           return res.items;
+          }
         });
     }
     return Promise.reject(new Error('Invalid loader'));

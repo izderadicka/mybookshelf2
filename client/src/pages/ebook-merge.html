@@ -17,7 +17,7 @@
       <div class="form-group">
         <label class="control-label">Other Ebook</label>
         <autocomplete loader.bind="loaderEbooks" value-key="title" suggestion-template="./autocomplete-ebooks.html"
-        selected-value.bind="otherEbook" additional-class="form-control"></autocomplete>
+        selected-value.bind="otherEbook" additional-class="form-control" filter.one-time="filterOutThisEbook"></autocomplete>
       </div>
       <div class="form-group">
          <button type="button" class="btn btn-primary btn-lg" click.delegate="merge()" disabled.bind="!ready">Merge</button>

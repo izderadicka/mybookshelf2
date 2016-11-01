@@ -38,6 +38,10 @@ export class EbookMerge {
     return this.ebook.id && this.otherEbook && this.otherEbook.id;
   }
 
+  get filterOutThisEbook() {
+    return b => b.id !== this.ebook.id;
+  }
+
   cancel() {
     this.router.navigateToRoute('ebook', {id: this.ebook.id});
   }

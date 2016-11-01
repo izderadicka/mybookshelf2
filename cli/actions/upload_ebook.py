@@ -6,6 +6,7 @@ from urllib.parse import urlencode, quote, quote_plus
 
 import logging
 import json
+from requests.exceptions import HTTPError
 
 log = logging.getLogger('mbs2.upload')
 
@@ -72,17 +73,32 @@ class Upload(Action):
             search.extend(map(lambda x: x['first_name']+ ' ' + x['last_name'] if 'last_name' in x else x['last_name'], meta['authors']))
         search.append(meta['title'])   
         if 'series' in meta:
-            search.append(meta['series'])
+            search.append(meta['series']['title'])
             
         search = ' '.join(search)
+        
+        try:   
+            res = self.http.get('/api/search/'+quote_plus(search), params={'page':1, 'page_size':5})
+        except HTTPError as e:
+            if hasattr(e, 'response') and e.response.status_code == 404:
+                res ={}
+            else:
+                raise e
             
-        res = self.http.get('/api/search/'+quote_plus(search), params={'page':1, 'page_size':5})
+        log.debug('search results %s', res)
+        if not res.get('items'):
+            res = self.http.get('/api/ebooks/index/'+quote_plus(meta['title']))
+            
+            
+        book_id=None
         
         
-        #TODO: quick sanity check of search?
         if 'items' in  res and res['items']:
             
+            #
             book_id = res['items'][0]['id']
+            
+            
             
             res = self.http.post('/api/ebooks/%d/add-upload'%(book_id,), json={'upload_id':upload_meta_id, 'quality':self.opts.quality})
             log.info('Added file to existing ebook #%d', book_id)  

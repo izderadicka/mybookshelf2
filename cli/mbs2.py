@@ -7,9 +7,9 @@ import sys
 import os
 import asyncio
 from urllib.parse import urljoin
-from cli.action import load_actions, ActionError, SoftActionError
 from functools import wraps
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from cli.action import load_actions, ActionError, SoftActionError
 from engine.client import WAMPClient, run_loop_in_thread, stop_loop, join_loop
 log = logging.getLogger('mbs2')
 

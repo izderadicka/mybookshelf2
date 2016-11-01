@@ -370,11 +370,11 @@ def delete_source(source):
     # purging of empty dirs must be done when system is offline
     
 
-def delete_ebook(ebook):
+def delete_ebook(ebook, keep_cover=False):
     files_to_delete=[os.path.join(current_app.config['BOOKS_BASE_DIR'], source.location)
                      for source in ebook.sources]
     r = db.session.delete(ebook)  # @UndefinedVariable
-    if ebook.cover:
+    if ebook.cover and not keep_cover:
         files_to_delete.append(os.path.join(current_app.config['BOOKS_BASE_DIR'], ebook.cover))
     files_to_delete.append(os.path.join(
             current_app.config['THUMBS_DIR'], '%d.jpg'%ebook.id))
@@ -426,9 +426,8 @@ def filter_ebooks_by_genres(q,genres):
 
 def merge_ebook(ebook, other):   
     with db.session.no_autoflush:     
-        for s in other.sources:
-            other.sources.remove(s)
-            ebook.sources.append(s)
-            
-        delete_ebook(other)
+        ebook.sources.extend(list(other.sources))
+        other.sources.clear()
+        keep_cover= ebook.cover == other.cover
+        delete_ebook(other, keep_cover)
     
