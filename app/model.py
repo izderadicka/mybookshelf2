@@ -126,13 +126,20 @@ class Author(Base, Auditable):
 
 class Bookshelf(Base, Auditable):
     name = Column(String(256), nullable=False, index=True)
-    description = Column(String)
+    description = Column(Text)
     public = Column(Boolean, default=True)
     rating = Column(Float(asdecimal=True))
+    rating_count = Column(Integer)
     items = relationship('BookshelfItem', back_populates='bookshelf')
 
     def __repr__(self):
         return super(Bookshelf, self).__repr__(['name'])
+    
+class BookshelfRating(Base, Auditable):
+    bookshelf_id = Column(BigInteger, ForeignKey('bookshelf.id'), nullable=False)
+    rating = Column(Float(asdecimal=True))
+    description = Column(Text)
+    bookshelf = relationship('Bookshelf', backref=backref('ratings', lazy='dynamic'))
 
 
 class BookshelfItem(Base, Auditable):
@@ -173,6 +180,7 @@ class ConversionBatch(Base, Auditable):
     entity_id = Column(BigInteger)
     format_id = Column(BigInteger, ForeignKey('format.id'), nullable=False)
     items = relationship('Conversion', back_populates='batch')
+    zip_location = Column(String(512))
    
 
 
@@ -185,6 +193,8 @@ class Ebook(Base, Auditable):
     series = relationship('Series', back_populates='books', lazy='joined')
     series_index = Column(Integer)
     rating = Column(Float(asdecimal=True))
+    rating_count = Column(Integer)
+    downloads = Column(Integer)
     sources = relationship('Source', back_populates='ebook', cascade="all")
     genres = relationship('Genre', secondary=ebook_genres)
     # for lazy="subquery limited queries must be always ! ordered
@@ -213,6 +223,13 @@ class Ebook(Base, Auditable):
 
     def __repr__(self):
         return super(Ebook, self).__repr__(['title'])
+    
+
+class EbookRating(Base, Auditable):
+    ebook_id = Column(BigInteger, ForeignKey('ebook.id'), nullable=False)
+    rating = Column(Float(asdecimal=True))
+    description = Column(Text)
+    ebook = relationship('Ebook', backref=backref('ratings', lazy='dynamic'))    
 
 
 class Format(Base):
@@ -235,6 +252,7 @@ class Language(Base):
 class Series(Base, Auditable):
     title = Column(String(256), nullable=False, index=True)
     rating = Column(Float(asdecimal=True))
+    rating_count = Column(Integer)
     description = Column(Text)
     books = relationship('Ebook', back_populates='series', lazy='dynamic')
 
@@ -242,6 +260,12 @@ class Series(Base, Auditable):
 
     def __repr__(self):
         return super(Series, self).__repr__(['title'])
+
+class SeriesRating(Base, Auditable):
+    series_id = Column(BigInteger, ForeignKey('series.id'), nullable=False)
+    rating = Column(Float(asdecimal=True))
+    description = Column(Text)
+    series = relationship('Series', backref=backref('ratings', lazy='dynamic'))    
 
 
 class Source(Base, Auditable):
@@ -255,10 +279,17 @@ class Source(Base, Auditable):
     size = Column(Integer, nullable=False)
     hash = Column(String(128), nullable=False)
     quality = Column(Float(asdecimal=True))
+    quality_count = Column(Integer)
     conversions = relationship('Conversion', cascade = 'all')
     
     def __repr__(self):
         return super(Source, self).__repr__(['location'])
+    
+class SourceQuality(Base, Auditable):
+    source_id = Column(BigInteger, ForeignKey('source.id'), nullable=False)
+    quality = Column(Float(asdecimal=True))
+    description = Column(Text)
+    source = relationship('Source', backref=backref('ratings', lazy='dynamic'))    
 
 
 class Upload(Base, Auditable):
@@ -291,6 +322,9 @@ class Synonym(Base):
     other_name = Column(String(512), nullable=False)
     our_name = Column(String(512), nullable=False)
     category = Column(String(3), nullable=False)
+    
+class Version(Base):
+    version = Column(Integer)
 
 
 sortings = {'ebook': {'title': [Ebook.title],
