@@ -20,6 +20,7 @@ export class Login{
         .catch(err=>{
             this.error={error:'Login Failed', errorDetail: (err.error? err.error: err)};
             logger.error("Login failure: "+err);
+            this.password = '';
             //todo: get it from auth config?
             //this.router.navigate('login')
         });
