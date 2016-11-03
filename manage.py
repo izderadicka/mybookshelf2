@@ -14,6 +14,8 @@ import os.path
 import settings
 from datetime import datetime, timedelta
 from traceback import print_exc
+from version import __db_version as db_version
+import re
 
 
 SQL_DIR = os.path.join(os.path.dirname(__file__), 'sql')
@@ -89,6 +91,8 @@ def create_tables(add_data=False, create_directories=False):
     connection = db.engine.raw_connection()  # @UndefinedVariable
     try:
         c = connection.cursor()
+        #insert current db version
+        c.execute('insert into version (version, version_id) values (%s, %s)', (db_version,1))
         for fname in ('create_ts.sql', 'create_functions.sql'):
             script = open(os.path.join(SQL_DIR, fname), 'rt', encoding='utf-8-sig').read()
             # print(script)
@@ -107,7 +111,37 @@ def create_tables(add_data=False, create_directories=False):
             os.makedirs(d, exist_ok=True)
         print('Created directories')
 
-
+@manager.command
+def migrate_tables():
+    print('This will migrate database to latest schema, you are advised to backup database before running this command')
+    if prompt_bool('Do you want to continue?'):
+        mdir = os.path.join(SQL_DIR, 'migration')
+        versions=model.Version.query.all()
+        if len(versions)>1 or len(versions)<1:
+            raise Exception('Invalid version information in DB')
+        old_version = versions[0].version
+        if old_version == db_version:
+            print('DB is at correct version %d'% old_version)
+        scripts = []
+        for script in os.listdir(mdir):
+            m=re.match(r'v(\d+)\.sql', script)
+            if m:
+                version = int(m.group(1))
+                if version <= db_version and version > old_version:
+                    scripts.append((version, os.path.join(mdir,script)))
+                    
+        scripts.sort()
+        connection = db.engine.raw_connection()  # @UndefinedVariable
+        try:
+            c = connection.cursor()
+            for v,fname in scripts:
+                script = open(os.path.join(SQL_DIR, fname), 'rt', encoding='utf-8-sig').read()
+                print('Upgrading database to version %d', v)
+                res = c.execute(script)
+                connection.commit()
+        finally:
+            connection.close()
+                
 @manager.command
 def update_fulltext():
 
