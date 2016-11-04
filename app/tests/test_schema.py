@@ -21,9 +21,9 @@ class Test(TestCase):
 
         ebook_data = {
             'title': 'Sedm lumpu slohlo pumpu', 'language': {'id': 1}}
-        errors = schema.ebook_deserializer_insert().validate(ebook_data)
+        errors = schema.EbookSchema.create_insert_serializer().validate(ebook_data)
         self.assertFalse(errors)
-        errors = schema.ebook_deserializer_insert().validate({})
+        errors = schema.EbookSchema.create_insert_serializer().validate({})
         self.assertTrue(errors)
 
         ebook_data = {'title': 'Povidky o nicem', 'language': 'cs',
@@ -37,7 +37,7 @@ class Test(TestCase):
 
         no_lang = deepcopy(ebook_data)
         del no_lang['language']
-        errors = schema.ebook_deserializer_insert().validate(no_lang)
+        errors = schema.EbookSchema.create_insert_serializer().validate(no_lang)
         self.assertTrue(errors)
 
         no_series = deepcopy(ebook_data)
@@ -47,7 +47,7 @@ class Test(TestCase):
             print(errors)
         self.assertFalse(errors)
 
-        eb, errors = schema.ebook_deserializer_insert().load(ebook_data)
+        eb, errors = schema.EbookSchema.create_insert_serializer().load(ebook_data)
         self.assertFalse(errors)
 
         self.assertEqual(eb.title, ebook_data['title'])
@@ -122,7 +122,7 @@ class Test(TestCase):
         # test new series
         ns = deepcopy(ebook_data)
         ns['series'] = {'title': 'Maly bojovnik'}
-        eb, errors = schema.ebook_deserializer_insert().load(ns)
+        eb, errors = schema.EbookSchema.create_insert_serializer().load(ns)
         self.assertFalse(errors)
         self.assertTrue(inspect(eb.series).transient)
         eb.base_dir='test'
@@ -140,7 +140,7 @@ class Test(TestCase):
         # test strange series
         strange = deepcopy(ebook_data)
         strange['series'] = {'pako': 'mako'}
-        eb, errors = schema.ebook_deserializer_insert().load(strange)
+        eb, errors = schema.EbookSchema.create_insert_serializer().load(strange)
         self.assertFalse(errors)
         db.session.add(eb)
         try:
@@ -156,7 +156,7 @@ class Test(TestCase):
         # test null series
         ns = deepcopy(ebook_data)
         ns['series'] = None
-        eb, errors = schema.ebook_deserializer_insert().load(ns)
+        eb, errors = schema.EbookSchema.create_insert_serializer().load(ns)
         self.assertFalse(errors)
         self.assertTrue(db.session.dirty)
         eb.base_dir='test'
@@ -172,7 +172,7 @@ class Test(TestCase):
         # test empty series
         ns = deepcopy(ebook_data)
         ns['series'] = {}
-        eb, errors = schema.ebook_deserializer_insert().load(ns)
+        eb, errors = schema.EbookSchema.create_insert_serializer().load(ns)
         self.assertFalse(errors)
         self.assertTrue(db.session.dirty)
         db.session.add(eb)

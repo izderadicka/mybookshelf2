@@ -30,6 +30,18 @@ class ModelSchema(BaseModelSchema):
 
     class Meta:
         sqla_session = app.db.session
+        
+    @classmethod
+    def create_entity_serializer(cls):
+        return cls()
+    
+    @classmethod
+    def create_insert_serializer(cls):
+        return cls(exclude=('version_id',))
+    
+    @classmethod
+    def create_list_serializer(cls):
+        return cls(many=True)
 
 
 class AuthorSchema(ModelSchema):
@@ -107,8 +119,6 @@ class SourceSchema(ModelSchema):
         model = model.Source
 
 
-def lang_from_code(c):
-    return model.Language.query.filter_by(code=c).one()
 
 
 class EbookSchema(ModelSchema):
@@ -116,8 +126,6 @@ class EbookSchema(ModelSchema):
         AuthorSchema, many=True, only=('id', 'first_name', 'last_name'), allow_none=True)
     series = fields.Nested(SeriesSchema, only=('id', 'title'), allow_none=True)
     language = fields.Nested(LanguageSchema, required=True)
-#     language = fields.Function(
-#         serialize=lambda o: o.language.name, deserialize=lang_from_code)
     cover = fields.Function(serialize=lambda o: bool(o.cover))
     genres = fields.Nested(GenreSchema, many=True, allow_none=True)
     sources = fields.Nested(SourceSchema, many=True, only=(
@@ -127,6 +135,15 @@ class EbookSchema(ModelSchema):
     class Meta:
         model = model.Ebook
         exclude = ('full_text',)
+        
+    @classmethod
+    def create_insert_serializer(cls):
+        return PartialSchemaFactory(EbookSchema, exclude=('version_id','base_dir'))
+    
+    @classmethod
+    def create_list_serializer(cls):
+        return EbookSchema(many=True, only=(
+            'id', 'title', 'authors', 'series', 'series_index', 'language', 'cover'))
     
 
 
@@ -134,15 +151,27 @@ class FileInfoSchema(Schema):
     mime_type = fields.String(required=True, validate=validate.Length(max=255))
     size = fields.Integer(required=True, validate=validate.Range(min=1))
     # hash = fields.String(validate=validate.Length(max=128))
+    
+class BookshelfSchema(ModelSchema):
+    items_count = fields.Function(serialize = lambda o: o.items_count)
+    class Meta:
+        model = model.Bookshelf
+        
+    @classmethod
+    def create_list_serializer(cls):
+        return cls(many=True, only=('name', 'description', 'items_count'))
+        
+        
+class BookshelfItemSchema(ModelSchema):
+    class Meta:
+        model = model.BookshelfItem
 
 
 # schemas are probably not thread safe, better to have new instance per
 # each use
 ebook_serializer = lambda: EbookSchema(exclude=('base_dir',))
 ebook_deserializer_update = lambda: PartialSchemaFactory(EbookSchema, partial=True, exclude=('base_dir',))
-ebook_deserializer_insert = lambda: PartialSchemaFactory(EbookSchema, exclude=('version_id','base_dir'))
-ebooks_list_serializer = lambda: EbookSchema(many=True, only=(
-    'id', 'title', 'authors', 'series', 'series_index', 'language', 'cover'))
+
 
 authors_list_serializer = lambda: AuthorSchema(
     many=True, only=('id', 'first_name', 'last_name'))

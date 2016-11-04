@@ -1,10 +1,10 @@
 # coding: utf-8
 import app
 from sqlalchemy import Column, Date, DateTime, Float, Index, Integer, SmallInteger, String, \
-    BigInteger, Boolean, ForeignKey, Text, Enum, Table, desc
+    BigInteger, Boolean, ForeignKey, Text, Enum, Table, desc, select, func
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.sql import func
-from sqlalchemy.orm import relationship, deferred, backref
+from sqlalchemy.orm import relationship, deferred, backref, column_property
 from flask_login import UserMixin
 from sqlalchemy_utils import TSVectorType, JSONType
 # TODO - check if can use thse types instead
@@ -122,26 +122,7 @@ class Author(Base, Auditable):
 
     def __repr__(self):
         return super(Author, self).__repr__(['first_name', 'last_name'])
-
-
-class Bookshelf(Base, Auditable):
-    name = Column(String(256), nullable=False, index=True)
-    description = Column(Text)
-    public = Column(Boolean, default=True)
-    rating = Column(Float(asdecimal=True))
-    rating_count = Column(Integer)
-    items = relationship('BookshelfItem', back_populates='bookshelf')
-
-    def __repr__(self):
-        return super(Bookshelf, self).__repr__(['name'])
     
-class BookshelfRating(Base, Auditable):
-    bookshelf_id = Column(BigInteger, ForeignKey('bookshelf.id'), nullable=False)
-    rating = Column(Float(asdecimal=True))
-    description = Column(Text)
-    bookshelf = relationship('Bookshelf', backref=backref('ratings', lazy='dynamic'))
-
-
 class BookshelfItem(Base, Auditable):
 
     type = Column(
@@ -158,6 +139,40 @@ class BookshelfItem(Base, Auditable):
 
     def __repr__(self):
         return super(BookshelfItem, self).__repr__(['type'])
+
+
+class Bookshelf(Base, Auditable):
+    name = Column(String(256), nullable=False, index=True)
+    description = Column(Text)
+    public = Column(Boolean, default=True)
+    rating = Column(Float(asdecimal=True))
+    rating_count = Column(Integer)
+    items = relationship('BookshelfItem', back_populates='bookshelf', lazy='dynamic')
+    
+    def __repr__(self):
+        return super(Bookshelf, self).__repr__(['name'])
+    
+    def add_ebook(self, ebook, user, note=None, order=None):
+        ebook_id = ebook.id if isinstance(ebook, Ebook) else ebook
+        if not self.items.filter(BookshelfItem.ebook_id == ebook_id).all():
+            item = BookshelfItem(type='EBOOK', ebook_id=ebook_id, note=note, 
+                                 order=order,bookshelf=self, created_by=user,
+                                 modified_by=user)
+            app.db.session.add(item)
+    
+Bookshelf.items_count = column_property(
+        select([func.count(BookshelfItem.id)]).\
+        where(BookshelfItem.bookshelf_id == Bookshelf.id).\
+        correlate_except(BookshelfItem)
+            )
+
+    
+class BookshelfRating(Base, Auditable):
+    bookshelf_id = Column(BigInteger, ForeignKey('bookshelf.id'), nullable=False)
+    rating = Column(Float(asdecimal=True))
+    description = Column(Text)
+    bookshelf = relationship('Bookshelf', backref=backref('ratings', lazy='dynamic'))
+
 
 
 class Conversion(Base, Auditable):
@@ -332,6 +347,11 @@ sortings = {'ebook': {'title': [Ebook.title],
                       'created': [Ebook.created],
                       '-created': [desc(Ebook.created)],
                       },
+            'shelf': {'name': [Bookshelf.name],
+                      '-name': [desc(Bookshelf.name)],
+                      'created': [Bookshelf.created],
+                      '-created': [desc(Bookshelf.created)],
+                },
             'ebook_in_series': {'title': [Ebook.title],
                       '-title': [desc(Ebook.title)],
                       'created': [Ebook.created],

@@ -13,6 +13,13 @@ export const ROUTES =
     title: 'Ebooks',
     auth: true
   }, {
+    route: 'shelves',
+    name: 'shelves',
+    moduleId: 'pages/shelves',
+    nav: true,
+    title: 'Bookshelves',
+    auth: true
+  }, {
     route: 'login',
     name: 'login',
     moduleId: 'pages/login',

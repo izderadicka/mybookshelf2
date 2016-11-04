@@ -6,6 +6,7 @@ import app.schema as schema
 import app.logic as logic
 from common.utils import success_error, mimetype_from_file_name, ext_from_mimetype
 from app import db
+from functools import wraps
 from app.cors import add_cors_headers
 from app.access import role_required, can_change_object
 from werkzeug import secure_filename
@@ -28,52 +29,79 @@ def after_request(response):
     else:
         return add_cors_headers(response)
     
+def paginated(default_page_size=10, max_page_size=100, sortings=None):
+    def wrapper(fn):
+        @wraps(fn)
+        def inner(*args, **kwargs):
+            page_size = logic.safe_int(
+                request.args.get('page_size'), 'page_size') or default_page_size
+            if page_size > max_page_size:
+                abort(400, 'Page size bigger then maximum')
+            kwargs['page_size'] = page_size
+            kwargs['page'] = logic.safe_int(request.args.get('page'), 'page') or 1
+            sort_in = request.args.get('sort')
+            if sortings:
+                sort = sortings.get(sort_in)
+                if sort_in and not sort:
+                    abort(400, 'Invalid sort key %s' % sort_in)
+                kwargs['sort'] = sortings.get(request.args.get('sort'))
+            else:
+                if sort_in:
+                    abort(400, 'Sorting not supported')
+            return fn(*args, **kwargs)
+        return inner
+    return wrapper
+
+
+def paginate(q, page, page_size, sort, serializer):
+    if sort:
+        q = q.order_by(*sort)
+    pager = q.paginate(page, page_size)
+    return {'page': pager.page,
+            'page_size': pager.per_page,
+            'total': pager.total,
+            'items': serializer.dump(pager.items).data}
 
 
 class Resource(BaseResource):
     decorators = [role_required('user')]
-    pass
+    SCHEMA = None
+    
+    @property
+    def model(self):
+        return self.SCHEMA.Meta.model
 
-#############################################################################################
-# API RESOURCES
-#############################################################################################
-
-class Ebooks(Resource):
-
-    @logic.paginated(sortings=model.sortings['ebook'])
-    def get(self, page=1, page_size=20, sort=None, **kwargs):
-        genres=request.args.get('genres')
-        if genres:
-            genres=list(map(int,  genres.split(',')))
-        q = model.Ebook.query
-        if genres:
-            q= logic.filter_ebooks_by_genres(q, genres)
-        return logic.paginate(q, page, page_size, sort, schema.ebooks_list_serializer())
-
+class InsertListMixin():
+    
+    def clear_insert_data(self):
+        return request.json
+    
+    def modify_insert_object(self, obj):
+        pass
+    
     def post(self):
         if not request.json:
             abort(400)
 
         try:
-            data = logic.clear_ebook_data(request.json)
+            data = self.clear_insert_data()
         except ValueError as e:
             db.session.rollback()
             return jsonify(error="Invalid data", error_details=str(e))
 
-        deserializer = schema.ebook_deserializer_insert()
-        ebook, errors = deserializer.load(data)
+        deserializer = self.SCHEMA.create_insert_serializer()
+        obj, errors = deserializer.load(data)
 
         if errors:
             db.session.rollback()
             return jsonify(error="Invalid data", error_details=errors)
 
-        ebook.created_by = current_user
-        ebook.modified_by = current_user
-
-        logic.check_ebook_entity(ebook, current_user)
-        logic.update_ebook_base_dir(ebook)
+        obj.created_by = current_user
+        obj.modified_by = current_user
         
-        db.session.add(ebook)
+        self.modify_insert_object(obj)
+
+        db.session.add(obj)
 
         try:
             db.session.commit()
@@ -81,15 +109,63 @@ class Ebooks(Resource):
             db.session.rollback()
             return jsonify(error="Database error", error_details=str(e))
 
-        return jsonify(id=ebook.id, success=True)
+        return jsonify(id=obj.id, success=True)
+    
+    
+    def get(self):
+        q = self.filter_list(self.model.query)
+        serializer = self.SCHEMA.create_list_serializer()
+        
+        if self.paginated is not None:
+            return paginated(**self.paginated)(paginate)(q=q, serializer=serializer)
+        else:
+            return serializer.dump(q.all()).data
+        
+    def filter_list(self,q):
+        return q
+    
+class UpdateGetDeleteMixin():
+    def get(self, id): 
+        b = self.model.query.get_or_404(id)
+        return self.SCHEMA.create_entity_serializer().dump(b).data
+    
+        
 
+#############################################################################################
+# API RESOURCES
+#############################################################################################
+
+class Ebooks(Resource, InsertListMixin):
+    methods=['GET', 'POST']
+    SCHEMA =  schema.EbookSchema
+    paginated = {'sortings':model.sortings['ebook']}
+    
+    def filter_list(self, q):
+        genres=request.args.get('genres')
+        if genres:
+            genres=list(map(int,  genres.split(',')))
+        if genres:
+            q= logic.filter_ebooks_by_genres(q, genres)
+            
+        return q
+    
+    # Create post 
+    
+    def clear_insert_data(self):
+        return logic.clear_ebook_data(request.json)
+    
+    def modify_insert_object(self, ebook):
+        logic.check_ebook_entity(ebook, current_user)
+        logic.update_ebook_base_dir(ebook)
+    # end create post
+    
 
 class Authors(Resource):
 
-    @logic.paginated(sortings=model.sortings['author'])
+    @paginated(sortings=model.sortings['author'])
     def get(self, page=1, page_size=20, sort=None, **kwargs):
         q = model.Author.query
-        return logic.paginate(q, page, page_size, sort, schema.authors_list_serializer())
+        return paginate(q, page, page_size, sort, schema.authors_list_serializer())
 
 
 class Languages(Resource):
@@ -108,10 +184,10 @@ class Genres(Resource):
 
 class Series(Resource):
 
-    @logic.paginated(sortings=model.sortings['series'])
+    @paginated(sortings=model.sortings['series'])
     def get(self, page=1, page_size=20, sort=None, **kwargs):
         q = model.Series.query
-        return logic.paginate(q, page, page_size, sort, schema.series_list_serializer())
+        return paginate(q, page, page_size, sort, schema.series_list_serializer())
 
 
 class Serie(Resource):
@@ -192,27 +268,46 @@ class Author(Resource):
 
 class Search(Resource):
 
-    @logic.paginated()
+    @paginated()
     def get(self, search, page=1, page_size=20, **kwargs):
         q = logic.search_query(model.Ebook.query, search)
-        return logic.paginate(q, page, page_size, None, schema.ebooks_list_serializer())
+        return paginate(q, page, page_size, None, schema.EbookSchema.create_list_serializer())
 
 
 class AuthorEbooks(Resource):
 
-    @logic.paginated(sortings=model.sortings['ebook'])
+    @paginated(sortings=model.sortings['ebook'])
     def get(self, id, page=1, page_size=20, sort=None):
         q = model.Ebook.query.join(
             model.Author, model.Ebook.authors).filter(model.Author.id == id)
         if request.args.get('filter'):
             q = logic.filter_ebooks(q, request.args.get('filter'))
-        return logic.paginate(q, page, page_size, sort, schema.ebooks_list_serializer())
+        return paginate(q, page, page_size, sort, schema.EbookSchema.create_list_serializer())
+    
+class BookShelves(Resource, InsertListMixin):
+    methods=['GET', 'POST']
+    SCHEMA =  schema.BookshelfSchema
+    paginated = {'sortings': model.sortings['shelf']}
+       
+    def filter_list(self, q):
+        if request.args.get('filter'):
+            q = logic.filter_shelves(q, request.args.get('filter'))
+        return q 
+    
+    
+
+    
+class BookShelf(Resource, UpdateGetDeleteMixin):
+    methods=['GET']
+    SCHEMA = schema.BookshelfSchema
+    
+        
 
 class SeriesEbooks(Resource):
-    @logic.paginated(sortings=model.sortings['ebook_in_series'])
+    @paginated(sortings=model.sortings['ebook_in_series'])
     def get(self, id, page=1, page_size=20, sort=None):
         q=model.Ebook.query.filter(model.Ebook.series_id == id)
-        return logic.paginate(q, page, page_size, sort, schema.ebooks_list_serializer())
+        return paginate(q, page, page_size, sort, schema.EbookSchema.create_list_serializer())
 
 
 class UploadMeta(Resource):
@@ -355,7 +450,7 @@ def authors_index(start):
 @role_required('user')
 def ebooks_index(start):
     total, items = logic.ebooks_index(start)
-    serializer = schema.ebooks_list_serializer()
+    serializer = schema.EbookSchema.create_list_serializer()
     return jsonify(total=total,
                    items=serializer.dump(items).data)
 
@@ -416,11 +511,32 @@ def merge_ebook(ebook_id):
     other = model.Ebook.query.get_or_404(data['other_ebook'])    
     logic.merge_ebook(ebook, other)
     return jsonify(id=ebook_id)
+
+@bp.route('/bookshelves/<int:shelf_id>/add', methods=['POST'])
+@role_required('user')
+def add_ebook_to_shelf(shelf_id):
+    data = request.json
+    bookshelf = model.Bookshelf.query.get_or_404(shelf_id)
+    if 'ebook_id' in data:
+        bookshelf.add_ebook(data['ebook_id'], current_user, data.get('note'), data.get('order'))
+    elif 'series_id' in data:
+        bookshelf.add_series(data['series_id'])
+    else:
+        abort(400, 'Invalid request')
+        
+    db.session.commit()
+    
+    return jsonify(id=shelf_id)
+        
+    
+    
     
     
 
 
 api.add_resource(Ebooks, '/ebooks')
+api.add_resource(BookShelves, '/bookshelves')
+api.add_resource(BookShelf, '/bookshelves/<int:id>')
 api.add_resource(Ebook, '/ebooks/<int:id>')
 api.add_resource(Source, '/sources/<int:id>')
 api.add_resource(AuthorEbooks, '/ebooks/author/<int:id>')

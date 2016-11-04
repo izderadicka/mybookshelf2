@@ -274,4 +274,41 @@ class TestApi(TestCase):
         self.assertEqual(res['title'], 'Prokleta vesnice')
         self.assertEqual(res['version_id'], 2)
         
+    def test_bookshelfs(self):
+        res = self.post(
+            '/api/bookshelves', data='{"name":"test", "description":"bla bla"}', 
+            content_type="application/json", failure=True)
+        self.assert401(res)
+        self.login()
+        res = self.post(
+            '/api/bookshelves', data='{"name":"test", "description":"bla bla"}', 
+            content_type="application/json")
+
+        if res.get('error'):
+            print(res.get('error_details'))
+            self.fail('Ebook create error: %s' % res['error'])
+            
+        shelf_id = res['id']
+        self.assertEqual(shelf_id, 1)
+            
+        res = self.get('/api/bookshelves')
+        
+        self.assertEqual(res['total'], 1)
+        self.assertEqual(res['items'][0]['items_count'], 0)
+        
+        ebooks = self.get('/api/ebooks', query_string={'page': 1, 'page_size': 10})['items']
+        
+        self.assertEqual(len(ebooks), 10)
+        
+        for b in ebooks:
+            self.post('/api/bookshelves/%d/add'%shelf_id, data='{"ebook_id":%d, "note":"test"}'%b['id'],
+                      content_type="application/json")
+            
+        shelf = self.get('/api/bookshelves/%d'%shelf_id)
+        self.assertEqual(shelf['items_count'], 10)
+            
+        
+        
+    
+        
         
