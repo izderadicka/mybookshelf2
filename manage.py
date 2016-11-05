@@ -16,6 +16,7 @@ from datetime import datetime, timedelta
 from traceback import print_exc
 from version import __db_version as db_version
 import re
+from sqlalchemy.exc import ProgrammingError
 
 
 SQL_DIR = os.path.join(os.path.dirname(__file__), 'sql')
