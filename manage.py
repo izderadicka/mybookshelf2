@@ -16,6 +16,7 @@ from datetime import datetime, timedelta
 from traceback import print_exc
 from version import __db_version as db_version
 import re
+from sqlalchemy.exc import ProgrammingError
 
 
 SQL_DIR = os.path.join(os.path.dirname(__file__), 'sql')
@@ -116,10 +117,14 @@ def migrate_tables():
     print('This will migrate database to latest schema, you are advised to backup database before running this command')
     if prompt_bool('Do you want to continue?'):
         mdir = os.path.join(SQL_DIR, 'migration')
-        versions=model.Version.query.all()
-        if len(versions)>1 or len(versions)<1:
-            raise Exception('Invalid version information in DB')
-        old_version = versions[0].version
+        try:
+            versions=model.Version.query.all()
+        except ProgrammingError:
+            old_version = 0
+        else:
+            if len(versions)>1 or len(versions)<1:
+                raise Exception('Invalid version information in DB')
+            old_version = versions[0].version
         if old_version == db_version:
             print('DB is at correct version %d'% old_version)
         scripts = []
