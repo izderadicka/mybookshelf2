@@ -16,7 +16,6 @@ from datetime import datetime, timedelta
 from traceback import print_exc
 from version import __db_version as db_version
 import re
-from sqlalchemy.exc import ProgrammingError
 
 
 SQL_DIR = os.path.join(os.path.dirname(__file__), 'sql')
@@ -140,7 +139,7 @@ def migrate_tables():
         try:
             c = connection.cursor()
             for v,fname in scripts:
-                script = open(os.path.join(SQL_DIR, fname), 'rt', encoding='utf-8-sig').read()
+                script = open(fname, 'rt', encoding='utf-8-sig').read()
                 print('Upgrading database to version %d', v)
                 res = c.execute(script)
                 connection.commit()
