@@ -141,7 +141,7 @@ def migrate_tables():
             c = connection.cursor()
             for v,fname in scripts:
                 script = open(fname, 'rt', encoding='utf-8-sig').read()
-                print('Upgrading database to version %d', v)
+                print('Upgrading database to version %d'% v)
                 res = c.execute(script)
                 connection.commit()
         finally:

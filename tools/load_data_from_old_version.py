@@ -228,9 +228,11 @@ def export_data(args):
 # Sources
     q = 'select id, created, modified, ebook_id, location, format_id, size, crc, quality from ebook_source'
     c.execute(q)
+    col_names = c.column_names
+    rows = c.fetchall() # need to fetch all to prevent timeout of connection later
     count = 0
-    for row in c:
-        data = dict(zip(c.column_names, row))
+    for row in rows:
+        data = dict(zip(col_names, row))
         ebook = session.query(model.Ebook).get(data['ebook_id'])
         if not ebook:
             continue
