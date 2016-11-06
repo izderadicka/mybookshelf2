@@ -224,13 +224,16 @@ class Ebook(Base, Auditable):
         if not self.authors:
             return 'No Authors'
         if len(self.authors) == 1:
-            return '{a.last_name} {a.first_name}'.format(a=self.authors[0])
+            return '{a.last_name} {a.first_name}'.format(a=self.authors[0])\
+                 if self.authors[0].first_name else self.authors[0].last_name
         else:
             l = len(self.authors)
             authors = []
             for i in range(min(3, l)):
                 authors.append('{a.last_name} {initials}'.format(a=self.authors[i],
-                                                                 initials=initials(self.authors[i].first_name)))
+                                initials=initials(self.authors[i].first_name))\
+                               if self.authors[i].first_name else self.authors[i].last_name
+                               )
             s = ', '.join(authors)
             if l > 3:
                 s += ' and others'
