@@ -382,13 +382,14 @@ def main():
     p.add_argument('--db', default='ebooks', help='db name')
     p.add_argument('--dir', help='base directory with ebook files, will copy files to current ebooks directory')
     p.add_argument('--sample', type=int, default=0, help="Sample randomly 1 of n ebooks")
-    #p.add_argument('--limit', type=int, help='limit number of records to')
+    p.add_argument('--confirm-overwrite', action='store_true', help='Confirming data overwrite (otherwise will be asked)')
     args = p.parse_args()
-    print('This tool will migrate data from Mybookshelf (previous version)')
-    print("It'll delete all data from existing DB")
-    answer=input('Continue [Y/N]?: ')
-    if answer.strip().lower() != 'y':
-        return
+    if not args.confirm_overwrite:
+        print('This tool will migrate data from Mybookshelf (previous version)')
+        print("It'll delete all data from existing DB")
+        answer=input('Continue [Y/N]?: ')
+        if answer.strip().lower() != 'y':
+            return
     clear_directories()
     export_data(args)
 
