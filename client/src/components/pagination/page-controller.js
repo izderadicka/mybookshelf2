@@ -16,7 +16,7 @@ export class PageController {
   @bindable noSort=false;
 
   constructor() {
-    logger.debug('Constructing PageContoller');
+    logger.debug('Constructing PageContoller - history state is ' + JSON.stringify(history.state));
 
     if (history.state) {
       const state=history.state;

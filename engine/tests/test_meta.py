@@ -8,7 +8,7 @@ from app.tests.basecase import TestCase
 from engine import dal
 from settings import Testing
 from settings import UPLOAD_DIR
-from engine.tasks import MetadataTask
+from engine.tasks import MetadataTask, init, OOEnvironment
 
 dal.DSN = 'dbname={db} user={user} password={password} host={host}'.format(db=Testing.DB_NAME,
                                                                            host=Testing.DB_HOST,
@@ -51,9 +51,9 @@ class TestMeta(TestCase):
             pass
     
     def assert_cover(self, cover):
-         self.assertEqual(cover, 'cover.jpg')
-         self.assertTrue(os.path.exists(os.path.join(UPLOAD_DIR, cover)))
-         self.assertTrue(os.stat(os.path.join(UPLOAD_DIR, cover)).st_size > 0)
+        self.assertEqual(cover, 'cover.jpg')
+        self.assertTrue(os.path.exists(os.path.join(UPLOAD_DIR, cover)))
+        self.assertTrue(os.stat(os.path.join(UPLOAD_DIR, cover)).st_size > 0)
     
     def test_meta1(self):
         result = []
@@ -65,6 +65,9 @@ class TestMeta(TestCase):
         t = MetadataTask(user='ivan')
         loop = asyncio.get_event_loop()
         
+        loop.run_until_complete(init(3))   
+        self.assertTrue(OOEnvironment._envs and isinstance(OOEnvironment._envs, asyncio.Queue))
+             
         result = []
         res = loop.run_until_complete(t.run(self.fname[2]))
         self.assertEqual(res, 1)
@@ -117,6 +120,7 @@ class TestMeta(TestCase):
             meta['language'], {'code': 'cs', 'name': 'Czech', 'id': 1})
         self.assertEqual(meta['series'], {'title': 'Virex'})
         self.assertEqual(meta['series_index'], 1)
+        self.assertEqual(OOEnvironment._envs.qsize(), 3)
         
         
         

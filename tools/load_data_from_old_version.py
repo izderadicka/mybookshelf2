@@ -328,48 +328,53 @@ def clear_directories():
         shutil.rmtree(dir, ignore_errors=True)
         os.makedirs(dir, exist_ok=True)
         
-def extract_cover(source):
+def     extract_cover(source):
     f = os.path.join(settings.BOOKS_BASE_DIR, source.location)
     temp_dir=tempfile.mkdtemp(dir=settings.UPLOAD_DIR)
-    if f.endswith('.doc'):
-        OOFFICE='soffice'
-        proc= subprocess.Popen([OOFFICE, '--headless', '--convert-to', 'odt','--outdir', temp_dir, f])
-        retcode=proc.wait(120)
-        fname= os.path.basename(f)
-        out_file=os.path.splitext(fname)[0]+'.odt'
-        out_file=os.path.join(temp_dir, out_file)
-        if not os.path.exists(out_file):
-            return 
-        f= out_file
-    
-    cover_file = os.path.join(temp_dir, 'cover_in.jpg')
-    proc = subprocess.Popen(['ebook-meta', '--get-cover=%s'%cover_file, f])
-    retcode = proc.wait(timeout=30)
-    if retcode!=0 or not os.path.exists(cover_file):
-        return
-    IMAGE_MAGIC = 'convert'
-    cover_out = os.path.join(temp_dir, 'cover.jpg')
-    proc = subprocess.Popen([IMAGE_MAGIC, cover_file, '-fuzz', '7%',
-                            '-trim', '-resize', '%dX%d'%settings.COVER_SIZE, cover_out])
-    retcode=proc.wait(10)
-    if retcode!=0 or not os.path.exists(cover_out):
-        return
-    thumb_out =  os.path.join(temp_dir, settings.THUMBNAIL_FILE)
-    proc = subprocess.Popen([IMAGE_MAGIC, cover_out, '-resize', '%dX%d'%settings.THUMBNAIL_SIZE, thumb_out])
-    proc.wait()
-    
-    ebook_cover = os.path.join(source.ebook.base_dir, 'cover.jpg')
-    dst = os.path.join(settings.BOOKS_BASE_DIR, ebook_cover)
-    shutil.move(cover_out, dst)
-    if os.path.exists(thumb_out):
-        shutil.move(thumb_out, os.path.join(settings.THUMBS_DIR, '%d.jpg'%source.ebook.id))
-    return ebook_cover
-    
-    
-    
-    
-    
-    
+    try:
+        if f.endswith('.doc'):
+            OOFFICE='soffice'
+            proc= subprocess.Popen([OOFFICE, '--headless', '--convert-to', 'odt','--outdir', temp_dir, f])
+            try:
+                retcode=proc.wait(240)
+            except subprocess.TimeoutExpired:
+                proc.terminate()
+                try:
+                    proc.wait(5)
+                except subprocess.TimeoutExpired:
+                    proc.kill()
+                return 
+            fname= os.path.basename(f)
+            out_file=os.path.splitext(fname)[0]+'.odt'
+            out_file=os.path.join(temp_dir, out_file)
+            if not os.path.exists(out_file):
+                return 
+            f= out_file
+        
+        cover_file = os.path.join(temp_dir, 'cover_in.jpg')
+        proc = subprocess.Popen(['ebook-meta', '--get-cover=%s'%cover_file, f])
+        retcode = proc.wait(timeout=30)
+        if retcode!=0 or not os.path.exists(cover_file):
+            return
+        IMAGE_MAGIC = 'convert'
+        cover_out = os.path.join(temp_dir, 'cover.jpg')
+        proc = subprocess.Popen([IMAGE_MAGIC, cover_file, '-fuzz', '7%',
+                                '-trim', '-resize', '%dX%d'%settings.COVER_SIZE, cover_out])
+        retcode=proc.wait(10)
+        if retcode!=0 or not os.path.exists(cover_out):
+            return
+        thumb_out =  os.path.join(temp_dir, settings.THUMBNAIL_FILE)
+        proc = subprocess.Popen([IMAGE_MAGIC, cover_out, '-resize', '%dX%d'%settings.THUMBNAIL_SIZE, thumb_out])
+        proc.wait()
+        
+        ebook_cover = os.path.join(source.ebook.base_dir, 'cover.jpg')
+        dst = os.path.join(settings.BOOKS_BASE_DIR, ebook_cover)
+        shutil.move(cover_out, dst)
+        if os.path.exists(thumb_out):
+            shutil.move(thumb_out, os.path.join(settings.THUMBS_DIR, '%d.jpg'%source.ebook.id))
+        return ebook_cover
+    finally:
+        shutil.rmtree(temp_dir, ignore_errors=True)
          
 
 def main():

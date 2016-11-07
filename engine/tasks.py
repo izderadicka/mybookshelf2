@@ -17,15 +17,53 @@ logger = logging.getLogger('tasks')
 
 #'/usr/bin/soffice --headless --convert-to %(format)s --outdir "%(out_dir)s" "%(in_file)s"'
 
+class OOEnvironment():
+    ''' Provide temporarty environment for LibreOffice to allow several concurrent processes'''
+    def __init__(self):
+        self._env = None
+        
+    _envs = None
+    @classmethod
+    async def init(cls, concurrency):
+        tmp_dir='/tmp/mbs2_ooenvs'
+        cls._envs = asyncio.Queue(concurrency)
+        await aos.makedirs(tmp_dir, exist_ok=True)
+        for i in range(concurrency):
+            path = os.path.join
+            await cls._envs.put(os.path.join(tmp_dir, 'oohome%d'%i))
+            
+    async def __aenter__(self):
+        self._env=await self._envs.get()
+        return self._env
+    
+    async def __aexit__(self,  exc_type, exc_value, traceback):
+        await self._envs.put(self._env)
+        
+            
+    
+async def init(concurrency):
+    await OOEnvironment.init(concurrency)
+    
+
 async def convert_file(fname, format, outdir=None): 
     if not outdir:
         outdir=os.path.dirname(fname)
         out_file = os.path.splitext(fname)[0] +'.'+format
     else:
         out_file=os.path.join(outdir, os.path.splitext(os.path.basename(fname))[0]+'.'+format)
-    cmd=(OOFFICE, '--headless', '--convert-to', format,'--outdir', outdir, fname)
-    proc = await asyncio.create_subprocess_exec(*cmd)
-    return_code = await proc.wait()
+    
+    async with OOEnvironment() as env:
+        cmd=(OOFFICE, '--headless', '-env:UserInstallation=file://%s'%env, '--convert-to', format,
+             '--outdir', outdir, fname)
+        proc = await asyncio.create_subprocess_exec(*cmd)
+        try:
+            return_code = await asyncio.wait_for(proc.wait(), 240)
+        except asyncio.TimeoutError:
+            proc.terminate()
+            try:
+                await asyncio.wait_for(proc.wait(), 10)
+            except asyncio.TimeoutError:
+                proc.kill()
     #older version of LibreOffice are returning non return code even if file is created
     if await aos.path.exists(out_file):
         return out_file

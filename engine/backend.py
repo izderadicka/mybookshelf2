@@ -12,7 +12,9 @@ import time
 from urllib.parse import urlunsplit
 sys.path.append(os.path.join(os.path.dirname(__file__),'..'))
 import engine.dal as dal
+from engine.tasks import init
 from common.utils import verify_token
+from multiprocessing import cpu_count
 import settings
 
 log = logging.getLogger('engine')
@@ -33,6 +35,9 @@ if __name__ == '__main__':
     import argparse
 
     load_tasks_from('engine.tasks')
+    loop =  asyncio.get_event_loop()
+    
+    loop.run_until_complete(init(Config.CONCURRENT_TASKS or cpu_count()))
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
