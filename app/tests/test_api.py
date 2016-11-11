@@ -149,6 +149,12 @@ class TestApi(TestCase):
         
         res = self.get('/api/ebooks?genres=9,16')
         self.assertEqual(res['total'],2)
+        
+        res = self.get('/api/genres')
+        self.assertEqual(len(res), 57)
+        
+        res = self.get('/api/languages')
+        self.assertEqual(len(res), 4)
 
     def test_api2(self):
         #---------------

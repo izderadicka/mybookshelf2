@@ -1,5 +1,6 @@
 <template>
   <require from="./search"></require>
+  <require from="components/slice-converter"></require>
   <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
     <div class="container-fluid">
       <div class="navbar-header">
@@ -17,9 +18,19 @@
 
       <div class="collapse navbar-collapse" id="skeleton-navigation-navbar-collapse">
         <search if.bind="isAuthenticated" execute.call="searchSubmitted(query)"></search>
-        <ul class="nav navbar-nav">
-          <li repeat.for="row of router.navigation | authFilter: isAuthenticated" class="${row.isActive ? 'active' : ''}">
+        <ul class="nav navbar-nav main">
+          <li repeat.for="row of router.navigation | slice: 0:3 |authFilter: isAuthenticated" class="${row.isActive ? 'active' : ''}">
             <a data-toggle="collapse" data-target="#skeleton-navigation-navbar-collapse.in" href.bind="row.href">${row.title}</a>
+          </li>
+          <li>
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"i
+             if.bind="router.navigation.length>3">
+            More <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+              <li repeat.for="row of router.navigation | slice: 3 |authFilter: isAuthenticated" class="${row.isActive ? 'active' : ''}">
+                <a data-toggle="collapse" data-target="#skeleton-navigation-navbar-collapse.in" href.bind="row.href">${row.title}</a>
+              </li>
+          </ul>
           </li>
         </ul>
 

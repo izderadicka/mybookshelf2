@@ -42,12 +42,21 @@ class ModelSchema(BaseModelSchema):
     @classmethod
     def create_list_serializer(cls):
         return cls(many=True)
+    
+    @classmethod
+    def create_update_serializer(cls):
+        return cls(partial=True)
 
 
 class AuthorSchema(ModelSchema):
 
     class Meta:
         model = model.Author
+        
+    @classmethod
+    def create_list_serializer(cls):
+        return AuthorSchema(
+            many=True, only=('id', 'first_name', 'last_name'))
 
 
 class SeriesSchema(ModelSchema):
@@ -134,18 +143,21 @@ class EbookSchema(ModelSchema):
 
     class Meta:
         model = model.Ebook
-        exclude = ('full_text',)
+        exclude = ('full_text', 'base_dir')
         
     @classmethod
     def create_insert_serializer(cls):
-        return PartialSchemaFactory(EbookSchema, exclude=('version_id','base_dir'))
+        return PartialSchemaFactory(EbookSchema, exclude=('version_id',))
     
     @classmethod
     def create_list_serializer(cls):
         return EbookSchema(many=True, only=(
             'id', 'title', 'authors', 'series', 'series_index', 'language', 'cover'))
+        
+    @classmethod
+    def create_update_serializer(cls):
+        return PartialSchemaFactory(EbookSchema, partial=True)
     
-
 
 class FileInfoSchema(Schema):
     mime_type = fields.String(required=True, validate=validate.Length(max=255))
@@ -165,17 +177,8 @@ class BookshelfSchema(ModelSchema):
 class BookshelfItemSchema(ModelSchema):
     class Meta:
         model = model.BookshelfItem
+        
 
-
-# schemas are probably not thread safe, better to have new instance per
-# each use
-ebook_serializer = lambda: EbookSchema(exclude=('base_dir',))
-ebook_deserializer_update = lambda: PartialSchemaFactory(EbookSchema, partial=True, exclude=('base_dir',))
-
-
-authors_list_serializer = lambda: AuthorSchema(
-    many=True, only=('id', 'first_name', 'last_name'))
-author_serializer = lambda: AuthorSchema()
 
 series_list_serializer = lambda: SeriesSchema(many=True, only=('id', 'title'))
 series_index_serializer = lambda: SeriesSchemaWithAuthors(many=True, only=('id', 'title', 'authors'))

@@ -1,6 +1,13 @@
 <template>
   <section>
-    <h2 class="page-title"><span>ICON</span> Bookshelves</h2>
+    <div class="container-fluid vertically-spaced">
+    <ul class="nav nav-tabs nav-justified">
+      <li role="presentation" class="active"><a>My Bookshelves</a></li>
+      <li role="presentation"><a>Public Bookshelves</a></li>
+    </ul>
+  </div>
+
+  <div class="container-fluid vertically-spaced">
     <div class="row">
       <div class="col-lg-6">
         <div class="input-group ">
@@ -10,8 +17,10 @@
         </div>
       </div>
     </div>
+  </div>
 
-  <div class="container-fluid items-header" css="display: ${paginator.lastPage===0?'none':'block'}">
+
+  <div class="container-fluid items-header vertically-spaced" css="display: ${paginator.lastPage===0?'none':'block'}">
       <h3 class="page-title"><i class="fa fa-file-text-o" aria-hidden="true"></i>
         ${paginator.page} of ${paginator.lastPage}
     <div class='sorter' if.bind="sortings.length">
@@ -23,8 +32,15 @@
 
   <page-controller view-model.ref='paginator' loader.bind="loader" sort.bind="sorter.sort" page-size="12" no-sort.bind="!sortings.length"></page-controller>
 
-  <div class="container-fluid">
-    Content
+  <div class="container-fluid vertically-spaced">
+    <div class="list-group">
+      <a href="#" class="list-group-item" repeat.for="shelf of paginator.data">
+        <h3>shelf.name
+          <span class="badge">${shelf.items_count}</span>
+        </h3>
+        <p>${shelf.description}
+      </a>
+    </div>
   </div>
 
   <pager page.two-way="paginator.page" last-page.bind="paginator.lastPage" loading.bind="paginator.loading"></pager>

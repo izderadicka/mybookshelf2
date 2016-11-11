@@ -42,7 +42,7 @@ class Test(TestCase):
 
         no_series = deepcopy(ebook_data)
         no_series['series'] = None
-        errors = schema.ebook_deserializer_update().validate(no_series)
+        errors = schema.EbookSchema.create_update_serializer().validate(no_series)
         if errors:
             print(errors)
         self.assertFalse(errors)
@@ -82,7 +82,7 @@ class Test(TestCase):
 
         data = {'title': 'Povidky o necem',
                 'id': eb.id, 'version_id': eb.version_id}
-        updated_eb, errors = schema.ebook_deserializer_update().load(data)
+        updated_eb, errors = schema.EbookSchema.create_update_serializer().load(data)
 
         self.assertEqual(updated_eb.id, eb.id)
         self.assertFalse(errors)
@@ -104,7 +104,7 @@ class Test(TestCase):
 
         # must handle manually if not in one session
         version_id = data.pop('version_id')
-        updated_eb, errors = schema.ebook_deserializer_update().load(data)
+        updated_eb, errors = schema.EbookSchema.create_update_serializer().load(data)
         self.assertFalse(errors)
         if version_id != updated_eb.version_id:
             db.session.rollback()
@@ -185,7 +185,7 @@ class Test(TestCase):
         db.session.close()
         db.session.remove()
         #test series edit
-        eb, errors = schema.ebook_deserializer_update().load({'id':myebook_id, 'series':{'title': "Uplne nova"}})
+        eb, errors = schema.EbookSchema.create_update_serializer().load({'id':myebook_id, 'series':{'title': "Uplne nova"}})
         self.assertEqual(eb.title, 'Povidky o necem')
         self.assertTrue(inspect(eb).persistent and inspect(eb).modified)
         self.assertTrue(inspect(eb.series).pending)

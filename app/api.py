@@ -72,9 +72,10 @@ class Resource(BaseResource):
         return self.SCHEMA.Meta.model
 
 class InsertListMixin():
+    paginated = None
     
-    def clear_insert_data(self):
-        return request.json
+    def clear_insert_data(self, data):
+        return data
     
     def modify_insert_object(self, obj):
         pass
@@ -84,7 +85,7 @@ class InsertListMixin():
             abort(400)
 
         try:
-            data = self.clear_insert_data()
+            data = self.clear_insert_data(request.json)
         except ValueError as e:
             db.session.rollback()
             return jsonify(error="Invalid data", error_details=str(e))
@@ -125,15 +126,126 @@ class InsertListMixin():
         return q
     
 class UpdateGetDeleteMixin():
+    user_can_change = False
+    
     def get(self, id): 
         b = self.model.query.get_or_404(id)
         return self.SCHEMA.create_entity_serializer().dump(b).data
+    
+    def delete(self, id):
+        entity = self.model.query.get_or_404(id)
+        if self.user_can_change:
+            can_change_object(entity)
+        else:
+            if not current_user.has_role('superuser'):
+                abort(403, 'Access denied')
+        db.session.delete(entity)
+        db.session.commit()
+        return jsonify(id=id, success=True)
+    
+    def clear_update_data(self, data):
+        return data
+    
+    def modify_update_object(self, obj):
+        pass
+    
+    def patch(self, id):
+        if not request.json:
+            abort(400)
+
+        try:
+            data = self.clear_update_data(request.json)
+        except ValueError as e:
+            db.session.rollback()
+            return jsonify(error="Invalid data", error_details=str(e))
+
+        deserializer = self.SCHEMA.create_update_serializer()
+
+        data['id'] = int(id)
+
+        try:
+            version_id = int(data.pop('version_id'))
+        except (KeyError,ValueError):
+            db.session.rollback()
+            return jsonify(error="Version_id missing", error_details="")
+
+        obj, errors = deserializer.load(data)
+
+        if obj.id != data['id']:
+            db.session.rollback()
+            return jsonify(error="Unknown record", error_details="Id %d is not in table" % data['id'])
+
+        can_change_object(obj)
+
+        if version_id != obj.version_id:
+            db.session.rollback()
+            return jsonify(error="Stalled record",  error_details="Your version %d, db version %d" %
+                           (version_id, obj.version_id))
+        if errors:
+            db.session.rollback()
+            return jsonify(error="Invalid data", error_details=errors)
+
+        obj.modified_by = current_user
+        self.modify_update_object(obj)
+
+        try:
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            return jsonify(error="Database error", error_details=str(e))
+
+        return jsonify(id=obj.id, success=True)
+
     
         
 
 #############################################################################################
 # API RESOURCES
 #############################################################################################
+
+class Author(Resource, UpdateGetDeleteMixin):
+    methods = ['GET', 'PATCH']
+    SCHEMA = schema.AuthorSchema
+    user_can_change = False
+
+class Authors(Resource, InsertListMixin):
+    methods = ['GET']
+    SCHEMA = schema.AuthorSchema
+    paginated = {'sortings': model.sortings['author']}
+
+class BookShelf(Resource, UpdateGetDeleteMixin):
+    methods=['GET']
+    SCHEMA = schema.BookshelfSchema
+
+class BookShelves(Resource, InsertListMixin):
+    methods=['GET', 'POST']
+    SCHEMA =  schema.BookshelfSchema
+    paginated = {'sortings': model.sortings['shelf']}
+       
+    def filter_list(self, q):
+        if request.args.get('filter'):
+            q = logic.filter_shelves(q, request.args.get('filter'))
+        return q 
+
+class Ebook(Resource, UpdateGetDeleteMixin):
+    methods = ['GET', 'PATCH', 'DELETE']
+    SCHEMA = schema.EbookSchema
+    user_can_change = True
+
+    def delete(self, id):
+        # check access - superuser or owner
+        b = model.Ebook.query.get_or_404(id)
+        can_change_object(b)
+        logic.delete_ebook(b)
+        #TODO: delete sources files!
+        return jsonify(id=id, success=True)
+
+    def clear_update_data(self, data):
+        return logic.clear_ebook_data(request.json)
+    
+    
+    def modify_update_object(self, obj):
+            logic.check_ebook_entity(obj, current_user)
 
 class Ebooks(Resource, InsertListMixin):
     methods=['GET', 'POST']
@@ -151,123 +263,61 @@ class Ebooks(Resource, InsertListMixin):
     
     # Create post 
     
-    def clear_insert_data(self):
-        return logic.clear_ebook_data(request.json)
+    def clear_insert_data(self, data):
+        return logic.clear_ebook_data(data)
     
     def modify_insert_object(self, ebook):
         logic.check_ebook_entity(ebook, current_user)
         logic.update_ebook_base_dir(ebook)
     # end create post
     
+class Genres(Resource, InsertListMixin):
+    methods = ['GET']
+    SCHEMA = schema.GenreSchema
+    
+    def filter_list(self, q):
+        return q.order_by(model.Genre.name)
+        
+        
+class Languages(Resource, InsertListMixin):
+    methods = ['GET']
+    SCHEMA = schema.LanguageSchema
 
-class Authors(Resource):
-
-    @paginated(sortings=model.sortings['author'])
-    def get(self, page=1, page_size=20, sort=None, **kwargs):
-        q = model.Author.query
-        return paginate(q, page, page_size, sort, schema.authors_list_serializer())
-
-
-class Languages(Resource):
-
-    def get(self):
-        q = model.Language.query.order_by(model.Language.name)
-        return schema.languages_list_serializer().dump(q.all()).data
-
-
-class Genres(Resource):
-
-    def get(self):
-        q = model.Genre.query.order_by(model.Genre.name)
-        return schema.languages_list_serializer().dump(q.all()).data
+    def filter_list(self,q):
+        return q.order_by(model.Language.name)
 
 
-class Series(Resource):
-
-    @paginated(sortings=model.sortings['series'])
-    def get(self, page=1, page_size=20, sort=None, **kwargs):
-        q = model.Series.query
-        return paginate(q, page, page_size, sort, schema.series_list_serializer())
+class Serie(Resource, UpdateGetDeleteMixin):
+    methods = ['GET', 'PATCH']
+    SCHEMA = schema.SeriesSchema
+    user_can_change = False
 
 
-class Serie(Resource):
-
-    def get(self, id):
-        s = model.Series.query.get_or_404(id)
-        return schema.series_serializer().dump(s).data
-
-
-class Ebook(Resource):
-
-    def get(self, id):
-        b = model.Ebook.query.get_or_404(id)
-        return schema.ebook_serializer().dump(b).data  # @UndefinedVariable
-
-    def delete(self, id):
-        # check access - superuser or owner
-        b = model.Ebook.query.get_or_404(id)
-        can_change_object(b)
-        logic.delete_ebook(b)
-        #TODO: delete sources files!
+class Series(Resource, InsertListMixin):
+    methods = ['GET']
+    SCHEMA = schema.SeriesSchema
+    paginated = {'sortings': model.sortings['series']}
+    
+    
+class Source(Resource): 
+    
+    def delete(self,id):
+        source= model.Source.query.get_or_404(id)
+        can_change_object(source)
+        logic.delete_source(source)
         return jsonify(id=id, success=True)
+    
+class UploadMeta(Resource, UpdateGetDeleteMixin):
+    methods = ['GET']
+    SCHEMA = schema.UploadSchema
+    user_can_change = True
 
-    def patch(self, id):
-        if not request.json:
-            abort(400)
-
-        try:
-            data = logic.clear_ebook_data(request.json)
-        except ValueError as e:
-            db.session.rollback()
-            return jsonify(error="Invalid data", error_details=str(e))
-
-        deserializer = schema.ebook_deserializer_update()
-
-        data['id'] = int(id)
-
-        try:
-            version_id = int(data.pop('version_id'))
-        except (KeyError,ValueError):
-            db.session.rollback()
-            return jsonify(error="Version_id missing", error_details="")
-
-        ebook, errors = deserializer.load(data)
-
-        if ebook.id != data['id']:
-            db.session.rollback()
-            return jsonify(error="Unknown record", error_details="Id %d is not in table" % data['id'])
-
-        can_change_object(ebook)
-
-        if version_id != ebook.version_id:
-            db.session.rollback()
-            return jsonify(error="Stalled record",  error_details="Your version %d, db version %d" %
-                           (version_id, ebook.version_id))
-        if errors:
-            db.session.rollback()
-            return jsonify(error="Invalid data", error_details=errors)
-
-        ebook.modified_by = current_user
-        logic.check_ebook_entity(ebook, current_user)
-
-        try:
-            db.session.commit()
-        except Exception as e:
-            db.session.rollback()
-            return jsonify(error="Database error", error_details=str(e))
-
-        return jsonify(id=ebook.id, success=True)
-
-
-class Author(Resource):
-
-    def get(self, id):
-        a = model.Author.query.get_or_404(id)
-        return schema.author_serializer().dump(a).data
-
+    
+###################################################################################################
+# Special Resources 
+###################################################################################################
 
 class Search(Resource):
-
     @paginated()
     def get(self, search, page=1, page_size=20, **kwargs):
         q = logic.search_query(model.Ebook.query, search)
@@ -275,7 +325,6 @@ class Search(Resource):
 
 
 class AuthorEbooks(Resource):
-
     @paginated(sortings=model.sortings['ebook'])
     def get(self, id, page=1, page_size=20, sort=None):
         q = model.Ebook.query.join(
@@ -283,23 +332,6 @@ class AuthorEbooks(Resource):
         if request.args.get('filter'):
             q = logic.filter_ebooks(q, request.args.get('filter'))
         return paginate(q, page, page_size, sort, schema.EbookSchema.create_list_serializer())
-    
-class BookShelves(Resource, InsertListMixin):
-    methods=['GET', 'POST']
-    SCHEMA =  schema.BookshelfSchema
-    paginated = {'sortings': model.sortings['shelf']}
-       
-    def filter_list(self, q):
-        if request.args.get('filter'):
-            q = logic.filter_shelves(q, request.args.get('filter'))
-        return q 
-    
-    
-
-    
-class BookShelf(Resource, UpdateGetDeleteMixin):
-    methods=['GET']
-    SCHEMA = schema.BookshelfSchema
     
         
 
@@ -310,30 +342,12 @@ class SeriesEbooks(Resource):
         return paginate(q, page, page_size, sort, schema.EbookSchema.create_list_serializer())
 
 
-class UploadMeta(Resource):
-
-    def get(self, id):
-        upload = model.Upload.query.get_or_404(id)
-        data = schema.upload_serializer().dump(upload).data
-        return data
-    
-class Source(Resource): 
-    
-    def delete(self,id):
-        source= model.Source.query.get_or_404(id)
-        can_change_object(source)
-        logic.delete_source(source)
-        return jsonify(id=id, success=True)
-        
-        
-
 
 ###################################################################################################
 # API SPECIAL METHODS
 ###################################################################################################
 
-@bp.route('/upload', methods=['POST'])
-@role_required('user')
+
 def upload():
     file = request.files['file']
     if file:
@@ -349,8 +363,7 @@ def upload():
         return jsonify(result='ok', file=os.path.join(tdir, filename))
     return jsonify(error='no file')
 
-@bp.route('/upload-cover', methods=['POST'])
-@role_required('user')
+
 def upload_cover():
     file=request.files['file']
     if file:
@@ -368,9 +381,6 @@ def upload_cover():
         return jsonify(result='ok', file=os.path.join(tdir, filename))
         
 
-
-@bp.route('/upload/check', methods=['POST'])
-@role_required('user')
 def check_upload():
     file_info = request.json
     logger.debug('File info %s' % file_info)
@@ -385,13 +395,10 @@ def check_upload():
     return jsonify(result='ok')
 
 
-@bp.route('/download/<int:id>')
-@role_required('user')
 def download(id):
     return logic.download(id)
 
-@bp.route('/download-converted/<int:id>')
-@role_required('user')
+
 def download_converted(id):
     conversion = model.Conversion.query.get_or_404(id)
     if conversion.created_by != current_user:
@@ -399,9 +406,8 @@ def download_converted(id):
     return logic.download_converted(conversion)
 
 
-@bp.route('/uploads-meta/<int:id>/cover')
-@role_required('user')
-def cover_meta(id, size='normal'):
+
+def cover_meta(id):
     upload = model.Upload.query.get_or_404(id)
     if not upload.cover:
         logger.warn('Upload cover for %d is empty', id)
@@ -414,8 +420,7 @@ def cover_meta(id, size='normal'):
 
     return logic.stream_response(fname, mimetype)
 
-@bp.route('/ebooks/<int:id>/cover')
-@role_required('user')
+
 def cover_ebook(id, size='normal'):
     ebook = model.Ebook.query.get_or_404(id)
     if not ebook.cover:
@@ -428,8 +433,6 @@ def cover_ebook(id, size='normal'):
     return logic.stream_response(fname, mimetype)
 
 
-@bp.route('/series/index/<string:start>')
-@role_required('user')
 def series_index(start):
     total, items = logic.series_index(start)
     serializer = schema.series_index_serializer()
@@ -437,17 +440,13 @@ def series_index(start):
                    items=serializer.dump(items).data)
 
 
-@bp.route('/authors/index/<string:start>')
-@role_required('user')
 def authors_index(start):
     total, items = logic.authors_index(start)
-    serializer = schema.authors_list_serializer()
+    serializer = schema.AuthorSchema.create_list_serializer()
     return jsonify(total=total,
                    items=serializer.dump(items).data)
 
 
-@bp.route('/ebooks/index/<string:start>')
-@role_required('user')
 def ebooks_index(start):
     total, items = logic.ebooks_index(start)
     serializer = schema.EbookSchema.create_list_serializer()
@@ -455,8 +454,6 @@ def ebooks_index(start):
                    items=serializer.dump(items).data)
 
 
-@bp.route('/ebooks/<int:id>/add-upload', methods=['POST'])
-@role_required('user')
 def add_upload_to_ebook(id):
     data = request.json
     if not data.get('upload_id'):
@@ -494,15 +491,13 @@ def add_upload_to_ebook(id):
 
     return jsonify(id=source.id)
 
-@bp.route('/ebooks/<int:ebook_id>/converted') 
-@role_required('user')
+
 def converted_sources(ebook_id):
     q = logic.query_converted_sources_for_ebook(ebook_id, current_user)
     serializer = schema.conversions_list_serializer()
     return jsonify( total=q.count(), items=serializer.dump(q.limit(100).all()).data)
 
-@bp.route('/ebooks/<int:ebook_id>/merge', methods=['POST'])
-@role_required('superuser')
+
 def merge_ebook(ebook_id):
     data=request.json
     if not data['other_ebook']:
@@ -512,8 +507,6 @@ def merge_ebook(ebook_id):
     logic.merge_ebook(ebook, other)
     return jsonify(id=ebook_id)
 
-@bp.route('/bookshelves/<int:shelf_id>/add', methods=['POST'])
-@role_required('user')
 def add_ebook_to_shelf(shelf_id):
     data = request.json
     bookshelf = model.Bookshelf.query.get_or_404(shelf_id)
@@ -530,22 +523,53 @@ def add_ebook_to_shelf(shelf_id):
         
     
     
-    
-    
+#############################################################################################
+# URL mapping
+#############################################################################################   
 
-
-api.add_resource(Ebooks, '/ebooks')
-api.add_resource(BookShelves, '/bookshelves')
-api.add_resource(BookShelf, '/bookshelves/<int:id>')
-api.add_resource(Ebook, '/ebooks/<int:id>')
-api.add_resource(Source, '/sources/<int:id>')
-api.add_resource(AuthorEbooks, '/ebooks/author/<int:id>')
-api.add_resource(SeriesEbooks, '/ebooks/series/<int:id>')
+def add_url(view_func, url, roles_required=['user'], **kwargs): 
+    if roles_required:
+        view_func = role_required(*roles_required)(view_func)
+        
+    bp.add_url_rule(url, view_func=view_func, **kwargs)
+    
 api.add_resource(Authors, '/authors')
 api.add_resource(Author, '/authors/<int:id>')
+add_url(authors_index, '/authors/index/<string:start>')
+
+
+api.add_resource(BookShelves, '/bookshelves')
+api.add_resource(BookShelf, '/bookshelves/<int:id>')
+add_url(add_ebook_to_shelf, '/bookshelves/<int:shelf_id>/add',  methods=['POST'])
+
+api.add_resource(Ebooks, '/ebooks')
+api.add_resource(Ebook, '/ebooks/<int:id>')
+api.add_resource(AuthorEbooks, '/ebooks/author/<int:id>')
+api.add_resource(SeriesEbooks, '/ebooks/series/<int:id>')
+add_url(cover_ebook, '/ebooks/<int:id>/cover')
+add_url(ebooks_index, '/ebooks/index/<string:start>')
+add_url(add_upload_to_ebook,'/ebooks/<int:id>/add-upload', methods=['POST'])
+add_url(converted_sources, '/ebooks/<int:ebook_id>/converted') 
+add_url(merge_ebook, '/ebooks/<int:ebook_id>/merge', methods=['POST'])
+
+api.add_resource(Genres, '/genres')
+api.add_resource(Languages, '/languages')
+
 api.add_resource(Series, '/series')
 api.add_resource(Serie, '/series/<int:id>')
+add_url(series_index, '/series/index/<string:start>')
+
+api.add_resource(Source, '/sources/<int:id>')
+
 api.add_resource(Search, '/search/<string:search>')
+
 api.add_resource(UploadMeta, '/uploads-meta/<int:id>')
-api.add_resource(Languages, '/languages')
-api.add_resource(Genres, '/genres')
+add_url(cover_meta,'/uploads-meta/<int:id>/cover')
+
+add_url(upload, '/upload', methods=['POST'])
+add_url(upload_cover, '/upload-cover', methods=['POST'])
+add_url(check_upload, '/upload/check', methods=['POST'])
+
+add_url(download,'/download/<int:id>')
+add_url(download_converted, '/download-converted/<int:id>')
+

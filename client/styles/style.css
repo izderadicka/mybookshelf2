@@ -338,3 +338,25 @@ background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAACMCAMAAAC9K
   margin:auto;
   display:block;
 }
+
+.vertically-spaced {
+  margin-top:20px;
+}
+
+nav .nav > li > a {
+
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+@media (min-width: 768px) {
+
+  nav search form {
+    width:33% !important;
+
+  }
+
+  nav search .input-group {
+    width:100%;
+  }
+}

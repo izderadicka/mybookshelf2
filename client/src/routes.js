@@ -9,15 +9,15 @@ export const ROUTES =
     route: 'ebooks',
     name: 'ebooks',
     moduleId: 'pages/ebooks',
-    nav: true,
+    nav: 1,
     title: 'Ebooks',
     auth: true
   }, {
     route: 'shelves',
     name: 'shelves',
     moduleId: 'pages/shelves',
-    nav: true,
-    title: 'Bookshelves',
+    nav: 2,
+    title: 'Shelves',
     auth: true
   }, {
     route: 'login',
@@ -52,8 +52,8 @@ export const ROUTES =
     route: 'upload',
     name: 'upload',
     moduleId: 'pages/upload',
-    title: 'Upload Ebook',
-    nav: true,
+    title: 'Upload',
+    nav: 3,
     auth: true
   },
   {
