@@ -17,7 +17,7 @@ export class Series {
 
   canActivate(params) {
     this.loader = this.client.getMany.bind(this.client,'ebooks/series/'+params.id);
-    this.client.getOne('series', params.id)
+    return this.client.getOne('series', params.id)
     .then( s => {
       this.series = s;
       return true;
@@ -26,5 +26,9 @@ export class Series {
       logger.error(`Fetch error ${err}`, err);
       return false;
     });
+  }
+
+  activate(params, route) {
+    route.navModel.setTitle(`Series "${this.series.title}"`);
   }
 }

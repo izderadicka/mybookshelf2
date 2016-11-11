@@ -13,13 +13,14 @@ export class Author {
     this.client=client;
   }
 
-  activate(params)  {
+  activate(params, route)  {
     logger.debug('Author activated with '+JSON.stringify(params));
     this.id=params.id;
     this.client.getOne('authors', params.id)
     .then(data => {
       this.author=data;
-      logger.debug('Loaded author'+JSON.stringify(data))
+      route.navModel.setTitle(`Author ${this.author.first_name?this.author.first_name+' ':''}${this.author.last_name}`);
+      logger.debug('Loaded author'+JSON.stringify(data));
       })
     .catch(err => logger.error(`Fetch error ${err}`, err));
     if (params.filter) this.filter=params.filter;

@@ -77,8 +77,9 @@ export class Ebook {
       });
   }
 
-  activate(params) {
+  activate(params, route) {
     this.updateConverted();
+    route.navModel.setTitle(`Ebook "${this.ebook.title}"`);
   }
 
   updateConverted() {
@@ -190,6 +191,10 @@ export class Ebook {
       break;
     }
   }
+  }
+
+  showAddToShelf() {
+
   }
 
 

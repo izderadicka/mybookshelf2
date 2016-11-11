@@ -92,6 +92,13 @@ export const ROUTES =
     title: 'Create Ebook',
     auth: true
   },
+  {
+    route: 'shelf/add/:what/:id',
+    name: 'add-to-shelf',
+    moduleId: 'pages/ebook-add-to-shelf',
+    title: 'Add To Bookshelf',
+    auth: true
+  },
 
 // testing routes
   {

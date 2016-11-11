@@ -44,7 +44,7 @@ export class ApiClient {
 
   getManyUnpagedCached(resource) {
     let now = new Date()
-    if (this._cache.has(resource) && (now- this._cache.get(resource).ts) < 60*3600*1000) {
+    if (this._cache.has(resource) && (now - this._cache.get(resource).ts) < 60*3600*1000) {
       return Promise.resolve(this._cache.get(resource).data)
     }
     let url = this.getUrl(resource);

@@ -10,8 +10,8 @@
       <input type="file" name="file" id="file-input" change.trigger="showFile()">
     </div>
 
-  <div if.bind="fileOK" class="form-group">
-    <button class="btn btn-primary btn-lg" click.delegate="uploadCover()">Change Cover</button>
+  <div class="form-group">
+    <button if.bind="fileOK" class="btn btn-primary btn-lg" click.delegate="uploadCover()">Change Cover</button>
     <button type="button" class="btn btn-default btn-lg" click.delegate="cancel()">Cancel</button>
   </div>
   <div class='uploading-progress' if.bind="uploading">
