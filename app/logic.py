@@ -228,6 +228,16 @@ def ebooks_index(start):
         func.unaccent(start + '%'))).order_by(model.Ebook.title)
     return _run_query(q)
 
+def shelves_index(start, user):
+    q = model.Bookshelf.query
+    if user:
+        q=q.filter(model.Bookshelf.created_by == user)
+    else:
+        q=q.filter(model.Bookshelf.public == True, model.Bookshelf.created_by != user)
+    q = q.filter(func.unaccent(model.Bookshelf.name).ilike(
+        func.unaccent(start + '%'))).order_by(model.Bookshelf.name)
+    return _run_query(q)
+
 
 def authors_index(start):
     q = model.Author.query

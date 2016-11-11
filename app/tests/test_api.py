@@ -312,6 +312,9 @@ class TestApi(TestCase):
             
         shelf = self.get('/api/bookshelves/%d'%shelf_id)
         self.assertEqual(shelf['items_count'], 10)
+        
+        res = self.get('/api/bookshelves/mine/index/t')
+        self.assertEqual(res['total'], 1)
             
         
         

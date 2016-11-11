@@ -44,6 +44,10 @@ class ModelSchema(BaseModelSchema):
         return cls(many=True)
     
     @classmethod
+    def create_index_serializer(cls):
+        return cls(many=True)
+    
+    @classmethod
     def create_update_serializer(cls):
         return cls(partial=True)
 
@@ -171,8 +175,12 @@ class BookshelfSchema(ModelSchema):
         
     @classmethod
     def create_list_serializer(cls):
-        return cls(many=True, only=('name', 'description', 'items_count'))
-        
+        return cls(many=True, only=('id', 'name', 'description', 'items_count'))
+    
+    @classmethod
+    def create_index_serializer(cls):
+        return cls(many=True, only=('id','name',))
+
         
 class BookshelfItemSchema(ModelSchema):
     class Meta:

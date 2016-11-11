@@ -8,7 +8,7 @@
       <div class="list-group">
         <a data-index="${$index}" class="list-group-item ${$index == _selected ? 'active' : ''}"
         repeat.for="item of _suggestions" mousedown.delegate="select($index)">
-          <span if.bind="! suggestionTemplate">${item}</span>
+          <span if.bind="! suggestionTemplate">${valueKey?item[valueKey]:item}</span>
           <compose if.bind="suggestionTemplate" view.bind="suggestionTemplate" view-model.bind="item"></compose>
         </a>
       </div>

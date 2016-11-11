@@ -28,6 +28,10 @@ export class EbookAddToShelf {
     return this.shelf && this.shelf.length >= 3;
   }
 
+  get loaderShelves() {
+    return start => this.client.getIndex('bookshelves/mine', start);
+  }
+
   goToItemPage() {
     this.router.navigateToRoute(this.what == 'ebooks'?'ebook':'series', {id:this.item.id})
   }

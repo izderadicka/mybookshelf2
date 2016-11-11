@@ -226,7 +226,7 @@ def export_data(args):
 ####################################################
 
 # Sources
-    q = 'select id, created, modified, ebook_id, location, format_id, size, crc, quality from ebook_source'
+    q = 'select id, created, modified, ebook_id, location, format_id, size, crc, quality from ebook_source order by created desc'
     c.execute(q)
     col_names = c.column_names
     rows = c.fetchall() # need to fetch all to prevent timeout of connection later

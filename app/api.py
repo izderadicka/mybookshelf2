@@ -6,7 +6,7 @@ import app.schema as schema
 import app.logic as logic
 from common.utils import success_error, mimetype_from_file_name, ext_from_mimetype
 from app import db
-from functools import wraps
+from functools import wraps, partial
 from app.cors import add_cors_headers
 from app.access import role_required, can_change_object
 from werkzeug import secure_filename
@@ -452,6 +452,11 @@ def ebooks_index(start):
     serializer = schema.EbookSchema.create_list_serializer()
     return jsonify(total=total,
                    items=serializer.dump(items).data)
+    
+def shelves_index(start, mine=True):
+    total, items = logic.shelves_index(start, current_user if mine else None)
+    serializer = schema.BookshelfSchema.create_index_serializer()
+    return jsonify(total=total, items=serializer.dump(items).data)
 
 
 def add_upload_to_ebook(id):
@@ -541,6 +546,7 @@ add_url(authors_index, '/authors/index/<string:start>')
 api.add_resource(BookShelves, '/bookshelves')
 api.add_resource(BookShelf, '/bookshelves/<int:id>')
 add_url(add_ebook_to_shelf, '/bookshelves/<int:shelf_id>/add',  methods=['POST'])
+add_url(shelves_index, '/bookshelves/mine/index/<string:start>')
 
 api.add_resource(Ebooks, '/ebooks')
 api.add_resource(Ebook, '/ebooks/<int:id>')
