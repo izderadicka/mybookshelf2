@@ -331,6 +331,16 @@ def fix_shelves(args):
     engine = create_engine(settings.SQLALCHEMY_DATABASE_URI)
     Session = sessionmaker(bind=engine)
     session = Session(autoflush=False)
+    
+    admin = session.query(model.User).get(1)
+    if not admin:
+        raise Exception('Need user admin')
+    
+    def auditable_attrs(data):
+        return {'created_by': admin, 'modified_by': admin,
+                'created': data['created'], 'modified': data['modified'],
+                'id': data['id']
+                }
     # Bookshelves
     q = 'select id, created, modified, name, description, public, rating from ebook_bookshelf'
     c.execute(q)
