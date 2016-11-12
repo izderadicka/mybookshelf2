@@ -360,3 +360,12 @@ nav .nav > li > a {
     width:100%;
   }
 }
+
+.form-group textarea {
+  width: 332px;
+  height: 5em;
+}
+
+input.form-control.sm {
+  width: 100px;
+}

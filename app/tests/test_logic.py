@@ -86,3 +86,12 @@ class TestLogic(TestCase):
         tot = len(b1.sources) + len(b2.sources)
         logic.merge_ebook(b1, b2)
         self.assertEqual(len(b1.sources), tot)
+        
+        s = model.Series(title='Series/Neserie')
+        a = model.Author(first_name='Jan', last_name='Kocian/Koci')
+        b = model.Ebook(title= 'Neco / Nekde', language=model.Language(code='cs', name='Czech'), 
+                        series_index=1)
+        b.series = s
+        b.authors.append(a)
+        
+        self.assertEqual(logic.norm_file_name(b,'doc'), 'Kocian-Koci Jan/Series-Neserie/Series-Neserie 1 - Neco - Nekde(cs)/Kocian-Koci Jan - Series-Neserie 1 - Neco - Nekde.doc')

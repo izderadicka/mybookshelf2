@@ -1,5 +1,6 @@
 <template>
   <require from="components/autocomplete/autocomplete"></require>
+  <require from="components/int-converter"></require>
   <section>
     <h2 class="page-title">Add "${item.title}" to Bookshelf</h2>
     <error-alert error.bind="error"></error-alert>
@@ -7,13 +8,27 @@
       <div class="form-group">
         <label class="control-label">Bookshelf</label>
         <autocomplete loader.bind="loaderShelves" value-key="name"
-        selected-value.bind="existingShelf" value.bind="shelf" additional-class="form-control"></autocomplete>
+        selected-value.bind="existingShelf" value.bind="shelf" additional-class="form-con trol"></autocomplete>
       </div>
+      <div class="form-group">
+        <label class="control-label">Note</label>
+        <textarea name="note" value.bind="note"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="control-label">Order (number to use for sorting)</label>
+        <input class="form-control sm" type="text" value.bind="order | int">
+      </div>
+
+      <div if.bind="!existingShelf">
+
+      </div>
+      
       <div class="form-group">
          <button type="button" class="btn btn-primary btn-lg" click.delegate="add()" disabled.bind="!ready">
            Add${existingShelf?" to Existing Shelf":" And Create New Shelf"}</button>
         <button type="button" class="btn btn-default btn-lg" click.delegate="cancel()">Cancel</button>
       </div>
+
     </div>
   </section>
 </template>

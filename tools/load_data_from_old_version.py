@@ -100,6 +100,7 @@ def export_data(args):
     prepare_db(engine)
     session = Session(autoflush=False)
 #########################################################
+
     
 # Codelists genre, language format
     load_model(c, session, 'select id,name from ebook_subject',
@@ -322,6 +323,72 @@ def export_data(args):
     conn2.close()
     return
 
+def fix_shelves(args):
+    '''just to fix remaining tasks if connection is outdated'''
+    conn = mysql.connect(host=args.host, port=args.port, user=args.user, password=args.pwd,
+                         database=args.db, charset='utf8')
+    c = conn.cursor()
+    engine = create_engine(settings.SQLALCHEMY_DATABASE_URI)
+    Session = sessionmaker(bind=engine)
+    session = Session(autoflush=False)
+    # Bookshelves
+    q = 'select id, created, modified, name, description, public, rating from ebook_bookshelf'
+    c.execute(q)
+    for row in c:
+        data = dict(zip(c.column_names, row))
+        o = model.Bookshelf(name=data['name'], description=data['description'], public=bool(data['public']),
+                            rating=data['rating'], **auditable_attrs(data))
+        session.add(o)
+
+    session.commit()
+    print('Loaded Bookshelf: %d records' %
+          session.query(model.Bookshelf).count())
+
+    q = 'select id, created, modified, type, bookshelf_id, ebook_id, serie_id, `order`, note from ebook_bookshelfitem'
+    c.execute(q)
+    for row in c:
+        data = dict(zip(c.column_names, row))
+        ebook = session.query(model.Ebook).get(
+            data['ebook_id']) if data['ebook_id'] else None
+        series = session.query(model.Series).get(
+            data['serie_id']) if data['serie_id'] else None
+        bookshelf = session.query(model.Bookshelf).get(data['bookshelf_id'])
+        type = 'EBOOK' if data['type'] == 1 else 'SERIES' if data[
+            'type'] == 2 else None
+        if not type:
+            print('Error invalid bookshelfitem type on %s' %
+                  str(row), file=sys.stderr)
+            continue
+        elif type == 'EBOOK' and not ebook:
+            print('Error invalid bookshelfitem, type is ebook but no book - %s' %
+                  str(row), file=sys.stderr)
+            continue
+        elif type == 'SERIES' and not series:
+            print('Error invalid bookshelfitem, type is series but no series - %s' %
+                  str(row), file=sys.stderr)
+            continue
+
+        o = model.BookshelfItem(type=type, ebook=ebook, series=series, bookshelf=bookshelf, order=data['order'],
+                                note=data['note'], **auditable_attrs(data))
+
+        session.add(o)
+
+    session.commit()
+    print('Loaded BookshelfItem: %d records' %
+          session.query(model.BookshelfItem).count())
+    
+############################################################################
+
+    for t in ['author', 'bookshelf', 'bookshelf_item', 'ebook', 'format', 'genre', 'language', 'series', 'source']:
+        update_seq(engine, t)
+
+    session.close()
+    c.close()
+    conn.close()
+    
+    
+    
+
 def clear_directories():
     for dir in [settings.UPLOAD_DIR, settings.BOOKS_CONVERTED_DIR, settings.THUMBS_DIR,
                 settings.BOOKS_BASE_DIR]:
@@ -388,15 +455,19 @@ def main():
     p.add_argument('--dir', help='base directory with ebook files, will copy files to current ebooks directory')
     p.add_argument('--sample', type=int, default=0, help="Sample randomly 1 of n ebooks")
     p.add_argument('--confirm-overwrite', action='store_true', help='Confirming data overwrite (otherwise will be asked)')
+    p.add_argument('--fix-shelves', action="store_true", help=" Just load shelves and update sequences")
     args = p.parse_args()
-    if not args.confirm_overwrite:
-        print('This tool will migrate data from Mybookshelf (previous version)')
-        print("It'll delete all data from existing DB")
-        answer=input('Continue [Y/N]?: ')
-        if answer.strip().lower() != 'y':
-            return
-    clear_directories()
-    export_data(args)
+    if args.fix_shelves:
+        fix_shelves(args)
+    else:
+        if not args.confirm_overwrite:
+            print('This tool will migrate data from Mybookshelf (previous version)')
+            print("It'll delete all data from existing DB")
+            answer=input('Continue [Y/N]?: ')
+            if answer.strip().lower() != 'y':
+                return
+        clear_directories()
+        export_data(args)
 
     print('Done')
 

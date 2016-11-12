@@ -546,7 +546,7 @@ add_url(authors_index, '/authors/index/<string:start>')
 api.add_resource(BookShelves, '/bookshelves')
 api.add_resource(BookShelf, '/bookshelves/<int:id>')
 add_url(add_ebook_to_shelf, '/bookshelves/<int:shelf_id>/add',  methods=['POST'])
-add_url(shelves_index, '/bookshelves/mine/index/<string:start>')
+add_url(partial(shelves_index, mine=True), '/bookshelves/mine/index/<string:start>')
 
 api.add_resource(Ebooks, '/ebooks')
 api.add_resource(Ebook, '/ebooks/<int:id>')

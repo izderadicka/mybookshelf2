@@ -6,6 +6,10 @@ const logger = LogManager.getLogger('ebook-add-to-shelf');
 
 @inject(Router, ApiClient)
 export class EbookAddToShelf {
+  @bindable shelf;
+  @bindable existingShelf;
+  @bindable order;
+
   constructor(router, client) {
     this.client = client;
     this.router = router;
@@ -50,6 +54,8 @@ export class EbookAddToShelf {
     }
     shelfLoader.then ( ({id}) => {
       let postObj = this.what == 'ebooks'? {ebook_id:this.item.id}:{series_id:this.item.id};
+      Object.assign(postObj, {note: this.note,
+                              order: this.order});
       this.client.post(`bookshelves/${id}/add`, postObj)
       .then( () => {
         this.goToItemPage();
