@@ -91,15 +91,18 @@ def norm_file_name(source, ext=''):
 
     return new_name_rel
 
+def _safe_file_name(name):
+    return name.replace('/', '-')
+
 
 def norm_file_name_base(ebook):
     config = current_app.config
-    data = {'author': ebook.authors_str,
-            'title': ebook.title,
+    data = {'author': _safe_file_name(ebook.authors_str),
+            'title': _safe_file_name(ebook.title),
             'language': ebook.language.code,
             }
     if ebook.series:
-        data.update({'serie': ebook.series.title,
+        data.update({'serie': _safe_file_name(ebook.series.title),
                     'serie_index': ebook.series_index or 0})
     if ebook.series and config.get('BOOKS_FILE_SCHEMA_SERIE'):
         new_name_rel = config.get('BOOKS_FILE_SCHEMA_SERIE') % data
