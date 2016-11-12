@@ -80,6 +80,41 @@ def test_database():
     issue = database_issue()
     if issue:
         print('database is not properly initialized: %s'%issue)
+        
+@manager.command
+def check_data():
+    no_cover = model.Ebook.query.filter(model.Ebook.cover == None).count()
+    print ('%d Ebooks has no cover' % no_cover)
+    
+    missing_cover = 0
+    for b in model.Ebook.query.filter(model.Ebook.cover != None):
+        cover_file = os.path.join(settings.BOOKS_BASE_DIR, b.cover)
+        if not os.access(cover_file, os.R_OK) or os.stat(cover_file).st_size ==0:
+            missing_cover+=1
+    print('%d Ebooks has cover missing' % missing_cover) 
+    
+    missing_thumb = 0
+    for b in model.Ebook.query.filter(model.Ebook.cover != None):
+        thumb_file = os.path.join(settings.THUMBS_DIR, '%d.jpg'%b.id)
+        if not os.access(thumb_file, os.R_OK) or os.stat(thumb_file).st_size ==0:
+            missing_thumb+=1
+    print('%d Ebooks has thumbnail missing' % missing_thumb) 
+    
+    missing_source = 0
+    duplicate_source = 0
+    sources = set()
+    for s in model.Source.query:
+        source_file =  os.path.join(settings.BOOKS_BASE_DIR, s.location)
+        if source_file in sources:
+            duplicate_source += 1
+        sources.add(source_file)
+        if not os.access(source_file, os.R_OK) or os.stat(source_file).st_size ==0:
+            missing_source+=1
+            
+    print('%d Sources is missing file' % missing_source )
+    print('%d Sources points to same file' % duplicate_source)
+        
+    
 
 @manager.command
 def create_tables(add_data=False, create_directories=False):
