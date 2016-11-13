@@ -23,10 +23,6 @@ export class Ebook {
     this.token = access.token;
     this.canDownload=access.hasRole('user');
     this.canConvert=access.hasRole('user');
-    this.cover = new Image();
-    this.cover.onload = function() {
-        URL.revokeObjectURL(this.src);
-      }
     this.subscribeConvertEvents();
   }
 
@@ -86,18 +82,6 @@ export class Ebook {
     this.client.getManyUnpaged(`ebooks/${this.ebook.id}/converted`)
     .then(data => this.convertedSources = data.items)
     .catch(err => logger.error('Cannot get converted sources',err));
-  }
-
-  attached() {
-    if (this.coverLoader)
-    this.coverLoader.then (blob => {
-      this.cover.src = URL.createObjectURL(blob);
-      document.getElementById('cover-holder').appendChild(this.cover);
-      })
-    .catch(err => {
-      logger.warn(`Cannot load cover for ebook ${this.ebook.id}: ${err}`);
-    });
-
   }
 
   get searchString() {

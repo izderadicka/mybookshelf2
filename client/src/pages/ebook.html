@@ -6,6 +6,7 @@
   <require from="components/size-converter"></require>
   <require from="components/date-converter"></require>
   <require from="components/add-to-shelf-button"></require>
+  <require from="components/cover"></require>
   <section>
     <h2 class="page-title">
       <span class="title">${ebook.title}</span>
@@ -15,8 +16,7 @@
     </h2>
     <authors authors.bind="ebook.authors"></authors>
     <div class="ebook-panel">
-      <div class="ebook-cover-big" id="cover-holder">
-      </div>
+      <cover loader.bind="coverLoader"></cover>
       <div class="ebook-details">
         <ul class="list-group ebook-properties">
           <li class="list-group-item">

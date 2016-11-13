@@ -4,6 +4,7 @@
   <require from="components/error-alert"></require>
   <require from="components/search"></require>
   <require from="components/ebook-action-list"></require>
+  <require from="components/cover"></require>
   <section>
     <h2 class="page-title">Upload Results</h2>
     <div class="panel panel-default">
@@ -13,7 +14,7 @@
 
       <div class="panel-body">
 
-          <div class="ebook-cover-big" id="cover-holder"></div>
+          <cover loader.bind="coverLoader"></cover>
           <div class="ebook-meta">
             <div>
               <label>File:</label>
