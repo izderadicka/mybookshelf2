@@ -15,11 +15,6 @@ export class CoverEdit {
     this.router = router;
     this.wsClient = wsClient;
     this.event = event;
-
-    this.cover=new Image();
-    this.cover.onload = function() {
-        URL.revokeObjectURL(this.src);
-      }
   }
 
   canActivate(params) {
@@ -38,18 +33,6 @@ export class CoverEdit {
     })
   }
 
-  attached() {
-    $('#cover-holder', this.elem).append(this.cover);
-    if (this.coverLoader)
-      this.coverLoader.then(blob => {
-        this.cover.src = URL.createObjectURL(blob);
-
-      })
-      .catch(err => {
-        logger.warn(`Cannot load cover for upload ${this.ebook.title}: ${err}`);
-      });
-  }
-
   showFile() {
     this.fileOK = false;
     let files=document.getElementById('file-input');
@@ -57,11 +40,14 @@ export class CoverEdit {
       let reader = new FileReader();
       let file = files.files[0];
       if (! /^image\//.test(file.type)) return;
+      let promise= new Promise(
+       (resolve, reject) => {
       reader.onload = (evt) => {
-        this.cover.src=evt.target.result;
+        resolve(evt.target.result);
         this.fileOK = true;
-      }
+      }});
       reader.readAsDataURL(file);
+      this.coverLoader = promise;
     }
   }
 

@@ -16,8 +16,12 @@ export class Cover {
 
   updateCover() {
     if (this.loader)
-    this.loader.then (blob => {
-      this.cover.src = URL.createObjectURL(blob);
+    this.loader.then (result => {
+      if (result instanceof Blob) {
+        this.cover.src = URL.createObjectURL(result);
+      } else {
+        this.cover.src = result;
+      }
       let holder = $('#cover-holder', this.elem);
       holder.empty().append(this.cover);
       })

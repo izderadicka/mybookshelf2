@@ -1,9 +1,10 @@
 <template>
+  <require from="components/cover"></require>
   <section>
     <h2 class="page-title">Change Cover of "${ebook.title}"</h2>
     <error-alert error.bind="error"></error-alert>
     <div class="panel-body">
-    <div class="ebook-cover-big" id="cover-holder"></div>
+    <cover loader.bind="coverLoader"></cover>
     <form id="file-upload-form" enctype="multipart/form-data">
       <div class='form-group'>
         <label>New Cover File</label>
