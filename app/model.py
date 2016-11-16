@@ -135,7 +135,7 @@ class BookshelfItem(Base, Auditable):
     series = relationship('Series')
     order = Column(Integer)
     note = Column(Text)
-    #bookshelf = relationship('Bookshelf', back_populates='items')
+    bookshelf = relationship('Bookshelf', back_populates='items')
 
     def __repr__(self):
         return super(BookshelfItem, self).__repr__(['type'])
@@ -147,7 +147,7 @@ class Bookshelf(Base, Auditable):
     public = Column(Boolean, default=True)
     rating = Column(Float(asdecimal=True))
     rating_count = Column(Integer)
-    #items = relationship('BookshelfItem', back_populates='bookshelf', lazy='dynamic')
+    items = relationship('BookshelfItem', back_populates='bookshelf', lazy='dynamic')
     
     def __repr__(self):
         return super(Bookshelf, self).__repr__(['name'])

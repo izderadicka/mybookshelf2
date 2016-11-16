@@ -168,6 +168,7 @@ class BookshelfSchema(ModelSchema):
     items_count = fields.Function(serialize = lambda o: o.items_count)
     class Meta:
         model = model.Bookshelf
+        exclude = ('items',)
         
     @classmethod
     def create_list_serializer(cls):
