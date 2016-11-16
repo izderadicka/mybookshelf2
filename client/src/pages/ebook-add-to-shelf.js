@@ -13,6 +13,7 @@ export class EbookAddToShelf {
   constructor(router, client) {
     this.client = client;
     this.router = router;
+    this.shelfIsPublic = true;
   }
 
   activate({what, id}, route) {
@@ -49,11 +50,11 @@ export class EbookAddToShelf {
     if (this.existingShelf) {
       shelfLoader = Promise.resolve({id:this.existingShelf.id});
     } else {
-      shelfLoader = this.client.post(`bookshelves`, {name: this.shelf})
+      shelfLoader = this.client.post(`bookshelves`, {name: this.shelf, description: shelfDescription, public: shelfIsPublic})
 
     }
     shelfLoader.then ( ({id}) => {
-      let postObj = this.what == 'ebooks'? {ebook_id:this.item.id}:{series_id:this.item.id};
+      let postObj = this.what == 'ebooks'? {ebook:{id:this.item.id}}:{series: {id:this.item.id}};
       Object.assign(postObj, {note: this.note,
                               order: this.order});
       this.client.post(`bookshelves/${id}/add`, postObj)

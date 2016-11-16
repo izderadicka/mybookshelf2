@@ -307,7 +307,7 @@ class TestApi(TestCase):
         self.assertEqual(len(ebooks), 10)
         
         for b in ebooks:
-            self.post('/api/bookshelves/%d/add'%shelf_id, data='{"ebook_id":%d, "note":"test"}'%b['id'],
+            self.post('/api/bookshelves/%d/add'%shelf_id, data='{"ebook":{"id":%d}, "note":"test"}'%b['id'],
                       content_type="application/json")
             
         shelf = self.get('/api/bookshelves/%d'%shelf_id)

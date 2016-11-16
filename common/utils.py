@@ -11,7 +11,16 @@ import shutil
 
 logger = logging.getLogger('utils')
 
-
+def deep_get(d,k, default=None): 
+    parts=k.split('.')
+    for k in parts:
+        if isinstance(d, dict):
+            d= d.get(k)
+        else:
+            return default
+        
+    return d or default
+    
 def mimetype_from_file_name(fname):
     return mimetypes.guess_type(fname, False)[0]
 

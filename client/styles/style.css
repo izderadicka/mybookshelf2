@@ -369,3 +369,8 @@ nav .nav > li > a {
 input.form-control.sm {
   width: 100px;
 }
+
+.top-tabs {
+  font-weight: bold !important;
+  font-size: 125%;
+}

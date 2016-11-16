@@ -1,0 +1,39 @@
+<template>
+  <require from="components/context-menu/context-menu"></require>
+  <section>
+    <h2 class="page-title">
+      <span class="title">Bookshelf ${shelf.name}</span>
+      <span class="actions">
+      <a click.delegate="menuEdit.show($event)" if.bind="isEditable"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
+    </span>
+    </h2>
+    <context-menu items.bind="editActions" header="Edit" view-model.ref="menuEdit" action.bind="editAction"></context-menu>
+    <p>${shelf.description}</p>
+
+    <div class="container-fluid items-header vertically-spaced" css="display: ${paginator.lastPage===0?'none':'block'}">
+        <h3 class="page-title"><i class="fa fa-file-text-o" aria-hidden="true"></i>
+          ${paginator.page} of ${paginator.lastPage}
+      <div class='sorter' if.bind="sortings.length">
+        <label class="sorter-label"><i class="fa fa-sort"></i></label>
+        <sorter  sortings.one-time="sortings" view-model.ref="sorter"></sorter>
+      </div>
+    </h3>
+    </div>
+
+    <page-controller view-model.ref='paginator' loader.bind="loader" sort.bind="sorter.sort"
+    page-size="12" no-sort.bind="!sortings.length"></page-controller>
+
+    <div class="container-fluid vertically-spaced">
+      <div class="list-group">
+        <div class="list-group-item" repeat.for="item of paginator.data">
+          <p> ${item.id} </p>
+          <p>${shelf.description}</p>
+        </div>
+      </div>
+    </div>
+
+    <pager page.two-way="paginator.page" last-page.bind="paginator.lastPage" loading.bind="paginator.loading"></pager>
+
+     <error-alert error.bind="paginator.error" dismissible.one-time="false"></error-alert>
+
+</template>

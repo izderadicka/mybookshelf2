@@ -135,7 +135,7 @@ class BookshelfItem(Base, Auditable):
     series = relationship('Series')
     order = Column(Integer)
     note = Column(Text)
-    bookshelf = relationship('Bookshelf', back_populates='items')
+    #bookshelf = relationship('Bookshelf', back_populates='items')
 
     def __repr__(self):
         return super(BookshelfItem, self).__repr__(['type'])
@@ -147,7 +147,7 @@ class Bookshelf(Base, Auditable):
     public = Column(Boolean, default=True)
     rating = Column(Float(asdecimal=True))
     rating_count = Column(Integer)
-    items = relationship('BookshelfItem', back_populates='bookshelf', lazy='dynamic')
+    #items = relationship('BookshelfItem', back_populates='bookshelf', lazy='dynamic')
     
     def __repr__(self):
         return super(Bookshelf, self).__repr__(['name'])
@@ -171,7 +171,7 @@ class BookshelfRating(Base, Auditable):
     bookshelf_id = Column(BigInteger, ForeignKey('bookshelf.id'), nullable=False)
     rating = Column(Float(asdecimal=True))
     description = Column(Text)
-    bookshelf = relationship('Bookshelf', backref=backref('ratings', lazy='dynamic'))
+    bookshelf = relationship('Bookshelf')#, backref=backref('ratings', lazy='dynamic'))
 
 
 
@@ -247,7 +247,7 @@ class EbookRating(Base, Auditable):
     ebook_id = Column(BigInteger, ForeignKey('ebook.id'), nullable=False)
     rating = Column(Float(asdecimal=True))
     description = Column(Text)
-    ebook = relationship('Ebook', backref=backref('ratings', lazy='dynamic'))    
+    ebook = relationship('Ebook')#, backref=backref('ratings', lazy='dynamic'))    
 
 
 class Format(Base):
@@ -274,7 +274,14 @@ class Series(Base, Auditable):
     description = Column(Text)
     books = relationship('Ebook', back_populates='series', lazy='dynamic')
 
-    # authors= relationship('Author', secondary=ebook_authors, order_by='author.id', lazy='subquery')
+    authors= relationship('Author', 
+                          secondary='join(ebook_authors, Ebook, ebook_authors.c.ebook_id == Ebook.id)', 
+                          primaryjoin='Ebook.series_id == Series.id',
+                          secondaryjoin ='ebook_authors.c.author_id == Author.id',
+                          order_by='Author.id', 
+                          viewonly=True,
+                          lazy="joined", #subquery ...
+                          )
 
     def __repr__(self):
         return super(Series, self).__repr__(['title'])
@@ -283,7 +290,7 @@ class SeriesRating(Base, Auditable):
     series_id = Column(BigInteger, ForeignKey('series.id'), nullable=False)
     rating = Column(Float(asdecimal=True))
     description = Column(Text)
-    series = relationship('Series', backref=backref('ratings', lazy='dynamic'))    
+    series = relationship('Series')#, backref=backref('ratings', lazy='dynamic'))    
 
 
 class Source(Base, Auditable):

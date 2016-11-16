@@ -17,9 +17,17 @@ export const ROUTES =
     name: 'shelves',
     moduleId: 'pages/shelves',
     nav: 2,
-    title: 'Shelves',
+    title: 'Bookshelves',
     auth: true
-  }, {
+  },
+  {
+    route: 'shelf/:id',
+    name: 'shelf',
+    moduleId: 'pages/shelf',
+    title: 'Bookshelf',
+    auth: true
+  },
+  {
     route: 'login',
     name: 'login',
     moduleId: 'pages/login',

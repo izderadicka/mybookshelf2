@@ -5,6 +5,8 @@ const logger = LogManager.getLogger('shelves');
 
 @inject(ApiClient)
 export class Shelves {
+  sortings = [{name:'Name A-Z', key:'name'}, {name:'Name Z-A', key:'-name'},
+              {name:'Recent First', key: 'created'}, {name:'Oldest First', key: '-created'}]
   constructor(client) {
     this.client = client;
   }

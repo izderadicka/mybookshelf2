@@ -4,7 +4,7 @@ from flask_login import current_user
 import app.model as model
 import app.schema as schema
 import app.logic as logic
-from common.utils import success_error, mimetype_from_file_name, ext_from_mimetype
+from common.utils import success_error, mimetype_from_file_name, ext_from_mimetype, deep_get
 from app import db
 from functools import wraps, partial
 from app.cors import add_cors_headers
@@ -435,7 +435,7 @@ def cover_ebook(id, size='normal'):
 
 def series_index(start):
     total, items = logic.series_index(start)
-    serializer = schema.series_index_serializer()
+    serializer = schema.SeriesSchema.create_index_serializer()
     return jsonify(total=total,
                    items=serializer.dump(items).data)
 
@@ -499,7 +499,7 @@ def add_upload_to_ebook(id):
 
 def converted_sources(ebook_id):
     q = logic.query_converted_sources_for_ebook(ebook_id, current_user)
-    serializer = schema.conversions_list_serializer()
+    serializer = schema.ConversionSchema.create_list_serializer()
     return jsonify( total=q.count(), items=serializer.dump(q.limit(100).all()).data)
 
 
@@ -515,19 +515,22 @@ def merge_ebook(ebook_id):
 def add_ebook_to_shelf(shelf_id):
     data = request.json
     bookshelf = model.Bookshelf.query.get_or_404(shelf_id)
-    if 'ebook_id' in data:
-        bookshelf.add_ebook(data['ebook_id'], current_user, data.get('note'), data.get('order'))
-    elif 'series_id' in data:
-        bookshelf.add_series(data['series_id'])
+    if deep_get(data, 'ebook.id'):
+        bookshelf.add_ebook(deep_get(data, 'ebook.id'), current_user, data.get('note'), data.get('order'))
+    elif deep_get(data, 'series.id'):
+        bookshelf.add_series(data['series']['id'])
     else:
         abort(400, 'Invalid request')
         
     db.session.commit()
     
     return jsonify(id=shelf_id)
-        
-    
-    
+
+@paginated(sortings=[])
+def shelf_items(id, page=1, page_size=20, sort=None):
+    q = model.BookshelfItem.query.filter(model.BookshelfItem.bookshelf_id == id)
+    return jsonify(**paginate(q, page, page_size, sort, schema.EbookSchema.create_list_serializer()))
+       
 #############################################################################################
 # URL mapping
 #############################################################################################   
@@ -547,6 +550,7 @@ api.add_resource(BookShelves, '/bookshelves')
 api.add_resource(BookShelf, '/bookshelves/<int:id>')
 add_url(add_ebook_to_shelf, '/bookshelves/<int:shelf_id>/add',  methods=['POST'])
 add_url(partial(shelves_index, mine=True), '/bookshelves/mine/index/<string:start>')
+add_url(shelf_items, '/bookshelves/<int:id>/items')
 
 api.add_resource(Ebooks, '/ebooks')
 api.add_resource(Ebook, '/ebooks/<int:id>')

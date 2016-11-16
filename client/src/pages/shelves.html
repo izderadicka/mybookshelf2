@@ -1,7 +1,7 @@
 <template>
   <section>
     <div class="container-fluid vertically-spaced">
-    <ul class="nav nav-tabs nav-justified">
+    <ul class="nav nav-tabs nav-justified top-tabs">
       <li role="presentation" class="active"><a>My Bookshelves</a></li>
       <li role="presentation"><a>Public Bookshelves</a></li>
     </ul>
@@ -34,7 +34,7 @@
 
   <div class="container-fluid vertically-spaced">
     <div class="list-group">
-      <a href="#" class="list-group-item" repeat.for="shelf of paginator.data">
+      <a route-href="route: shelf; params.bind: {id:shelf.id}" class="list-group-item" repeat.for="shelf of paginator.data">
         <h3>${shelf.name}
           <span class="badge">${shelf.items_count}</span>
         </h3>

@@ -64,18 +64,14 @@ class AuthorSchema(ModelSchema):
 
 
 class SeriesSchema(ModelSchema):
-
-    class Meta:
-        model = model.Series
-
-
-class SeriesSchemaWithAuthors(ModelSchema):
     authors = fields.Nested(
         AuthorSchema, many=True, only=('id', 'first_name', 'last_name'))
-
     class Meta:
         model = model.Series
-
+        
+    @classmethod
+    def create_index_serializer(cls):
+        return cls(many=True, only=('id', 'title', 'authors'))
 
 class LanguageSchema(ModelSchema):
 
@@ -185,16 +181,3 @@ class BookshelfSchema(ModelSchema):
 class BookshelfItemSchema(ModelSchema):
     class Meta:
         model = model.BookshelfItem
-        
-
-
-series_list_serializer = lambda: SeriesSchema(many=True, only=('id', 'title'))
-series_index_serializer = lambda: SeriesSchemaWithAuthors(many=True, only=('id', 'title', 'authors'))
-series_serializer = lambda: SeriesSchema()
-
-upload_serializer = lambda: UploadSchema()
-
-languages_list_serializer = lambda: LanguageSchema(many=True)
-genres_list_serializer = lambda: GenreSchema(many=True)
-
-conversions_list_serializer = lambda: ConversionSchema(many=True)

@@ -70,6 +70,7 @@
       "aurelia-animator-css": "npm:aurelia-animator-css@^1.0.0-rc.1.0.0",
       "aurelia-auth": "npm:aurelia-auth@^3.0.2",
       "aurelia-bootstrapper": "npm:aurelia-bootstrapper@^1.0.0-rc.1.0.0",
+      "aurelia-dependency-injection": "npm:aurelia-dependency-injection@^1.2.0",
       "aurelia-dialog": "npm:aurelia-dialog@^1.0.0-beta.3.0.0",
       "aurelia-event-aggregator": "npm:aurelia-event-aggregator@^1.0.0",
       "aurelia-fetch-client": "npm:aurelia-fetch-client@^1.0.0-rc.1.0.0",
