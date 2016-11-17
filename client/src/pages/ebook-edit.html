@@ -3,6 +3,7 @@
   <require from="components/genres-edit"></require>
   <require from="components/autocomplete/autocomplete"></require>
   <require from="components/error-alert"></require>
+  <require from="components/edit-buttons"></require>
   <section>
     <h2 class="page-title">Edit Ebook</h2>
     <error-alert error.bind="error"></error-alert>
@@ -44,11 +45,8 @@
         <label class="control-label">Genres</label>
         <genres-edit all-genres.bind="_genres" genres.bind="ebook.genres"></genres-edit>
       </div>
-     <div class="form-group">
-       <button type="button" class="btn btn-primary btn-lg" click.delegate="save()">Save</button>
-       <button type="button" class="btn btn-default btn-lg" click.delegate="cancel()">Cancel</button>
-       <button type="button" class="btn btn-default btn-lg" click.delegate="delete()" if.bind="canDelete()">Delete</button>
-     </div>
+      <edit-buttons></edit-buttons>
+
     </div>
   </section>
 </template>

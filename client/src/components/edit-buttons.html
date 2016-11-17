@@ -1,0 +1,7 @@
+<template>
+  <div class="form-group">
+    <button type="button" class="btn btn-primary btn-lg" click.delegate="p.save()" disabled.bind="! p.model.dirty">Save</button>
+    <button type="button" class="btn btn-default btn-lg" click.delegate="p.cancel()">Cancel</button>
+    <button type="button" class="btn btn-default btn-lg" click.delegate="p.delete()" if.bind="p.canDelete()">Delete</button>
+  </div>
+</template>

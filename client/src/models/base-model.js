@@ -46,6 +46,10 @@ export class BaseModel {
       bind(prop, asArray);
   }
 
+  get dirty() {
+    return this._changed.size > 0;
+  }
+
   get editableProps() {
     return this.editableProperties.map(p => {
       p = p.split('.')[0];

@@ -6,6 +6,8 @@ const logger = LogManager.getLogger('shelf');
 
 @inject(ApiClient, Access)
 export class Shelf {
+  sortings = [{name:'Order A-Z', key:'order'}, {name:'Order Z-A', key:'-order'},
+              {name:'Recent First', key:'-created'}, {name:'Oldest First', key:'created'} ]
   constructor(client, access) {
     this.client = client;
     this.access = access;
