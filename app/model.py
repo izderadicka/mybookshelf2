@@ -147,7 +147,7 @@ class Bookshelf(Base, Auditable):
     public = Column(Boolean, default=True)
     rating = Column(Float(asdecimal=True))
     rating_count = Column(Integer)
-    items = relationship('BookshelfItem', back_populates='bookshelf', lazy='dynamic')
+    items = relationship('BookshelfItem', back_populates='bookshelf', lazy='dynamic', cascade = 'all')
     
     def __repr__(self):
         return super(Bookshelf, self).__repr__(['name'])

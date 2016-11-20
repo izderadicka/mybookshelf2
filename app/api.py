@@ -214,7 +214,7 @@ class Authors(Resource, InsertListMixin):
     paginated = {'sortings': model.sortings['author']}
 
 class BookShelf(Resource, UpdateGetDeleteMixin):
-    methods=['GET']
+    methods=['GET', 'PATCH', 'DELETE']
     SCHEMA = schema.BookshelfSchema
 
 class BookShelves(Resource, InsertListMixin):
@@ -529,7 +529,7 @@ def add_ebook_to_shelf(shelf_id):
 @paginated(sortings=model.sortings['bookshelf_item'])
 def shelf_items(id, page=1, page_size=20, sort=None):
     q = model.BookshelfItem.query.filter(model.BookshelfItem.bookshelf_id == id)
-    return jsonify(**paginate(q, page, page_size, sort, schema.EbookSchema.create_list_serializer()))
+    return jsonify(**paginate(q, page, page_size, sort, schema.BookshelfItemSchema.create_list_serializer()))
        
 #############################################################################################
 # URL mapping

@@ -315,6 +315,15 @@ class TestApi(TestCase):
         
         res = self.get('/api/bookshelves/mine/index/t')
         self.assertEqual(res['total'], 1)
+        
+        items = self.get('/api/bookshelves/1/items', query_string={'page': 1, 'page_size': 10})
+        self.assertEqual(items['total'], 10)
+        
+        for i in items['items']:
+            print(i)
+            self.assertEqual(i.get('note'), 'test')
+            self.assertTrue(i['ebook']['title'])
+        
             
         
         
