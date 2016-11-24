@@ -14,6 +14,7 @@ import os.path
 import logging
 import tempfile
 from time import sleep
+import datetime
 
 logger = logging.getLogger('api')
 
@@ -132,6 +133,9 @@ class UpdateGetDeleteMixin():
         b = self.model.query.get_or_404(id)
         return self.SCHEMA.create_entity_serializer().dump(b).data
     
+    def before_delete(self, entity):
+        pass
+    
     def delete(self, id):
         entity = self.model.query.get_or_404(id)
         if self.user_can_change:
@@ -139,6 +143,7 @@ class UpdateGetDeleteMixin():
         else:
             if not current_user.has_role('superuser'):
                 abort(403, 'Access denied')
+        self.before_delete(entity)
         db.session.delete(entity)
         db.session.commit()
         return jsonify(id=id, success=True)
@@ -168,12 +173,15 @@ class UpdateGetDeleteMixin():
         except (KeyError,ValueError):
             db.session.rollback()
             return jsonify(error="Version_id missing", error_details="")
-
-        obj, errors = deserializer.load(data)
-
-        if obj.id != data['id']:
+        
+        existing = self.model.query.filter(self.model.id == data['id']).with_for_update(of=self.model).one()
+        if not existing:
             db.session.rollback()
             return jsonify(error="Unknown record", error_details="Id %d is not in table" % data['id'])
+        
+        obj, errors = deserializer.load(data)
+        
+        assert(existing.id == obj.id)
 
         can_change_object(obj)
 
@@ -216,7 +224,14 @@ class Authors(Resource, InsertListMixin):
 class BookShelf(Resource, UpdateGetDeleteMixin):
     methods=['GET', 'PATCH', 'DELETE']
     SCHEMA = schema.BookshelfSchema
+    
+class BookShelfItem(Resource, UpdateGetDeleteMixin):
+    methods=['GET', 'PATCH', 'DELETE']
+    SCHEMA = schema.BookshelfItemSchema
 
+    def before_delete(self, item):
+        item.bookshelf.modified = datetime.datetime.now()
+        
 class BookShelves(Resource, InsertListMixin):
     methods=['GET', 'POST']
     SCHEMA =  schema.BookshelfSchema
@@ -226,6 +241,7 @@ class BookShelves(Resource, InsertListMixin):
         if request.args.get('filter'):
             q = logic.filter_shelves(q, request.args.get('filter'))
         return q 
+    
 
 class Ebook(Resource, UpdateGetDeleteMixin):
     methods = ['GET', 'PATCH', 'DELETE']
@@ -518,7 +534,7 @@ def add_ebook_to_shelf(shelf_id):
     if deep_get(data, 'ebook.id'):
         bookshelf.add_ebook(deep_get(data, 'ebook.id'), current_user, data.get('note'), data.get('order'))
     elif deep_get(data, 'series.id'):
-        bookshelf.add_series(data['series']['id'])
+        bookshelf.add_series(data['series']['id'], current_user, data.get('note'), data.get('order'))
     else:
         abort(400, 'Invalid request')
         
@@ -551,6 +567,7 @@ api.add_resource(BookShelf, '/bookshelves/<int:id>')
 add_url(add_ebook_to_shelf, '/bookshelves/<int:shelf_id>/add',  methods=['POST'])
 add_url(partial(shelves_index, mine=True), '/bookshelves/mine/index/<string:start>')
 add_url(shelf_items, '/bookshelves/<int:id>/items')
+api.add_resource(BookShelfItem,'/bookshelf-items/<int:id>')
 
 api.add_resource(Ebooks, '/ebooks')
 api.add_resource(Ebook, '/ebooks/<int:id>')

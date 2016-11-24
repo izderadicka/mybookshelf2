@@ -112,57 +112,13 @@ export class EditEbook extends Edit{
     else this.ebook.series = {title: this._series};
   }
 
-  save() {
-    //logger.debug(`Saving ${JSON.stringify(this.ebook)}`);
-    this.error=undefined;
 
-    if (this.validate()) {
-      let data = this.ebook.prepareData();
-      if (!data || ! Object.keys(data).length) {
-        this.error={error:'No changes to save'};
-        return
-      }
-      let result;
-      if (this.ebook.id) {
-        result = this.client.patch('ebooks', data, this.ebook.id)
-      } else {
-        result = this.client.post('ebooks', data);
-      }
-
-      result.then(res => {
-        if (res.error) {
-          this.error={error:res.error, errorDetail:res.error_details}
-        } else if (res.id) {
-          let action = this.uploadId ? this.client.addUploadToEbook(res.id, this.uploadId, this.meta.quality || null) : Promise.resolve({})
-           action.then(res2 => {
-              if (res2.error) this.error = {
-                error: res2.error,
-                errorDetail: res2.error_details }
-              else
-                this.router.navigateToRoute('ebook', {id:res.id});
-              })
-            .catch(err => this.error={error:"Server error attaching source", errorDetail:err});
-
-        } else {
-          this.error = {error:'Invalid respose', errorDetail: 'Ebook ID is missing'}
-        }
-      })
-      .catch(err => this.error={error:'Request failed', errorDetail:err})
-
-
-    } else {
-      logger.debug(`Validation fails`)
-    }
-  }
-
-  afterSave() {
-    let action = this.uploadId ? this.client.addUploadToEbook(res.id, this.uploadId, this.meta.quality || null) : Promise.resolve({})
-     action.then(res2 => {
+  doAfterSave(entity_id) {
+    let action = this.uploadId ? this.client.addUploadToEbook(entity_id, this.uploadId, this.meta.quality || null) : Promise.resolve({})
+     return action.then(res2 => {
         if (res2.error)
           throw new Error(`Cannot add upload to this ebook: ${res2.error}, ${res2.error_details}`)
-        else
-          this.router.navigateToRoute('ebook', {id:res.id});
-        })
+        });
   }
 
 

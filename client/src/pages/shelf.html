@@ -1,8 +1,9 @@
 <template>
   <require from="components/context-menu/context-menu"></require>
+  <require from="components/ebook-card"></require>
   <section>
     <h2 class="page-title">
-      <span class="title">Bookshelf ${shelf.name}</span>
+      <span class="title"><span class="semi-icon shelf-image"></span> ${shelf.name}</span>
       <span class="actions">
       <a click.delegate="menuEdit.show($event)" if.bind="isEditable"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
     </span>
@@ -24,10 +25,11 @@
     page-size="12" no-sort.bind="!sortings.length"></page-controller>
 
     <div class="container-fluid vertically-spaced">
-      <div class="list-group">
-        <div class="list-group-item" repeat.for="item of paginator.data">
-          <p> ${item.id} </p>
-          <p>${shelf.description}</p>
+      <div class="row">
+        <div class="col-sm-6 col-md-4 col-lg-3" repeat.for="item of paginator.data">
+          <ebook-card ebook.bind="item.ebook" description.bind="item.note" edit-action.one-time="editItem(item)"
+          delete-action.one-time="deleteItem(item)" reload-action.one-time="paginator.reloadPage">
+          </ebook-card>
         </div>
       </div>
     </div>

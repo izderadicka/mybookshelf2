@@ -6,7 +6,31 @@ export class Edit {
     this.router = router;
     this.access = access;
     this.dialog = dialog;
+    this.afterDeleteRoute = 'welcome';
   }
+
+  canActivate(params) {
+    if (params.id !== undefined) {
+    return this.client.getOne(this.modelEntity, params.id)
+      .then(b => {
+        this.model= new this.modelClass(b);
+        return this.canEdit(b.created_by);
+      })
+      .catch(err => { logger.error(`Failed to load ${err}`);
+                      return false;})
+
+    } else {
+      if (this.canCreateNew) {
+        this.model= new this.modelClass();
+        return true;
+      } else {
+      logger.error('Need ID of existing shelf')
+      return false;
+      }
+    }
+
+  }
+
 
   deactivate() {
     if (this.model) this.model.dispose();
@@ -48,9 +72,9 @@ export class Edit {
         if (res.error) {
           this.error={error:res.error, errorDetail:res.error_details}
         } else if (res.id) {
-          this.afterSave()
+          this.doAfterSave(res.id)
           .then(() => {
-            this.router.navigateToRoute('ebook', {id:res.id});
+            this.router.navigateToRoute(this.viewRoute, {id:res.id});
           })
           .catch(err => this.error = {error:'After Save action error', errorDetail: err});
         } else {
@@ -65,7 +89,7 @@ export class Edit {
     }
   }
 
-  afterSave() {
+  doAfterSave() {
     return Promise.resolve()
   }
 
@@ -74,12 +98,16 @@ export class Edit {
     if (this.model.id) {
       this.router.navigateToRoute(this.viewRoute, {id:this.model.id});
     } else {
-      this.router.navigate('welcome')
+      this.router.navigate(this.afterDeleteRoute);
     }
   }
 
   canDelete() {
     return this.model.id && this.access.canDelete(this.model.created_by);
+  }
+
+  canEdit() {
+    return this.model.id && this.access.canEdit(this.model.created_by);
   }
 
   delete() {
@@ -92,7 +120,7 @@ export class Edit {
           if (res.error) {
             this.error={error:res.error, errorDetail:res.error_details}
           } else {
-            this.router.navigateToRoute('welcome');
+            this.router.navigateToRoute(afterDeleteRoute);
           }
         })
         .catch(err=> this.error={error:'Delete error', errorDetail:err})

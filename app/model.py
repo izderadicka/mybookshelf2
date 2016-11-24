@@ -10,6 +10,7 @@ from sqlalchemy_utils import TSVectorType, JSONType
 # TODO - check if can use thse types instead
 from sqlalchemy.dialects.postgresql import JSON, TSVECTOR
 from common.utils import initials
+import datetime
 
 model_base = app.db.Model or declarative_base()
 
@@ -159,6 +160,16 @@ class Bookshelf(Base, Auditable):
                                  order=order,bookshelf=self, created_by=user,
                                  modified_by=user)
             app.db.session.add(item)
+        self.modified = datetime.datetime.now()
+        
+    def add_series(self, series, user, note=None, order=None):
+        series_id = series.id if isinstance(series, Series) else series
+        if not self.items.filter(BookshelfItem.series_id == series_id).all():
+            item = BookshelfItem(type='SERIES', series_id=series_id, note=note, 
+                                 order=order,bookshelf=self, created_by=user,
+                                 modified_by=user)
+            app.db.session.add(item)
+        self.modified = datetime.datetime.now()
     
 Bookshelf.items_count = column_property(
         select([func.count(BookshelfItem.id)]).\

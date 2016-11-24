@@ -323,6 +323,27 @@ class TestApi(TestCase):
             print(i)
             self.assertEqual(i.get('note'), 'test')
             self.assertTrue(i['ebook']['title'])
+            
+        res=self.delete('/api/bookshelf-items/%d' %1)
+        self.assertEqual(res['id'], 1)
+        
+        items = self.get('/api/bookshelves/1/items', query_string={'page': 1, 'page_size': 10})
+        self.assertEqual(items['total'], 9)
+        
+       
+        
+        res = self.post('/api/bookshelves/%d/add'%shelf_id, data='{"series":{"id":%d}, "note":"test"}'%1633,
+                      content_type="application/json")
+        
+        self.assertEqual(res['id'], 1)
+        
+        items = self.get('/api/bookshelves/1/items', query_string={'page': 1, 'page_size': 10, 'sort':'-created'})
+        self.assertEqual(items['total'], 10)
+        
+        items = items['items']
+        self.assertEqual(items[0]['series']['id'], 1633)
+        self.assertEqual(items[0]['series']['title'], 'Na stopě hrůzy')
+        
         
             
         

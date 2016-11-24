@@ -11,7 +11,7 @@ export class IntValueConverter {
   }
 
   toView(val) {
-    if (val !== null) return val.toString();
-    
+    if (val !== null && val !== undefined) return val.toString();
+    return val;
   }
 }

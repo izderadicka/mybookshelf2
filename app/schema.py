@@ -181,11 +181,11 @@ class BookshelfSchema(ModelSchema):
         
 class BookshelfItemSchema(ModelSchema):
     series = fields.Nested(SeriesSchema, only=('id', 'title', 'authors'), allow_none=True)
-    ebook = fields.Nested(EbookSchema, only=('id', 'title', 'authors', 'series', 'series_index'), allow_none=True)
+    ebook = fields.Nested(EbookSchema, only=('id', 'title', 'authors', 'series', 'series_index', 'cover'), allow_none=True)
     class Meta:
         model = model.BookshelfItem
         
     @classmethod
     def create_list_serializer(cls):
-        return cls(many=True, only=('id', 'note', 'ebook', 'series'))
+        return cls(many=True, only=('id', 'version_id', 'note', 'ebook', 'series'))
         

@@ -59,6 +59,10 @@ export class PageController {
       .then(() => this.loading=false);
   }
 
+  get reloadPage() {
+    return () => this.loadPage(this.page);
+  }
+
   pageChanged(newPage) {
     logger.debug('page changed '+newPage);
     this.loadPage(this.page)

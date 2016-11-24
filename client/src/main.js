@@ -14,7 +14,7 @@ export function configure(aurelia) {
       config.settings.centerHorizontalOnly = false;
       config.settings.startingZIndex = 1045;
     })
-    .globalResources('components/error-alert');
+    .globalResources(['components/error-alert']);
     //.plugin('aurelia-configuration');
 
   if (config.debug) aurelia.use.developmentLogging();

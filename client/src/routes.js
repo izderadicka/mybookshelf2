@@ -28,6 +28,13 @@ export const ROUTES =
     auth: true
   },
   {
+    route: 'shelf-edit/:id',
+    name: 'shelf-edit',
+    moduleId: 'pages/shelf-edit',
+    title: 'Edit Bookshelf Information',
+    auth: true
+  },
+  {
     route: 'login',
     name: 'login',
     moduleId: 'pages/login',

@@ -1,0 +1,22 @@
+<template>
+  <require from="components/int-converter"></require>
+    <ai-dialog>
+        <ai-dialog-header><h3>Edit Item</h3></ai-dialog-header>
+        <error-alert error.bind="error"></error-alert>
+        <ai-dialog-body>
+          <div class="form-group" id="note-input-group">
+            <label class="control-label">Note</label>
+            <textarea name="note" value.bind="model.note"></textarea>
+          </div>
+          <div class="form-group" id="order-input-group">
+            <label class="control-label">Order (number to use for sorting)</label>
+            <input class="form-control sm" type="number" pattern="-?\d+" value.bind="model.order | int">
+          </div>
+
+        </ai-dialog-body>
+        <ai-dialog-footer>
+            <button class="btn btn-primary" click.delegate="save()">Save</button>
+            <button class="btn btn-default" click.delegate="controller.cancel()">Cancel</button>
+        </ai-dialog-footer>
+    </ai-dialog>
+</template>

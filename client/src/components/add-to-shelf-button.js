@@ -12,6 +12,6 @@ export class AddToShelfButton {
   }
 
   showAddToShelf() {
-    this.router.navigateToRoute('add-to-shelf', {what:this.what, item: this.item, id:this.item.id})
+    this.router.navigateToRoute('add-to-shelf', {what:this.what, id:this.item.id})
   }
 }

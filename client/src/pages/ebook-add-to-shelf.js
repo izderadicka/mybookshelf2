@@ -50,7 +50,7 @@ export class EbookAddToShelf {
     if (this.existingShelf) {
       shelfLoader = Promise.resolve({id:this.existingShelf.id});
     } else {
-      shelfLoader = this.client.post(`bookshelves`, {name: this.shelf, description: shelfDescription, public: shelfIsPublic})
+      shelfLoader = this.client.post(`bookshelves`, {name: this.shelf, description: this.shelfDescription, public: this.shelfIsPublic})
 
     }
     shelfLoader.then ( ({id}) => {
