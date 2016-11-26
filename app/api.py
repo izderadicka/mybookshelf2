@@ -225,23 +225,40 @@ class BookShelf(Resource, UpdateGetDeleteMixin):
     methods=['GET', 'PATCH', 'DELETE']
     SCHEMA = schema.BookshelfSchema
     
+    def get(self, id): 
+        b = self.model.query.get_or_404(id)
+        if not (b.created_by == current_user or b.public):
+            abort(403, 'Access denied')
+        return self.SCHEMA.create_entity_serializer().dump(b).data
+    
 class BookShelfItem(Resource, UpdateGetDeleteMixin):
-    methods=['GET', 'PATCH', 'DELETE']
+    methods=['PATCH', 'DELETE']
     SCHEMA = schema.BookshelfItemSchema
 
     def before_delete(self, item):
         item.bookshelf.modified = datetime.datetime.now()
         
-class BookShelves(Resource, InsertListMixin):
+class MyBookShelves(Resource, InsertListMixin):
     methods=['GET', 'POST']
     SCHEMA =  schema.BookshelfSchema
     paginated = {'sortings': model.sortings['bookshelf']}
        
     def filter_list(self, q):
+        q = q.filter(model.Bookshelf.created_by == current_user)   
         if request.args.get('filter'):
             q = logic.filter_shelves(q, request.args.get('filter'))
         return q 
     
+class OthersBookShelves(Resource, InsertListMixin):
+    methods=['GET']
+    SCHEMA =  schema.BookshelfSchema
+    paginated = {'sortings': model.sortings['bookshelf']}
+       
+    def filter_list(self, q):
+        q = q.filter(model.Bookshelf.created_by != current_user, model.Bookshelf.public == True)   
+        if request.args.get('filter'):
+            q = logic.filter_shelves(q, request.args.get('filter'))
+        return q 
 
 class Ebook(Resource, UpdateGetDeleteMixin):
     methods = ['GET', 'PATCH', 'DELETE']
@@ -544,6 +561,9 @@ def add_ebook_to_shelf(shelf_id):
 
 @paginated(sortings=model.sortings['bookshelf_item'])
 def shelf_items(id, page=1, page_size=20, sort=None):
+    b = model.Bookshelf.query.get_or_404(id)
+    if not (b.created_by == current_user or b.public):
+        abort(403, 'Access denied')
     q = model.BookshelfItem.query.filter(model.BookshelfItem.bookshelf_id == id)
     return jsonify(**paginate(q, page, page_size, sort, schema.BookshelfItemSchema.create_list_serializer()))
        
@@ -562,7 +582,8 @@ api.add_resource(Author, '/authors/<int:id>')
 add_url(authors_index, '/authors/index/<string:start>')
 
 
-api.add_resource(BookShelves, '/bookshelves')
+api.add_resource(MyBookShelves, '/bookshelves/mine')
+api.add_resource(OthersBookShelves, '/bookshelves/others')
 api.add_resource(BookShelf, '/bookshelves/<int:id>')
 add_url(add_ebook_to_shelf, '/bookshelves/<int:shelf_id>/add',  methods=['POST'])
 add_url(partial(shelves_index, mine=True), '/bookshelves/mine/index/<string:start>')

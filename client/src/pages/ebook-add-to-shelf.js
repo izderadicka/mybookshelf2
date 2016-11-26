@@ -50,11 +50,11 @@ export class EbookAddToShelf {
     if (this.existingShelf) {
       shelfLoader = Promise.resolve({id:this.existingShelf.id});
     } else {
-      shelfLoader = this.client.post(`bookshelves`, {name: this.shelf, description: this.shelfDescription, public: this.shelfIsPublic})
+      shelfLoader = this.client.post(`bookshelves/mine`, {name: this.shelf, description: this.shelfDescription, public: this.shelfIsPublic})
 
     }
     shelfLoader.then ( ({id}) => {
-      let postObj = this.what == 'ebooks'? {ebook:{id:this.item.id}}:{series: {id:this.item.id}};
+      let postObj = this.what == 'ebook'? {ebook:{id:this.item.id}}:{series: {id:this.item.id}};
       Object.assign(postObj, {note: this.note,
                               order: this.order});
       this.client.post(`bookshelves/${id}/add`, postObj)

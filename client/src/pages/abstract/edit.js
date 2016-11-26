@@ -120,7 +120,7 @@ export class Edit {
           if (res.error) {
             this.error={error:res.error, errorDetail:res.error_details}
           } else {
-            this.router.navigateToRoute(afterDeleteRoute);
+            this.router.navigateToRoute(this.afterDeleteRoute);
           }
         })
         .catch(err=> this.error={error:'Delete error', errorDetail:err})

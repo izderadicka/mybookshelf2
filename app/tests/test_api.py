@@ -282,12 +282,12 @@ class TestApi(TestCase):
         
     def test_bookshelfs(self):
         res = self.post(
-            '/api/bookshelves', data='{"name":"test", "description":"bla bla"}', 
+            '/api/bookshelves/mine', data='{"name":"test", "description":"bla bla"}', 
             content_type="application/json", failure=True)
         self.assert401(res)
         self.login()
         res = self.post(
-            '/api/bookshelves', data='{"name":"test", "description":"bla bla"}', 
+            '/api/bookshelves/mine', data='{"name":"test", "description":"bla bla"}', 
             content_type="application/json")
 
         if res.get('error'):
@@ -297,7 +297,7 @@ class TestApi(TestCase):
         shelf_id = res['id']
         self.assertEqual(shelf_id, 1)
             
-        res = self.get('/api/bookshelves')
+        res = self.get('/api/bookshelves/mine')
         
         self.assertEqual(res['total'], 1)
         self.assertEqual(res['items'][0]['items_count'], 0)
@@ -343,6 +343,13 @@ class TestApi(TestCase):
         items = items['items']
         self.assertEqual(items[0]['series']['id'], 1633)
         self.assertEqual(items[0]['series']['title'], 'Na stopě hrůzy')
+        
+        res = self.get('/api/bookshelves/mine')
+        self.assertEqual(res['total'], 1)
+        self.assertEqual(res['items'][0]['items_count'], 10)
+        
+        res = self.get('/api/bookshelves/others')
+        self.assertEqual(res['total'], 0)
         
         
             

@@ -9,6 +9,7 @@ export class Shelves {
               {name:'Recent First', key: 'created'}, {name:'Oldest First', key: '-created'}]
   constructor(client) {
     this.client = client;
+    this.mine = true;
   }
 
   activate() {
@@ -17,7 +18,13 @@ export class Shelves {
 
   updateLoader() {
     this._loader = (page, pageSize, sort) =>
-      this.client.getMany('bookshelves', page, pageSize, sort, {filter:this.filter});
+      this.client.getMany(`bookshelves/${this.mine?'mine':'others'}`, page, pageSize, sort, {filter:this._filter});
+  }
+
+  get _filter() {
+    let filter = {filter: this.filter};
+    if (this.mine) filter.mine = 1
+    else filter.others = 1;
   }
 
   @computedFrom('_loader')
