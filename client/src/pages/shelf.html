@@ -1,6 +1,7 @@
 <template>
   <require from="components/context-menu/context-menu"></require>
   <require from="components/ebook-card"></require>
+  <require from="components/series-card"></require>
   <section>
     <h2 class="page-title">
       <span class="title"><span class="semi-icon shelf-image"></span> ${shelf.name}</span>
@@ -27,9 +28,14 @@
     <div class="container-fluid vertically-spaced">
       <div class="row">
         <div class="col-sm-6 col-md-4 col-lg-3" repeat.for="item of paginator.data">
-          <ebook-card ebook.bind="item.ebook" description.bind="item.note" edit-action.one-time="editItem(item)"
+
+          <ebook-card if.bind="item.ebook" ebook.bind="item.ebook" description.bind="item.note" edit-action.one-time="editItem(item)"
+          delete-action.one-time="deleteItem(item)" reload-action.one-time="paginator.reloadPage"></ebook-card>
+
+          <series-card if.bind="item.series" series.bind="item.series" description.bind="item.note" edit-action.one-time="editItem(item)"
           delete-action.one-time="deleteItem(item)" reload-action.one-time="paginator.reloadPage">
-          </ebook-card>
+        </series-card>
+
         </div>
       </div>
     </div>

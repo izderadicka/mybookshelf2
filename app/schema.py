@@ -166,17 +166,18 @@ class FileInfoSchema(Schema):
     
 class BookshelfSchema(ModelSchema):
     items_count = fields.Function(serialize = lambda o: o.items_count)
+    owner = fields.Function(serialize= lambda o: o.created_by.user_name)
     class Meta:
         model = model.Bookshelf
         exclude = ('items',)
         
     @classmethod
     def create_list_serializer(cls):
-        return cls(many=True, only=('id', 'name', 'description', 'items_count'))
+        return cls(many=True, only=('id', 'name',  'owner', 'description', 'items_count'))
     
     @classmethod
     def create_index_serializer(cls):
-        return cls(many=True, only=('id','name',))
+        return cls(many=True, only=('id','name','owner'))
 
         
 class BookshelfItemSchema(ModelSchema):

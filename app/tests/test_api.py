@@ -304,6 +304,8 @@ class TestApi(TestCase):
         
         ebooks = self.get('/api/ebooks', query_string={'page': 1, 'page_size': 10})['items']
         
+        ebook_id = ebooks[4]['id']
+        
         self.assertEqual(len(ebooks), 10)
         
         for b in ebooks:
@@ -350,6 +352,10 @@ class TestApi(TestCase):
         
         res = self.get('/api/bookshelves/others')
         self.assertEqual(res['total'], 0)
+        
+        print('Shelves with ebook %d' % ebook_id)
+        res = self.get('/api/bookshelves/with-ebook/%d'% ebook_id)
+        self.assertEqual(res['total'], 1)
         
         
             

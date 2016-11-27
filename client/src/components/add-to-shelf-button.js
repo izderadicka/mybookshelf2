@@ -8,6 +8,7 @@ const logger = LogManager.getLogger('add-to-shelf-button');
 export class AddToShelfButton {
   @bindable what;
   @bindable item;
+  @bindable afterAddCb;
   constructor(router, client) {
     this.client = client;
     this.router = router;
@@ -30,7 +31,8 @@ export class AddToShelfButton {
     let postObj = this.what == 'ebook'? {ebook:{id:this.item.id}}:{series: {id:this.item.id}};
     this.client.post(`bookshelves/${shelf.id}/add`, postObj)
     .then( () => {
-      logger.debug('Added to shelf')
+      logger.debug('Added to shelf');
+      if (this.afterAddCb) this.afterAddCb();
     })
     .catch((err) => {
       logger.error('Error posting data to server', err);

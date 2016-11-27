@@ -75,6 +75,17 @@ section {
   box-shadow: 2px 2px 5px 0px rgba(0,0,0,0.5);
 }
 
+.ebook-detail .right-side {
+  display: flex; 
+  flex-direction: column;
+  height: 140px;
+  justify-content: space-between;
+}
+
+.ebook-card-description {
+  overflow-y:auto;
+}
+
 .ebook-title {
   font-weight: bold;
 }
@@ -298,6 +309,10 @@ background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAACMCAMAAAC9K
   margin-right: 0.5em;
 }
 
+.ebook-details .shelves-item {
+   margin-right: 0.5em;
+}
+
 @keyframes blink {
   0% {opacity: 1}
   50% {opacity: 0.5}
@@ -368,8 +383,12 @@ nav .nav > li > a {
 }
 
 .form-group textarea {
-  width: 332px;
+  min-width: 331px;
   height: 5em;
+}
+
+ai-dialog-body .form-group textarea {
+  min-width: 270px;
 }
 
 input.form-control.sm {
@@ -383,12 +402,12 @@ input.form-control.sm {
 
 .ebook-card-actions {
   position: absolute;
-    top: 5px;
-    right: 22px;
-    z-index: 99;
-    font-size: 200%;
-    opacity: 0;
-    transition: opacity 2s ease-out;
+  top: 5px;
+  right: 22px;
+  z-index: 9;
+  font-size: 200%;
+  opacity: 0;
+  transition: opacity 2s ease-out;
 }
 
 .ebook-detail:hover > .ebook-card-actions {
@@ -399,4 +418,11 @@ input.form-control.sm {
   font-style: italic;
     font-family: serif;
     font-size: 120%;
+}
+
+.ebook-cover.series-image {
+  background-color: #EEEEEE;
+  background-repeat:no-repeat;
+  background-position: center;
+
 }

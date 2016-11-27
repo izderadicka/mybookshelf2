@@ -44,15 +44,18 @@
             <a if.bind="ebook.language.code=='cs'" class="ext-link" target="_blank" href="http://www.databazeknih.cz/search?q=${searchString}">DatabazeKnih</a>
             <a class="ext-link" target="_blank" href="http://www.goodreads.com/search?q=${searchString}">GoodReads</a>
           </li>
+          <li class="list-group-item" if.bind="shelves && shelves.length">
+            <label class="ebook-detail-label">In Bookshelves:</label>
+            <a class="shelves-item" repeat.for="shelf of shelves" route-href="route:shelf; params.bind:{id: shelf.id}">${shelf.name} (${shelf.owner})  </a>
+          </li>
           <li class="list-group-item" if.bind="convertedSources.length">
             <label class="ebook-detail-label">Recently Converted To:</label>
             <a class="converted-sources-item" repeat.for="converted of convertedSources" href="${client.baseUrl}/api/download-converted/${converted.id}?bearer_token=${token}">${converted.format} </a>
           </li>
-          <br>
-          <add-to-shelf-button what="ebook" item.bind="ebook"></add-to-shelf-button>
-
         </ul>
 
+        <br>
+        <add-to-shelf-button what="ebook" item.bind="ebook" after-add-cb.one-time="updateShelves"></add-to-shelf-button>
 
       </div>
     </div>

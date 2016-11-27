@@ -75,7 +75,17 @@ export class Ebook {
 
   activate(params, route) {
     this.updateConverted();
+    this.updateShelves();
     route.navModel.setTitle(`Ebook "${this.ebook.title}"`);
+
+  }
+
+  get updateShelves() {
+    return () => {
+    this.client.getManyUnpaged(`bookshelves/with-ebook/${this.ebook.id}`)
+    .then(res => this.shelves = res.items)
+    .catch(err => logger.error('Error fetching shelves'));
+  }
   }
 
   updateConverted() {
@@ -177,9 +187,6 @@ export class Ebook {
   }
   }
 
-  showAddToShelf() {
-
-  }
 
 
 }

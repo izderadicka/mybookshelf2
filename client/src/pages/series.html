@@ -1,7 +1,9 @@
 <template>
   <require from="components/ebook-panel"></require>
+  <require from="components/add-to-shelf-button"></require>
   <section>
     <h2 class="page-title"><span class="semi-icon series-image"></span> ${series.title}</h2>
     <ebook-panel loader.bind="loader" sortings.one-time="sortings"></ebook-panel>
+    <add-to-shelf-button what="series" item.bind="series"></add-to-shelf-button>
   </section>
 </template>

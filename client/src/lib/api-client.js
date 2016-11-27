@@ -59,10 +59,7 @@ export class ApiClient {
   getManyUnpaged(resource) {
     let url = this.getUrl(resource);
     return this.http.fetch(url)
-      .then(response => response.json())
-      .then(data => {
-        return data
-      });
+      .then(response => response.json());
   }
 
   getMany(resource, page=1, pageSize=25, sort, extra) {

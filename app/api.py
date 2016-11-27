@@ -566,7 +566,15 @@ def shelf_items(id, page=1, page_size=20, sort=None):
         abort(403, 'Access denied')
     q = model.BookshelfItem.query.filter(model.BookshelfItem.bookshelf_id == id)
     return jsonify(**paginate(q, page, page_size, sort, schema.BookshelfItemSchema.create_list_serializer()))
-       
+
+def shelves_with_ebook(ebook_id):   
+    q = model.Bookshelf.query.join(model.BookshelfItem).filter(model.BookshelfItem.ebook_id == ebook_id)\
+    .order_by(model.Bookshelf.public, model.Bookshelf.name)
+    q = q.limit(100)
+    count,data = logic.run_query_limited(q)
+    data = schema.BookshelfSchema.create_index_serializer().dump(data).data
+    return jsonify(total = count, items = data)
+        
 #############################################################################################
 # URL mapping
 #############################################################################################   
@@ -589,6 +597,7 @@ add_url(add_ebook_to_shelf, '/bookshelves/<int:shelf_id>/add',  methods=['POST']
 add_url(partial(shelves_index, mine=True), '/bookshelves/mine/index/<string:start>')
 add_url(shelf_items, '/bookshelves/<int:id>/items')
 api.add_resource(BookShelfItem,'/bookshelf-items/<int:id>')
+add_url(shelves_with_ebook, '/bookshelves/with-ebook/<int:ebook_id>')
 
 api.add_resource(Ebooks, '/ebooks')
 api.add_resource(Ebook, '/ebooks/<int:id>')

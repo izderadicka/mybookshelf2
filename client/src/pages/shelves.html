@@ -2,8 +2,8 @@
   <section>
     <div class="container-fluid vertically-spaced">
     <ul class="nav nav-tabs nav-justified top-tabs">
-      <li role="presentation" class="${mine?'active':''}"><a>My Bookshelves</a></li>
-      <li role="presentation" class="${!mine?'active':''}"><a>Public Bookshelves</a></li>
+      <li role="presentation" class="${mine?'active':''}"><a click.delegate="changeTab()">My Bookshelves</a></li>
+      <li role="presentation" class="${!mine?'active':''}"><a click.delegate="changeTab()">Public Bookshelves</a></li>
     </ul>
   </div>
 

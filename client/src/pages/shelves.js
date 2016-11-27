@@ -1,4 +1,4 @@
-import {inject, LogManager, computedFrom} from 'aurelia-framework';
+import {inject, LogManager, computedFrom, bindable} from 'aurelia-framework';
 import {ApiClient} from 'lib/api-client';
 
 const logger = LogManager.getLogger('shelves');
@@ -7,6 +7,8 @@ const logger = LogManager.getLogger('shelves');
 export class Shelves {
   sortings = [{name:'Name A-Z', key:'name'}, {name:'Name Z-A', key:'-name'},
               {name:'Recent First', key: 'created'}, {name:'Oldest First', key: '-created'}]
+
+  @bindable filter;
   constructor(client) {
     this.client = client;
     this.mine = true;
@@ -18,17 +20,23 @@ export class Shelves {
 
   updateLoader() {
     this._loader = (page, pageSize, sort) =>
-      this.client.getMany(`bookshelves/${this.mine?'mine':'others'}`, page, pageSize, sort, {filter:this._filter});
+      this.client.getMany(`bookshelves/${this.mine?'mine':'others'}`, page, pageSize, sort, {filter:this.filter});
   }
 
-  get _filter() {
-    let filter = {filter: this.filter};
-    if (this.mine) filter.mine = 1
-    else filter.others = 1;
-  }
 
   @computedFrom('_loader')
   get loader() {
     return this._loader;
   }
+
+  changeTab() {
+    this.mine = ! this.mine;
+    let oldFilter = this.filter;
+    this.filter = null;
+    if (oldFilter === null) this.updateLoader();
   }
+
+  filterChanged() {
+    this.updateLoader();
+  }
+}

@@ -1,0 +1,19 @@
+<template>
+  <require from="components/authors"></require>
+  <div class='ebook-detail'>
+    <a route-href="route: series; params.bind: {id:series.id}">
+      <div class="ebook-cover series-image"></div>
+    </a>
+    <div class="right-side">
+      <div class="ebook-info">
+        <authors authors.one-time="series.authors" compact.bind="true"></authors>
+        <div class="ebook-title"><a route-href="route: series; params.bind: {id:series.id}">${series.title}</a></div>
+      </div>
+      <div class="ebook-card-description" if.bind={description}>${description}</div>
+    </div>
+    <div class="ebook-card-actions">
+      <a href="#" if.bind="editAction" click.delegate="edit($event)"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
+      <a href="#" if.bind="deleteAction" click.delegate="delete($event)"><i class="fa fa-minus-circle"></i></a>
+    </div>
+  </div>
+</template>

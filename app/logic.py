@@ -193,7 +193,7 @@ def check_uploaded_file(mime_type, fname):
     return check_file(mime_type, size, hash, extension)
 
 
-def _run_query(q):
+def run_query_limited(q):
     return q.count(), q.limit(current_app.config.get('MAX_INDEX_SIZE', 100)).all()
 
 
@@ -207,29 +207,14 @@ def series_index(start):
     q = model.Series.query
     q = q.filter(func.unaccent(model.Series.title).ilike(
         func.unaccent(start + '%'))).order_by(model.Series.title)
-    count = q.count()
-    q = q.limit(current_app.config.get('MAX_INDEX_SIZE', 100)).subquery(
-        'series_view')
-    q = aliased(model.Series, q)
-    session_author = db.session.query(q, model.Author).outerjoin(model.Ebook).join(
-        model.Ebook.authors).order_by(q.title, model.Author.id).all()
-    res = []
-    current = None
-    for series, author in session_author:
-        if series == current:
-            series.authors.append(author)
-        else:
-            current = series
-            res.append(series)
-            series.authors = [author] if author else []
-    return count, res
+    return run_query_limited(q)
 
 
 def ebooks_index(start):
     q = model.Ebook.query
     q = q.filter(func.unaccent(model.Ebook.title).ilike(
         func.unaccent(start + '%'))).order_by(model.Ebook.title)
-    return _run_query(q)
+    return run_query_limited(q)
 
 def shelves_index(start, user):
     q = model.Bookshelf.query
@@ -239,14 +224,14 @@ def shelves_index(start, user):
         q=q.filter(model.Bookshelf.public == True, model.Bookshelf.created_by != user)
     q = q.filter(func.unaccent(model.Bookshelf.name).ilike(
         func.unaccent(start + '%'))).order_by(model.Bookshelf.name)
-    return _run_query(q)
+    return run_query_limited(q)
 
 
 def authors_index(start):
     q = model.Author.query
     q = q.filter(func.unaccent(model.Author.last_name + ', ' + model.Author.first_name)
                  .ilike(func.unaccent(start + '%'))).order_by(model.Author.last_name, model.Author.first_name)
-    return _run_query(q)
+    return run_query_limited(q)
 
 
 def clear_ebook_data(data):
