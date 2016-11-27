@@ -17,7 +17,7 @@ export class EbookAddToShelf {
   }
 
   activate({what, id}, route) {
-    return this.client.getOne(what,id)
+    return this.client.getOne(what==='ebook'?'ebooks':'series',id)
     .then ( (item) =>{
       this.item = item;
       this.what = what;
@@ -38,7 +38,7 @@ export class EbookAddToShelf {
   }
 
   goToItemPage() {
-    this.router.navigateToRoute(this.what == 'ebooks'?'ebook':'series', {id:this.item.id})
+    this.router.navigateToRoute(this.what == 'ebook'?'ebook':'series', {id:this.item.id})
   }
 
   cancel() {
