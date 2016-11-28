@@ -15,6 +15,7 @@ import logging
 import tempfile
 from time import sleep
 import datetime
+import numbers
 
 logger = logging.getLogger('api')
 
@@ -574,6 +575,38 @@ def shelves_with_ebook(ebook_id):
     count,data = logic.run_query_limited(q)
     data = schema.BookshelfSchema.create_index_serializer().dump(data).data
     return jsonify(total = count, items = data)
+
+def rate_ebook(ebook_id): 
+    data = request.json
+    errors=schema.RatingSchema().validate(data)
+    if errors:
+        logger.error('Invalid rate request %s', errors)
+        abort(400,'Invalid request' )
+        
+    ebook = model.Ebook.query.get_or_404(ebook_id)
+    rating = model.EbookRating.query.filter(model.EbookRating.ebook_id==ebook_id, 
+                                            model.EbookRating.created_by == current_user).one_or_none()
+                                            
+    if  data.get('rating') is None:
+        if rating:
+            db.session.delete(rating)
+    else:    
+        ts = datetime.datetime.now()                                        
+        if not rating:
+            rating = model.EbookRating(created_by=current_user, created = ts, ebook_id = ebook_id)
+            db.session.add(rating)
+            
+        rating.modified_by=current_user
+        rating.rating = data['rating']
+        if 'description' in data: 
+            rating.description = data['description']
+        rating.modified = ts
+        
+    ebook.rating, ebook.rating_count = logic.calc_avg_ebook_rating(ebook_id)
+    db.session.commit()
+    return jsonify(id=ebook_id, rating=float(ebook.rating) if not ebook.rating is None else None, 
+                   rating_count=ebook.rating_count)
+    
         
 #############################################################################################
 # URL mapping
@@ -608,6 +641,7 @@ add_url(ebooks_index, '/ebooks/index/<string:start>')
 add_url(add_upload_to_ebook,'/ebooks/<int:id>/add-upload', methods=['POST'])
 add_url(converted_sources, '/ebooks/<int:ebook_id>/converted') 
 add_url(merge_ebook, '/ebooks/<int:ebook_id>/merge', methods=['POST'])
+add_url(rate_ebook, '/ebooks/<int:ebook_id>/rate', methods=['POST'])
 
 api.add_resource(Genres, '/genres')
 api.add_resource(Languages, '/languages')

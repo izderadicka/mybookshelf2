@@ -140,6 +140,7 @@ class EbookSchema(ModelSchema):
     sources = fields.Nested(SourceSchema, many=True, only=(
         'id', 'format', 'location', 'quality', 'modified', 'size', 'created_by'), allow_none=True)
     full_text = None
+    my_rating = fields.Function(serialize=lambda o: o.my_rating)
 
     class Meta:
         model = model.Ebook
@@ -152,7 +153,7 @@ class EbookSchema(ModelSchema):
     @classmethod
     def create_list_serializer(cls):
         return EbookSchema(many=True, only=(
-            'id', 'title', 'authors', 'series', 'series_index', 'language', 'cover'))
+            'id', 'title', 'authors', 'series', 'series_index', 'language', 'cover', 'rating', 'rating_count'))
         
     @classmethod
     def create_update_serializer(cls):
@@ -163,6 +164,10 @@ class FileInfoSchema(Schema):
     mime_type = fields.String(required=True, validate=validate.Length(max=255))
     size = fields.Integer(required=True, validate=validate.Range(min=1))
     # hash = fields.String(validate=validate.Length(max=128))
+    
+class RatingSchema(Schema):
+    rating = fields.Float(allow_none=True, validate=validate.Range(min=0, max=100))
+    description = fields.String(validate=validate.Length(max=16*1024))
     
 class BookshelfSchema(ModelSchema):
     items_count = fields.Function(serialize = lambda o: o.items_count)
@@ -182,7 +187,7 @@ class BookshelfSchema(ModelSchema):
         
 class BookshelfItemSchema(ModelSchema):
     series = fields.Nested(SeriesSchema, only=('id', 'title', 'authors'), allow_none=True)
-    ebook = fields.Nested(EbookSchema, only=('id', 'title', 'authors', 'series', 'series_index', 'cover'), allow_none=True)
+    ebook = fields.Nested(EbookSchema, only=('id', 'title', 'authors', 'series', 'series_index', 'cover', 'rating', 'rating_count'), allow_none=True)
     class Meta:
         model = model.BookshelfItem
         

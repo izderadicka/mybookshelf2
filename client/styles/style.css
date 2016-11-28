@@ -424,5 +424,8 @@ input.form-control.sm {
   background-color: #EEEEEE;
   background-repeat:no-repeat;
   background-position: center;
+}
 
+.rating-count-ebook-detail {
+  font-size: 150%;
 }

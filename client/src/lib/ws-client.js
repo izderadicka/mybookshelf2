@@ -107,7 +107,7 @@ export class WSClient {
     .then(taskId => {
       this.notif.start(taskId,
         {
-        text:`Extract Metadata from ${originalFileName || fileName}`,
+        text:`Extract metadata from ${originalFileName || fileName}`,
         status:"submitted",
         task:"metadata",
         taskId,

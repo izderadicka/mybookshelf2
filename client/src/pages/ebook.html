@@ -31,9 +31,14 @@
             <label class="ebook-detail-label">Genres:</label>
             <span class="ebook-detail-value">${ebook.genres | genres}</span>
           </li>
-          <li class="list-group-item">
+          <li class="list-group-item" if.bind="ebook.rating">
             <label class="ebook-detail-label">Rating:</label>
-            <span class="ebook-rating"><rating size=2 rating.bind="ebook.rating"></rating></span>
+            <span class="ebook-rating"><rating size="1.5" rating.bind="ebook.rating" read-only="1"></rating></span>
+            <span class="rating-count-ebook-detail">(${ebook.rating_count})</span>
+          </li>
+          <li class="list-group-item">
+            <label class="ebook-detail-label">My Rating:</label>
+            <span class="ebook-rating"><rating size=2 rating.bind="ebook.my_rating" on-rating-change.one-time="updateRating"></rating></span>
           </li>
           <li class="list-group-item">
             <label class="ebook-detail-label">Created:</label>

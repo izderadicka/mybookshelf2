@@ -4,8 +4,9 @@ from sqlalchemy import Column, Date, DateTime, Float, Index, Integer, SmallInteg
     BigInteger, Boolean, ForeignKey, Text, Enum, Table, desc, select, func
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.sql import func
+from sqlalchemy.sql.expression import nullsfirst, nullslast
 from sqlalchemy.orm import relationship, deferred, backref, column_property
-from flask_login import UserMixin
+from flask_login import UserMixin, current_user
 from sqlalchemy_utils import TSVectorType, JSONType
 # TODO - check if can use thse types instead
 from sqlalchemy.dialects.postgresql import JSON, TSVECTOR
@@ -229,6 +230,14 @@ class Ebook(Base, Auditable):
     cover = Column(String(512))
     base_dir = Column(String(512), nullable=False)
     full_text = deferred(Column(TSVectorType(regconfig='custom')))
+    
+    @property
+    def my_rating(self):
+        rating = EbookRating.query.filter(EbookRating.ebook_id == self.id, 
+                                          EbookRating.created_by == current_user).one_or_none()
+        if rating:
+            return rating.rating
+        
 
     @property
     def authors_str(self):
@@ -367,6 +376,8 @@ sortings = {'ebook': {'title': [Ebook.title, Ebook.id],
                       '-title': [desc(Ebook.title), desc(Ebook.id)],
                       'created': [Ebook.created, Ebook.id],
                       '-created': [desc(Ebook.created), desc(Ebook.id)],
+                      'rating': [nullslast(Ebook.rating), Ebook.rating_count, Ebook.id],
+                      '-rating': [nullslast(desc(Ebook.rating)), desc(Ebook.rating_count), desc(Ebook.id)],
                       },
             'bookshelf': {'name': [Bookshelf.name, Bookshelf.id],
                       '-name': [desc(Bookshelf.name), desc(Bookshelf.id)],

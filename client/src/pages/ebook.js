@@ -187,6 +187,17 @@ export class Ebook {
   }
   }
 
+  get updateRating() {
+    return rating => {
+      this.client.post(`ebooks/${this.ebook.id}/rate`, {rating})
+      .then( res => {
+        if (res.error) throw new Error('Rating update error '+ res.error);
+        this.ebook.rating = res.rating;
+        this.ebook.rating_count = res.rating_count;
+      })
+    }
+  }
+
 
 
 }

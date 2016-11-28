@@ -6,6 +6,7 @@ import app
 import settings
 import os.path
 import shutil
+import json
 
 test_file = os.path.join(os.path.dirname(__file__),
                           'data/Kissinger, Henry - Roky v Bilem dome.epub')
@@ -279,6 +280,31 @@ class TestApi(TestCase):
         res= self.get('/api/ebooks/35485')
         self.assertEqual(res['title'], 'Prokleta vesnice')
         self.assertEqual(res['version_id'], 2)
+        # rating
+        def rate(x):
+            res = self.post('/api/ebooks/35485/rate', data = json.dumps({'rating':x}),
+                        content_type="application/json")
+            self.assertEqual(res['id'], 35485)
+            
+        def get_rating():
+            res= self.get('/api/ebooks/35485')
+            return res['rating'], res['rating_count']
+        rate(100)
+        self.assertEqual(get_rating(), (100, 1))
+        rate(50)
+        self.assertEqual(get_rating(), (50, 1))
+        
+        self.login('user', 'user')
+        rate(20)
+        self.assertEqual(get_rating(), (35, 2))
+        res= self.get('/api/ebooks/35485')
+        self.assertEqual(res['my_rating'], 20)
+        rate(None)
+        self.assertEqual(get_rating(), (50, 1))
+        
+        
+        
+        
         
     def test_bookshelfs(self):
         res = self.post(
