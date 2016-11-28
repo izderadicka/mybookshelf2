@@ -58,10 +58,8 @@
             <a class="converted-sources-item" repeat.for="converted of convertedSources" href="${client.baseUrl}/api/download-converted/${converted.id}?bearer_token=${token}">${converted.format} </a>
           </li>
         </ul>
-
-        <br>
         <add-to-shelf-button what="ebook" item.bind="ebook" after-add-cb.one-time="updateShelves"></add-to-shelf-button>
-
+        <br>
       </div>
     </div>
     <table class="table">
