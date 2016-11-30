@@ -60,7 +60,13 @@ export class PageController {
   }
 
   get reloadPage() {
-    return () => this.loadPage(this.page);
+    return (wasDelete) => {
+      if (this.data && this.data.length ===1 && wasDelete && this.page>1) {
+        this.page=this.page-1;
+      } else {
+        this.loadPage(this.page);
+      }
+    }
   }
 
   pageChanged(newPage) {

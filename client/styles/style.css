@@ -361,7 +361,11 @@ background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAACMCAMAAAC9K
 }
 
 .vertically-spaced {
-  margin-top:20px;
+   margin-top:20px; 
+}
+
+.add-to-shelf-btn {
+  margin-bottom: 20px;
 }
 
 nav .nav > li > a {

@@ -1,11 +1,12 @@
 import {inject, bindable, LogManager} from 'aurelia-framework';
 import {HttpClient} from 'aurelia-fetch-client';
 import $ from 'jquery';
+import {BaseCard} from './base-card';
 
 const logger=LogManager.getLogger('ebook-card');
 
 @inject(HttpClient)
-export class EbookCard {
+export class EbookCard extends BaseCard{
   @bindable ebook;
   @bindable description;
   @bindable editAction;
@@ -13,6 +14,7 @@ export class EbookCard {
   @bindable reloadAction;
 
   constructor(http) {
+    super();
     this.http=http;
   }
 
@@ -32,23 +34,5 @@ export class EbookCard {
     return this.http.baseUrl +'/thumb/'+ebook.id;
   }
 
-  delete(evt) {
-    if (this.deleteAction) {
-      this.deleteAction(evt)
-      .then( () => {
-      if (this.reloadAction) this.reloadAction();
-    });
-    }
-  }
-
-  edit(evt) {
-    if (this.editAction) {
-      this.editAction(evt)
-      .then( (res) => {
-        if (this.reloadAction && res !== 'noreload') this.reloadAction();
-      })
-
-    }
-  }
 
 }
