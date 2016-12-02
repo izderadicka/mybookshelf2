@@ -35,7 +35,7 @@ export class EditEbook extends Edit{
 
   canActivate(params) {
     if (params.id !== undefined) {
-    return this.client.getOne('ebooks', params.id)
+    return this.client.getOne('ebooks', params.id, true)
       .then(b => {
         this.ebook=new Ebook(b);
         this.model=this.ebook;

@@ -1,0 +1,12 @@
+<template>
+  <div class="form-group" id="direction-input-group">
+    <label class="${readOnly?'text-muted':''}">
+    <input disabled.bind="readOnly" type="radio" name="direction" model.bind="true" checked.bind="mergeTo">
+    Merge this ${name} to other ${name}
+    </label>
+    <label class="${readOnly?'text-muted':''}">
+    <input type="radio" disabled.bind="readOnly" name="direction" model.bind="false" checked.bind="mergeTo">
+    Merge other ${name} to this ${name}
+    </label>
+  </div>
+</template>

@@ -78,6 +78,9 @@ def can_change_object(obj):
     return role_required_owning('superuser', if_own=obj, owning_role='user')
 
 
+def can_delete_object(obj):
+    return role_required_owning('superuser', if_own=obj, owning_role='user')
+
 @bp.route('/login', methods=['GET', 'POST'])
 @cors_enabled
 def login():

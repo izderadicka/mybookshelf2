@@ -8,8 +8,8 @@ import {Merge} from './abstract/merge';
 export class EbookMerge extends Merge{
   constructor(client, router, access) {
     super(client, router, access);
-    this.viewRoute = 'ebook';
-    this.modelEntity = 'ebooks';
+    this.viewRoute = 'shelf';
+    this.modelEntity = 'bookshelves';
   }
 
 }

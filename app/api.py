@@ -8,7 +8,7 @@ from common.utils import success_error, mimetype_from_file_name, ext_from_mimety
 from app import db
 from functools import wraps, partial
 from app.cors import add_cors_headers
-from app.access import role_required, can_change_object
+from app.access import role_required, can_change_object, can_delete_object
 from werkzeug import secure_filename
 import os.path
 import logging
@@ -140,7 +140,7 @@ class UpdateGetDeleteMixin():
     def delete(self, id):
         entity = self.model.query.get_or_404(id)
         if self.user_can_change:
-            can_change_object(entity)
+            can_delete_object(entity)
         else:
             if not current_user.has_role('superuser'):
                 abort(403, 'Access denied')
@@ -543,6 +543,7 @@ def merge_ebook(ebook_id):
         abort(400, 'Invalid Request')
     ebook = model.Ebook.query.get_or_404(ebook_id)
     other = model.Ebook.query.get_or_404(data['other_ebook'])    
+    can_delete_object(other)
     logic.merge_ebook(ebook, other)
     return jsonify(id=ebook_id)
 

@@ -1,4 +1,7 @@
 import {ConfirmDialog} from 'components/confirm-dialog';
+import {LogManager} from 'aurelia-framework';
+
+const logger = LogManager.getLogger('edit');
 
 export class Edit {
   constructor(client, router, access, dialog) {
@@ -11,7 +14,7 @@ export class Edit {
 
   canActivate(params) {
     if (params.id !== undefined) {
-    return this.client.getOne(this.modelEntity, params.id)
+    return this.client.getOne(this.modelEntity, params.id, true) //get fresh
       .then(b => {
         this.model= new this.modelClass(b);
         return this.canEdit(b.created_by);
@@ -72,6 +75,7 @@ export class Edit {
         if (res.error) {
           this.error={error:res.error, errorDetail:res.error_details}
         } else if (res.id) {
+          this.client.clearCache(this.modelEntity);
           this.doAfterSave(res.id)
           .then(() => {
             this.router.navigateToRoute(this.viewRoute, {id:res.id});
