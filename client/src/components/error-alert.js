@@ -10,4 +10,9 @@ export class ErrorAlert {
   clearError() {
     this.error=undefined;
   }
+
+  @computedFrom('error.errorDetail')
+  get detail() {
+    return JSON.stringify(this.error.errorDetail);
+  }
 }

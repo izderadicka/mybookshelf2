@@ -87,6 +87,11 @@ export class BaseModel {
   prepareData() {
     let data = {}
 
+    let normNull = function(x) {
+      if (x === '') return null;
+      return x;
+    }
+
     let shrink = function(obj) {
       if  (!obj) return null;
       if (obj.hasOwnProperty('id') && obj.id) {
@@ -117,7 +122,7 @@ export class BaseModel {
           val = shrinkList(val);
         else if (typeof val === 'object')
           val = shrink(val)
-        data[prop] = val;
+        data[prop] = normNull(val);
       }
     }
 

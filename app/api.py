@@ -182,6 +182,10 @@ class UpdateGetDeleteMixin():
         
         obj, errors = deserializer.load(data)
         
+        if errors:
+            db.session.rollback()
+            return jsonify(error="Invalid data", error_details=errors)
+        
         assert(existing.id == obj.id)
 
         can_change_object(obj)
@@ -190,9 +194,6 @@ class UpdateGetDeleteMixin():
             db.session.rollback()
             return jsonify(error="Stalled record",  error_details="Your version %d, db version %d" %
                            (version_id, obj.version_id))
-        if errors:
-            db.session.rollback()
-            return jsonify(error="Invalid data", error_details=errors)
 
         obj.modified_by = current_user
         self.modify_update_object(obj)
