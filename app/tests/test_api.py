@@ -207,7 +207,7 @@ class TestApi(TestCase):
         res = self.get('/api/ebooks/index/r')
         self.assertEqual(res['total'], 1)
         
-        res = self.post('/api/ebooks/%d/merge'%33837, data='{"other_ebook":37157}',
+        res = self.post('/api/ebooks/%d/merge'%33837, data='{"other_id":37157}',
                         content_type='application/json')
         self.assertTrue(res['id'])
         
@@ -382,6 +382,31 @@ class TestApi(TestCase):
         print('Shelves with ebook %d' % ebook_id)
         res = self.get('/api/bookshelves/with-ebook/%d'% ebook_id)
         self.assertEqual(res['total'], 1)
+        
+        
+        res = self.post(
+            '/api/bookshelves/mine', data='{"name":"test2", "description":"temp"}', 
+            content_type="application/json")
+        
+        bs2_id = res['id']
+        ebooks = self.get('/api/ebooks', query_string={'page': 3, 'page_size': 10})['items']
+        for b in ebooks:
+            self.post('/api/bookshelves/%d/add'%bs2_id, data='{"ebook":{"id":%d}, "note":"test2"}'%b['id'],
+                      content_type="application/json")
+            
+        
+        self.post('/api/bookshelves/%d/add'%bs2_id, data='{"ebook":{"id":%d}, "note":"test2"}'%ebook_id,
+                      content_type="application/json") 
+        items = self.get('/api/bookshelves/%d/items'% bs2_id, query_string={'page': 1, 'page_size': 10})
+        self.assertEqual(items['total'], 11)   
+        res = self.post('/api/bookshelves/1/merge', data=json.dumps({'other_id': bs2_id}),
+                        content_type="application/json")
+        
+        items = self.get('/api/bookshelves/1/items', query_string={'page': 1, 'page_size': 10})
+        self.assertEqual(items['total'], 20)
+        
+        
+        
         
         
             

@@ -121,7 +121,7 @@ export class ApiClient {
   }
 
   merge(resource, entityId, otherId) {
-    return this.post(`${resource}/${entityId}/merge`, {other_ebook: otherId});
+    return this.post(`${resource}/${entityId}/merge`, {other_id: otherId});
   }
 
   getCover(resource, id) {

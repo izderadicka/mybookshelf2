@@ -391,12 +391,22 @@ def filter_ebooks_by_genres(q,genres):
             .having(func.count(model.Ebook.id) == len(genres))
     
 
-def merge_ebook(ebook, other):   
+def merge_ebooks(ebook, other):   
     with db.session.no_autoflush:     
         ebook.sources.extend(list(other.sources))
         other.sources.clear()
         keep_cover= ebook.cover == other.cover
         delete_ebook(other, keep_cover)
+        
+def merge_shelves(shelf, other):   
+    with db.session.no_autoflush:   
+        for item in other.items.all():
+            if not ((item.ebook and shelf.items.filter(model.BookshelfItem.ebook == item.ebook)).one_or_none() \
+                or (item.series and shelf.items.filter(model.BookshelfItem.series == item.series).one_or_none())):
+                item.bookshelf = shelf
+    db.session.flush()
+    db.session.delete(other)  
+    db.session.commit()
         
 def calc_avg_ebook_rating(ebook_id):
     return db.session.query(func.avg(model.EbookRating.rating), func.count(model.EbookRating.id))\

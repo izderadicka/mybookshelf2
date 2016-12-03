@@ -538,15 +538,36 @@ def converted_sources(ebook_id):
     return jsonify( total=q.count(), items=serializer.dump(q.limit(100).all()).data)
 
 
-def merge_ebook(ebook_id):
-    data=request.json
-    if not data['other_ebook']:
-        abort(400, 'Invalid Request')
-    ebook = model.Ebook.query.get_or_404(ebook_id)
-    other = model.Ebook.query.get_or_404(data['other_ebook'])    
+
+def merge_helper(mdl):
+    def _inner(fn):
+        @wraps(fn)
+        def _wrap(entity_id):
+            data=request.json
+            if not data['other_id']:
+                abort(400, 'Invalid Request')
+            entity = mdl.query.get_or_404(entity_id)
+            other = mdl.query.get_or_404(data['other_id'])  
+            fn(entity, other)
+            return jsonify(id=entity_id)
+        return _wrap
+    return _inner
+    
+
+@merge_helper(model.Ebook)
+def merge_ebooks(ebook, other):
     can_delete_object(other)
-    logic.merge_ebook(ebook, other)
-    return jsonify(id=ebook_id)
+    logic.merge_ebooks(ebook, other)
+    
+@merge_helper(model.Bookshelf)
+def merge_shelves(shelf, other):
+    if not (shelf.created_by == current_user):
+        abort(403, 'Access denied')
+    if not (other.created_by == current_user):
+        abort(403, 'Access denied')
+        
+    logic.merge_shelves(shelf, other)
+    
 
 def add_ebook_to_shelf(shelf_id):
     data = request.json
@@ -633,6 +654,7 @@ add_url(partial(shelves_index, mine=True), '/bookshelves/mine/index/<string:star
 add_url(shelf_items, '/bookshelves/<int:id>/items')
 api.add_resource(BookShelfItem,'/bookshelf-items/<int:id>')
 add_url(shelves_with_ebook, '/bookshelves/with-ebook/<int:ebook_id>')
+add_url(merge_shelves, '/bookshelves/<int:entity_id>/merge', methods=['POST'])
 
 api.add_resource(Ebooks, '/ebooks')
 api.add_resource(Ebook, '/ebooks/<int:id>')
@@ -642,7 +664,7 @@ add_url(cover_ebook, '/ebooks/<int:id>/cover')
 add_url(ebooks_index, '/ebooks/index/<string:start>')
 add_url(add_upload_to_ebook,'/ebooks/<int:id>/add-upload', methods=['POST'])
 add_url(converted_sources, '/ebooks/<int:ebook_id>/converted') 
-add_url(merge_ebook, '/ebooks/<int:ebook_id>/merge', methods=['POST'])
+add_url(merge_ebooks, '/ebooks/<int:entity_id>/merge', methods=['POST'])
 add_url(rate_ebook, '/ebooks/<int:ebook_id>/rate', methods=['POST'])
 
 api.add_resource(Genres, '/genres')

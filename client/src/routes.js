@@ -35,6 +35,13 @@ export const ROUTES =
     auth: true
   },
   {
+    route: 'shelf-merge/:id',
+    name: 'shelf-merge',
+    moduleId: 'pages/shelf-merge',
+    title: 'Merge Bookshelfs',
+    auth: true
+  },
+  {
     route: 'login',
     name: 'login',
     moduleId: 'pages/login',
@@ -90,7 +97,7 @@ export const ROUTES =
     route: 'ebook-merge/:id',
     name: 'ebook-merge',
     moduleId: 'pages/ebook-merge',
-    title: 'Merge Ebook',
+    title: 'Merge Ebooks',
     auth: true
   },
   {

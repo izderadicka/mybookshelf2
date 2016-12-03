@@ -12,4 +12,8 @@ export class EbookMerge extends Merge{
     this.modelEntity = 'bookshelves';
   }
 
+  get loader() {
+    return start => this.client.getIndex(this.modelEntity+'/mine', start);
+  }
+
 }
