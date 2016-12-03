@@ -84,7 +84,7 @@ class TestLogic(TestCase):
         b1 = model.Ebook.query.get(33837)
         b2 = model.Ebook.query.get(37157)
         tot = len(b1.sources) + len(b2.sources)
-        logic.merge_ebook(b1, b2)
+        logic.merge_ebooks(b1, b2)
         self.assertEqual(len(b1.sources), tot)
         
         s = model.Series(title='Series/Neserie')
