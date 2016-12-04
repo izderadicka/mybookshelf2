@@ -15,19 +15,24 @@ export class Cover {
   }
 
   updateCover() {
-    if (this.loader)
+    let holder = $('#cover-holder', this.elem);
+
+    if (this.loader) {
     this.loader.then (result => {
       if (result instanceof Blob) {
         this.cover.src = URL.createObjectURL(result);
       } else {
         this.cover.src = result;
       }
-      let holder = $('#cover-holder', this.elem);
+
       holder.empty().append(this.cover);
       })
     .catch(err => {
       logger.warn(`Cannot load cover: ${err}`);
     })
+  } else {
+    holder.empty();
+  }
   }
 
   attached() {

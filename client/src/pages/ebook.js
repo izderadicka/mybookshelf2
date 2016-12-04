@@ -65,7 +65,9 @@ export class Ebook {
       .then(b => {
         this.ebook=b;
         if (b.cover)
-          this.coverLoader = this.client.getCover('ebooks', b.id);
+          this.coverLoader = this.client.getCover('ebooks', b.id)
+        else
+          this.coverLoader = null;
         return true;
         })
       .catch(err => {
