@@ -108,6 +108,13 @@ export const ROUTES =
     auth: true
   },
   {
+    route: 'ebook/:ebookId/source/:sourceId/move',
+    name: 'source-move',
+    moduleId: 'pages/source-move',
+    title: 'Move Source to Other Ebook',
+    auth: true
+  },
+  {
     route: 'ebook-create',
     name: 'ebook-create',
     moduleId: 'pages/ebook-edit',

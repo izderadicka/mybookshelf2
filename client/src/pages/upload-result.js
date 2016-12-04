@@ -70,6 +70,7 @@ get addToEbook() {
           errorDetail: res.error_details
         }
         else {
+          this.client.clearCache('ebooks');
           this.router.navigateToRoute('ebook', {
             id: ebookId
           });

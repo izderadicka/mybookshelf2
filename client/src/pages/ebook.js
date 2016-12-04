@@ -103,6 +103,10 @@ export class Ebook {
   }
 
   canDeleteSource(source) {
+    return this.access.canDelete(source.created_by);
+  }
+
+  canMoveSource(source) {
     return this.access.canEdit(source.created_by);
   }
 
@@ -132,6 +136,10 @@ export class Ebook {
           })
         }
       });
+  }
+
+  moveSource(source) {
+    this.router.navigateToRoute('source-move', {ebookId:this.ebook.id, sourceId:source.id});
   }
 
   get convertSource() {

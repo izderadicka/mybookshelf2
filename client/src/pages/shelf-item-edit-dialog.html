@@ -2,8 +2,9 @@
   <require from="components/int-converter"></require>
     <ai-dialog>
         <ai-dialog-header><h3>Edit Item</h3></ai-dialog-header>
-        <error-alert error.bind="error"></error-alert>
+
         <ai-dialog-body>
+          <error-alert error.bind="error"></error-alert>
           <div class="form-group" id="note-input-group">
             <label class="control-label">Note</label>
             <textarea name="note" value.bind="model.note"></textarea>

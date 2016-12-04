@@ -1,0 +1,19 @@
+<template>
+  <require from="components/autocomplete/autocomplete"></require>
+  <section>
+    <h2 class="page-title">Move source "${source.format}"</h2>
+    <error-alert error.bind="error"></error-alert>
+    <div class="">
+
+      <div class="form-group">
+        <label class="control-label">To Other Ebook</label>
+        <autocomplete loader.bind="loader" value-key="title" suggestion-template="./autocomplete-ebooks.html"
+        selected-value.bind="otherEbook" additional-class="form-control" filter.one-time="filterOutThisEbook"></autocomplete>
+      </div>
+      <div class="form-group">
+         <button type="button" class="btn btn-primary btn-lg" click.delegate="move()" disabled.bind="!ready">Move</button>
+        <button type="button" class="btn btn-default btn-lg" click.delegate="cancel()">Cancel</button>
+      </div>
+    </div>
+  </section>
+</template>
