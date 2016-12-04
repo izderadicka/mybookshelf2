@@ -73,6 +73,7 @@ export class CoverEdit {
             this.event.subscribe('cover-ready', result =>{
               if (taskId == result.taskId) {
                 this.uploading=false;
+                this.ebook.cover = true;
                 this.router.navigateToRoute('ebook', {id: this.ebook.id});
               }
             });

@@ -98,7 +98,7 @@ export class Ebook {
   get searchString() {
     let s=''
     if (this.ebook.authors)
-      s += this.ebook.authors.slice(0,2).map(a=> a.first_name? a.first_name+' '+a.last_name: a.last_name).join(' ');
+      s += this.ebook.authors.slice(0,2).map(a=> a.last_name).join(' ');
     s += ' '+ this.ebook.title;
     return encodeURIComponent(s);
   }
