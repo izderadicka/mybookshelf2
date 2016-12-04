@@ -6,7 +6,7 @@ import {DialogController} from 'aurelia-dialog';
 
 const logger = LogManager.getLogger('source-move');
 
-@inject(ApiClient, Router, Access)
+@inject(ApiClient, Router, Access, DialogController)
 export class SourceMove {
 
   constructor(client, router, access, controller) {
@@ -14,6 +14,7 @@ export class SourceMove {
     this.router = router;
     this.access = access;
     this.controller = controller;
+    this.controller.settings.lock = true;
   }
 
   canActivate(params) {
@@ -39,10 +40,6 @@ export class SourceMove {
 
   get ready() {
     return this.ebook && this.otherEbook && this.otherEbook.id;
-  }
-
-  cancel() {
-    this.router.navigateToRoute('ebook', {id: this.ebook.id});
   }
 
   get loader() {

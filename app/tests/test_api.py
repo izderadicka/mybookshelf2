@@ -171,6 +171,13 @@ class TestApi(TestCase):
         self.assert403(res)
 
         self.login('superuser', 'superuser')
+        
+        res = self.get('/api/ebooks/%s' % id)
+        self.assertEqual(len(res['sources']), 1)
+        source_id = res['sources'][0]['id']
+        res = self.post('/api/sources/%d/move'%source_id, data='{"other_ebook_id":50118}', content_type='application/json')
+        res = self.get('/api/ebooks/%s' % id)
+        self.assertEqual(len(res['sources']), 0)
 
         res = self.delete('/api/ebooks/%d' % id)
 

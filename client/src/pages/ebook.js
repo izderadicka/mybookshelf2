@@ -7,6 +7,7 @@ import {ConfirmDialog} from 'components/confirm-dialog';
 import {WSClient} from 'lib/ws-client';
 import {EventAggregator} from 'aurelia-event-aggregator';
 import {Router} from 'aurelia-router';
+import {SourceMove} from './source-move';
 
 let logger = LogManager.getLogger('ebooks');
 
@@ -120,26 +121,41 @@ export class Ebook {
       })
       .then(resp => {
         if (!resp.wasCancelled) {
-        this.client.delete('sources', source.id)
-          .then(res => {
-            if (res.error) {
-              logger.error('Source delete failed: ' + res.error + ' '+ res.error_details);
-              alert('Cannot delete: '+ res.error);
-            } else {
-              let idx = this.ebook.sources.findIndex(x => x === source)
-              if (idx >= 0) this.ebook.sources.splice(idx, 1);
-              this.updateConverted();
-            }
-          })
-          .catch(err => {
-            logger.error('Server error: ' + err);
-          })
+        this.removeSource(source, 'Source delete failed:', this.client.delete('sources', source.id));
         }
       });
   }
 
+  removeSource(source, msg, promise) {
+    let showError = function(msg, error, errorDetail) {
+      logger.error(msg + ' ' + error + ' '+ JSON.stringify(errorDetail));
+      alert(msg + ' ' + error);
+    }
+
+    promise
+    .then(res => {
+      if (res.error) {
+        showError(msg, res.error, res.error_details);
+      } else {
+        let idx = this.ebook.sources.findIndex(x => x === source)
+        if (idx >= 0) this.ebook.sources.splice(idx, 1);
+        this.updateConverted();
+      }
+    })
+    .catch(err => {
+      showError('Server error:', err);
+    })
+  }
+
   moveSource(source) {
-    this.router.navigateToRoute('source-move', {ebookId:this.ebook.id, sourceId:source.id});
+    this.dialog.open({viewModel:SourceMove, model:{ebookId:this.ebook.id, sourceId:source.id}})
+    .then(resp=> {
+      if (!resp.wasCancelled) {
+        logger.debug('Moving to ', resp.output);
+        this.removeSource(source, 'Source move failed:',
+        this.client.post(`sources/${source.id}/move`, {other_ebook_id: resp.output.id}));
+      }
+    });
   }
 
   get convertSource() {

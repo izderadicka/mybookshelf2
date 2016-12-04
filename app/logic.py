@@ -146,7 +146,7 @@ def download(id):
     fname = os.path.join(current_app.config['BOOKS_BASE_DIR'], source.location)
 
     down_name = norm_file_name(source)
-    down_name = os.path.split(fname)[-1]
+    down_name = os.path.split(down_name)[-1]
     response = stream_response(fname, mimetype=source.format.mime_type,
                                headers={'Content-Disposition': 'attachment; filename="%s"' % down_name})
 

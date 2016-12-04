@@ -599,6 +599,17 @@ def shelves_with_ebook(ebook_id):
     data = schema.BookshelfSchema.create_index_serializer().dump(data).data
     return jsonify(total = count, items = data)
 
+def move_source(id):
+    data = request.json
+    if not 'other_ebook_id' in data:
+        abort(400, 'Invalid request')
+        
+    ebook = model.Ebook.query.get_or_404(data['other_ebook_id'])
+    source = model.Source.query.get_or_404(id)
+    source.ebook = ebook
+    db.session.commit()
+    return jsonify(id=id, ebook_id=ebook.id)
+
 def rate_ebook(ebook_id): 
     data = request.json
     errors=schema.RatingSchema().validate(data)
@@ -675,6 +686,7 @@ api.add_resource(Serie, '/series/<int:id>')
 add_url(series_index, '/series/index/<string:start>')
 
 api.add_resource(Source, '/sources/<int:id>')
+add_url(move_source, '/sources/<int:id>/move', methods=['POST'])
 
 api.add_resource(Search, '/search/<string:search>')
 
