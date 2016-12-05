@@ -158,7 +158,7 @@ class UpdateGetDeleteMixin():
     def patch(self, id):
         if not request.json:
             abort(400)
-
+            
         try:
             data = self.clear_update_data(request.json)
         except ValueError as e:
@@ -179,6 +179,12 @@ class UpdateGetDeleteMixin():
         if not existing:
             db.session.rollback()
             return jsonify(error="Unknown record", error_details="Id %d is not in table" % data['id'])
+        
+        if self.user_can_change:
+            can_change_object(existing)
+        else:
+            if not current_user.has_role('superuser'):
+                abort(403, 'Access denied')
         
         obj, errors = deserializer.load(data)
         

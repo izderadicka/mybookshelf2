@@ -11,8 +11,7 @@ let logger = LogManager.getLogger('ebook-edit')
 
 @inject(ApiClient, Router, Access, DialogService)
 export class EditEbook extends Edit{
-  ebook;
-  originalEbook;
+   ebook;
   _languages;
   _genres;
   @bindable _series;

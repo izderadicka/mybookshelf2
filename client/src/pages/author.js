@@ -1,16 +1,21 @@
 import {inject, bindable, computedFrom, LogManager} from 'aurelia-framework';
 import {ApiClient} from 'lib/api-client';
 import {rewriteURLParam} from 'lib/utils';
+import {Access} from 'lib/access';
+import {Router} from 'aurelia-router';
+
 const logger = LogManager.getLogger('author');
 
-@inject(ApiClient)
+@inject(ApiClient, Access, Router)
 export class Author {
   _loader;
   @bindable filter;
   author;
 
-  constructor(client) {
+  constructor(client, access, router) {
     this.client=client;
+    this.access = access;
+    this.router = router;
   }
 
   activate(params, route)  {
@@ -41,6 +46,29 @@ export class Author {
   @computedFrom('_loader')
   get loader() {
     return this._loader;
+  }
+
+  get editActions() {
+    return [{text:"Information",value:'edit', icon:'info-circle'},
+      {text:'Merge', value:'merge', icon:'compress'}];
+
+  }
+
+  get editAction() {
+    return action => {
+    switch (action) {
+      case 'edit':
+        this.router.navigateToRoute('author-edit', {id:this.author.id})
+      break;
+      case 'merge':
+      this.router.navigateToRoute('author-merge', {id: this.author.id});
+      break;
+    }
+  }
+  }
+
+  get isEditable() {
+    return  this.access.hasRole('superuser');
   }
 
 }

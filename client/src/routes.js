@@ -64,7 +64,15 @@ export const ROUTES =
     moduleId: 'pages/author',
     title: 'Authors books',
     auth: true
-  }, {
+  },
+  {
+    route: ['author-edit/:id'],
+    name: 'author-edit',
+    moduleId: 'pages/author-edit',
+    title: 'Edit Author',
+    auth: true
+  }, 
+  {
     route: ['series/:id'],
     name: 'series',
     moduleId: 'pages/series',
