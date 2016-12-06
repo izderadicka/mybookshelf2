@@ -554,6 +554,8 @@ def merge_helper(mdl):
                 abort(400, 'Invalid Request')
             entity = mdl.query.get_or_404(entity_id)
             other = mdl.query.get_or_404(data['other_id'])  
+            if entity == other:
+                abort(400, 'Invalid Request - cannot merge to self')
             fn(entity, other)
             return jsonify(id=entity_id)
         return _wrap
@@ -573,6 +575,10 @@ def merge_shelves(shelf, other):
         abort(403, 'Access denied')
         
     logic.merge_shelves(shelf, other)
+
+@merge_helper(model.Author)
+def merge_authors(author, other):
+    logic.merge_authors(author, other)
     
 
 def add_ebook_to_shelf(shelf_id):
@@ -661,6 +667,7 @@ def add_url(view_func, url, roles_required=['user'], **kwargs):
 api.add_resource(Authors, '/authors')
 api.add_resource(Author, '/authors/<int:id>')
 add_url(authors_index, '/authors/index/<string:start>')
+add_url(merge_authors, '/authors/<int:entity_id>/merge', roles_required=['superuser'], methods=['POST'])
 
 
 api.add_resource(MyBookShelves, '/bookshelves/mine')

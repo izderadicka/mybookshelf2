@@ -408,6 +408,15 @@ def merge_shelves(shelf, other):
     db.session.delete(other)  
     db.session.commit()
         
+def merge_authors(author, other):
+    with db.session.no_autoflush:
+        for ebook in other.ebooks:
+            ebook.authors.append(author)
+            
+    db.session.delete(other)
+    db.session.commit()
+                 
+            
 def calc_avg_ebook_rating(ebook_id):
     return db.session.query(func.avg(model.EbookRating.rating), func.count(model.EbookRating.id))\
                             .filter(model.EbookRating.ebook_id == ebook_id).one()

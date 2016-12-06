@@ -13,6 +13,9 @@ export class ErrorAlert {
 
   @computedFrom('error.errorDetail')
   get detail() {
-    return JSON.stringify(this.error.errorDetail);
+    if (this.error.errorDetail instanceof Error)
+      return `${this.error.errorDetail.name}: ${this.error.errorDetail.message}`
+    else
+      return JSON.stringify(this.error.errorDetail);
   }
 }

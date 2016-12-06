@@ -71,7 +71,14 @@ export const ROUTES =
     moduleId: 'pages/author-edit',
     title: 'Edit Author',
     auth: true
-  }, 
+  },
+  {
+    route: ['author-merge/:id'],
+    name: 'author-merge',
+    moduleId: 'pages/author-merge',
+    title: 'Merge Author',
+    auth: true
+  },
   {
     route: ['series/:id'],
     name: 'series',
