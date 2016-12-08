@@ -1,9 +1,11 @@
 import {inject, LogManager, bindable, computedFrom} from 'aurelia-framework';
 import {ApiClient} from 'lib/api-client';
+import {Access} from 'lib/access';
+import {Router} from 'aurelia-router';
 
 const logger = LogManager.getLogger('series');
 
-@inject(ApiClient)
+@inject(ApiClient, Access, Router)
 export class Series {
   sortings=[{name:'Series Index Asc.', key:'series_index'},
             {name:'Series Index Desc.', key:'-series_index'},
@@ -11,8 +13,10 @@ export class Series {
             {name:'Title Z-A',key:'-title'},
             {name:'Recent First', key:'-created'},
             {name:'Oldest First', key: 'created'}];
-  constructor(client) {
+  constructor(client, access, router) {
     this.client=client;
+    this.access=access;
+    this.router=router;
   }
 
   canActivate(params) {
@@ -30,5 +34,28 @@ export class Series {
 
   activate(params, route) {
     route.navModel.setTitle(`Series "${this.series.title}"`);
+  }
+
+  get editActions() {
+    return [{text:"Information",value:'edit', icon:'info-circle'},
+      {text:'Merge', value:'merge', icon:'compress'}];
+
+  }
+
+  get editAction() {
+    return action => {
+    switch (action) {
+      case 'edit':
+        this.router.navigateToRoute('series-edit', {id:this.series.id})
+      break;
+      case 'merge':
+      this.router.navigateToRoute('series-merge', {id: this.series.id});
+      break;
+    }
+  }
+  }
+
+  get isEditable() {
+    return  this.access.hasRole('superuser');
   }
 }

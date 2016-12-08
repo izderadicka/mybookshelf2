@@ -1,0 +1,18 @@
+<template>
+  <require from="components/error-alert"></require>
+  <require from="components/edit-buttons"></require>
+  <section>
+    <h2 class="page-title">Edit Author</h2>
+    <error-alert error.bind="error"></error-alert>
+    <div class="">
+
+      <div class="form-group" id="title-input-group">
+        <label class="control-label">Series Title</label>
+        <input class="form-control" type="text" value.bind="model.title">
+      </div>
+
+      <edit-buttons></edit-buttons>
+
+    </div>
+  </section>
+</template>

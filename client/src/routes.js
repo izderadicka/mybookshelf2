@@ -76,7 +76,7 @@ export const ROUTES =
     route: ['author-merge/:id'],
     name: 'author-merge',
     moduleId: 'pages/author-merge',
-    title: 'Merge Author',
+    title: 'Merge Authors',
     auth: true
   },
   {
@@ -86,6 +86,20 @@ export const ROUTES =
     title: 'Books in series',
     auth: true
   }, {
+    route: ['series-edit/:id'],
+    name: 'series-edit',
+    moduleId: 'pages/series-edit',
+    title: 'Edit Series',
+    auth: true
+  },
+  {
+    route: ['series-merge/:id'],
+    name: 'series-merge',
+    moduleId: 'pages/series-merge',
+    title: 'Merge Series',
+    auth: true
+  },
+   {
     route: 'upload',
     name: 'upload',
     moduleId: 'pages/upload',
