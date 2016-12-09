@@ -561,6 +561,9 @@ def merge_helper(mdl):
         return _wrap
     return _inner
     
+@merge_helper(model.Series)
+def merge_series(series, other):
+    logic.merge_series(series, other)
 
 @merge_helper(model.Ebook)
 def merge_ebooks(ebook, other):
@@ -697,6 +700,7 @@ api.add_resource(Languages, '/languages')
 api.add_resource(Series, '/series')
 api.add_resource(Serie, '/series/<int:id>')
 add_url(series_index, '/series/index/<string:start>')
+add_url(merge_series, '/series/<int:entity_id>/merge', roles_required=['superuser'], methods=['POST'])
 
 api.add_resource(Source, '/sources/<int:id>')
 add_url(move_source, '/sources/<int:id>/move', methods=['POST'])

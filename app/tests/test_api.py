@@ -251,7 +251,22 @@ class TestApi(TestCase):
         self.assertTrue(res['id'])
         res = self.get('/api/ebooks/author/%d' % a3_id)
         self.assertEqual(res['total'], 3)
-
+        
+        series = self.get('/api/series', query_string={'page': 1, 'page_size': 12, 'sort': 'title'})['items']
+        s1 = series[0]
+        s2 = series[-1]
+        self.assertEqual(self.get('api/ebooks/series/%d'%s1['id'])['total'], 1)
+        self.assertEqual(self.get('api/ebooks/series/%d'%s2['id'])['total'], 4)
+        
+        res = self.post('/api/series/%d/merge'%s1['id'], data='{"other_id":%d}' % s2['id'],
+                        content_type='application/json')
+        
+        self.assertTrue(res['id'])
+        self.assertEqual(self.get('api/ebooks/series/%d'%s1['id'])['total'], 5)
+        res = self.get('/api/series/%d'% s2['id'], failure=True)
+        self.assert404(res)
+        
+        
     def test_api_create_edit(self):
         self.login()
         data = '{"title":"Testovací kniha","authors":[{"id":5222},{"last_name":"Novy","first_name":"Autor"}, {"last_name":"Novy","first_name":"Autor"}],"genres":[{"id":43}],"language":{"id":1},"series":{"title":"Nejaka"},"series_index":"1"}'

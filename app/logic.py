@@ -415,6 +415,13 @@ def merge_authors(author, other):
             
     db.session.delete(other)
     db.session.commit()
+    
+def merge_series(series, other):
+    model.Ebook.query.filter(model.Ebook.series_id==other.id).update({model.Ebook.series_id: series.id}, 
+                                                               synchronize_session=False)
+    #db.session.flush()
+    db.session.delete(other)
+    db.session.commit()
                  
             
 def calc_avg_ebook_rating(ebook_id):
