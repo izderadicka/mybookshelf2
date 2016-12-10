@@ -193,5 +193,5 @@ class BookshelfItemSchema(ModelSchema):
         
     @classmethod
     def create_list_serializer(cls):
-        return cls(many=True, only=('id', 'version_id', 'note', 'ebook', 'series'))
+        return cls(many=True, only=('id', 'version_id', 'note', 'order', 'ebook', 'series'))
         
