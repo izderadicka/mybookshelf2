@@ -433,3 +433,12 @@ input.form-control.sm {
 .rating-count-ebook-detail {
   font-size: 150%;
 }
+
+.search-clear-btn i {
+  font-size: 130% !important;
+}
+
+.search-clear-btn:focus {
+  z-index: 9999 !important;
+}
+

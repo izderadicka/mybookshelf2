@@ -1,7 +1,7 @@
 import os.path
 import re
 import asyncio
-from asexor.task import BaseTask, TaskError
+from asexor.task import BaseSimpleTask, TaskError
 import settings
 from settings import UPLOAD_DIR, IMAGE_MAGIC, THUMBNAIL_SIZE, OOFFICE, CONVERSION_FORMATS, CONVERTABLE_TYPES,\
     BOOKS_CONVERTED_DIR, BOOKS_BASE_DIR, CALIBRE_META_TOOL, CALIBRE_CONVERT_TOOL, COVER_SIZE
@@ -98,7 +98,7 @@ async def resize_cover(cover_in, base_dir):
         logger.warn('Cannot get cover image')
     return cover
     
-class MetadataTask(BaseTask):
+class MetadataTask(BaseSimpleTask):
     NAME = 'metadata'
     COMMAND = CALIBRE_META_TOOL
     MAX_TIME = 60
@@ -214,7 +214,7 @@ class MetadataTask(BaseTask):
 
         return upload_id
 
-class CoverTask(BaseTask):
+class CoverTask(BaseSimpleTask):
     NAME='cover'
     MAX_TIME=10
     
@@ -240,7 +240,7 @@ class CoverTask(BaseTask):
         await loop.run_in_executor(None, shutil.rmtree, os.path.dirname(data))
         return self.ebook_id
     
-class ConvertTask(BaseTask):
+class ConvertTask(BaseSimpleTask):
     NAME = 'convert'
     COMMAND = CALIBRE_CONVERT_TOOL
     MAX_TIME = 300
