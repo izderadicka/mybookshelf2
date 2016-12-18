@@ -163,6 +163,12 @@ def download_converted(conversion):
 
     return response
 
+def download_converted_batch(batch):
+    fname = os.path.join(current_app.config['BOOKS_CONVERTED_DIR'], batch.zip_location)
+    down_name = batch.name + '.zip'
+    return stream_response(fname, mimetype='application/zip', 
+                           headers={'Content-Disposition': 'attachment; filename="%s"' % down_name})
+
 
 def check_file(mime_type, size, hash, extension=None):
     if size > current_app.config['MAX_CONTENT_LENGTH']:
@@ -366,6 +372,18 @@ def delete_conversion(conversion):
     except IOError:
         logger.warn('Conversion file %s cannot be deleted', conversion.location)
     db.session.delete(conversion)
+    
+def delete_conversion_batch(batch):
+    for conv in model.Conversion.query.filter(model.Conversion.batch == batch):
+        delete_conversion(conv)
+        
+    if batch.zip_location:
+        try:
+          os.remove(os.path.join(current_app.config['BOOKS_CONVERTED_DIR'], batch.zip_location))
+        except IOError:
+            logger.warn('Conversion batch file %s cannot be deleted', batch.zip_location)  
+            
+    db.session.delete(batch)
     
 
 def update_cover(upload, ebook, config=None):

@@ -3,19 +3,23 @@ import {ApiClient} from 'lib/api-client';
 import {rewriteURLParam} from 'lib/utils';
 import {Access} from 'lib/access';
 import {Router} from 'aurelia-router';
+import {Configure} from 'lib/config/index'
+import {WSClient} from 'lib/ws-client';
 
 const logger = LogManager.getLogger('author');
 
-@inject(ApiClient, Access, Router)
+@inject(ApiClient, Access, Router, WSClient, Configure)
 export class Author {
   _loader;
   @bindable filter;
   author;
 
-  constructor(client, access, router) {
+  constructor(client, access, router, wsClient, config) {
     this.client=client;
     this.access = access;
     this.router = router;
+    this.wsClient = wsClient;
+    this.conversionFormats = config.get('conversionFormats').map(fmt => {  return {value:fmt, text:fmt}});
   }
 
   activate(params, route)  {
@@ -69,6 +73,19 @@ export class Author {
 
   get isEditable() {
     return  this.access.hasRole('superuser');
+  }
+
+  get convertMany() {
+    return fmt => {
+      this.wsClient.convertMany('author', this.author, fmt)
+      .then(taskId => {
+        logger.debug('Conversion started as task id#' + taskId);
+      })
+      .catch(err => {
+        logger.error(`Conversion failed with ${err}`);
+      })
+
+    }
   }
 
 }

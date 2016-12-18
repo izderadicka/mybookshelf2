@@ -21,6 +21,22 @@ export const ROUTES =
     auth: true
   },
   {
+   route: 'upload',
+   name: 'upload',
+   moduleId: 'pages/upload',
+   title: 'Upload',
+   nav: 3,
+   auth: true
+  },
+  {
+    route: 'conversions',
+    name: 'conversions',
+    moduleId: 'pages/conversions',
+    title: 'Conversions',
+    nav: 4,
+    auth: true
+  },
+  {
     route: 'shelf/:id',
     name: 'shelf',
     moduleId: 'pages/shelf',
@@ -97,14 +113,6 @@ export const ROUTES =
     name: 'series-merge',
     moduleId: 'pages/series-merge',
     title: 'Merge Series',
-    auth: true
-  },
-   {
-    route: 'upload',
-    name: 'upload',
-    moduleId: 'pages/upload',
-    title: 'Upload',
-    nav: 3,
     auth: true
   },
   {

@@ -1,6 +1,6 @@
 import {inject, LogManager, computedFrom} from 'aurelia-framework';
 import {ApiClient} from 'lib/api-client';
-import {Access} from 'lib/access'
+import {Access} from 'lib/access';
 import {Router} from 'aurelia-router';
 import {DialogService} from 'aurelia-dialog';
 import {ShelfItemEditDialog} from './shelf-item-edit-dialog';

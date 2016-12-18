@@ -204,10 +204,11 @@ class ConversionBatch(Base, Auditable):
 
     name = Column(String(100), nullable=False)
     for_entity = Column(
-        Enum('SERIES', 'AUTHOR', 'EBOOK', 'SOURCE', name='CONVERSION_BATCH_ENTITY'))
+        Enum('SERIES', 'AUTHOR', 'EBOOK', 'SOURCE', 'BOOKSHELF', name='CONVERSION_BATCH_ENTITY'))
     entity_id = Column(BigInteger)
     format_id = Column(BigInteger, ForeignKey('format.id'), nullable=False)
-    items = relationship('Conversion', back_populates='batch')
+    format = relationship('Format', lazy='joined', innerjoin=True)
+    items = relationship('Conversion', back_populates='batch', lazy="dynamic")
     zip_location = Column(String(512))
    
 
@@ -414,4 +415,12 @@ sortings = {'ebook': {'title': [Ebook.title, Ebook.id],
                        'created': [Series.created, Series.id],
                        '-created': [desc(Series.created), desc(Series.id)],
                        },
+            'conversion': {
+                        'created': [Conversion.created, Conversion.id],
+                        '-created': [desc(Conversion.created), desc(Conversion.id)],
+                },
+            'conversion-batch': {
+                        'created': [ConversionBatch.created, ConversionBatch.id],
+                        '-created': [desc(ConversionBatch.created), desc(ConversionBatch.id)],
+                }
             }

@@ -377,8 +377,7 @@ nav .nav > li > a {
 @media (min-width: 768px) {
 
   nav search form {
-    width:33% !important;
-
+    width: 32% !important;
   }
 
   nav search .input-group {
@@ -442,3 +441,15 @@ input.form-control.sm {
   z-index: 9999 !important;
 }
 
+.short-logo {
+  display:none;
+}
+
+@media (min-width:768px) and (max-width:800px) {
+  .short-logo {
+    display:inline;
+  }
+  .long-logo {
+    display: none;
+  }
+}

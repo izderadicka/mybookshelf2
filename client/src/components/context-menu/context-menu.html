@@ -3,7 +3,7 @@
   <div class="context-menu" css="display:none;width:${width}px">
     <div class="list-group">
       <div class="list-group-item header">${header}</div>
-      <a class="list-group-item item ${isEnabled(item)?'':'disabled'}" repeat.for="item of items" click.delegate="select(item)"
+      <a class="list-group-item item ${item.disabled?'disabled':''}" repeat.for="item of items" click.delegate="select(item)"
        if.bind="filter(item)"><span if.bind="item.icon"><i class="fa fa-${item.icon}" aria-hidden="true"></i> </span>${item.text}</a>
 
     </div>

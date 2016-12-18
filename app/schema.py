@@ -91,6 +91,17 @@ class ConversionSchema(ModelSchema):
     class Meta:
         model = model.Conversion
         exclude = ('version_id',)
+        
+class ConversionBatchSchema(ModelSchema):
+    format = fields.Function(serialize=lambda o: o.format.extension)
+    has_file = fields.Function(serialize = lambda o: bool(o.zip_location))
+    class Meta:
+        model = model.ConversionBatch
+        exclude = ('version_id', 'zip_location')
+        
+    @classmethod
+    def create_list_serializer(cls):
+        return cls(many=True, only=('id', 'name', 'created', 'format', 'has_file'))
 
 
 class FormatSchema(ModelSchema):

@@ -136,6 +136,23 @@ export class WSClient {
   }
 
   @connected
+  convertMany(entityName, entity, format) {
+    return this.session.call('eu.zderadicka.asexor.run_task', ['convert-many', entityName, entity.id, format])
+      .then(taskId => {
+        this.notif.start(taskId,
+          {
+          text:`Convert all ebooks for ${entityName} ${entity.last_name || entity.title || entity.name} to ${format}`,
+          status:"submitted",
+          task:"convert-many",
+          taskId,
+          entityId: entity.id,
+          entityName: entityName
+        });
+        return taskId;
+      })
+  }
+
+  @connected
   changeCover(uploadedCover, ebook) {
     return this.session.call('eu.zderadicka.asexor.run_task', ['cover', uploadedCover, ebook.id])
     .then(taskId => {

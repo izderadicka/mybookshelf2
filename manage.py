@@ -210,12 +210,13 @@ def cleanup(uploads_older_then=24, conversions_older_then=24 * 7):
     db.session.commit()
     purge_empty_dirs(settings.UPLOAD_DIR, delete_root=False)
     since = datetime.now() - timedelta(hours=float(conversions_older_then))
+    for batch in model.ConversionBatch.query.filter(model.ConversionBatch.created < since):
+        logic.delete_conversion_batch(batch);
     for conversion in model.Conversion.query.filter(model.Conversion.created < since):
         logic.delete_conversion(conversion)
 
     db.session.commit()
     purge_empty_dirs(settings.BOOKS_CONVERTED_DIR, delete_root=False)
-
     purge_empty_dirs(settings.BOOKS_BASE_DIR, delete_root=False)
 
 

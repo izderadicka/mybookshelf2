@@ -26,6 +26,7 @@ export class ContextMenu {
 
   show(evt, context) {
     this.context = context;
+    for (let item of this.items) item.disabled = ! this.isEnabled(item);
     evt.stopPropagation();
     this.root.show();
     let {pageX,pageY} = evt;

@@ -15,7 +15,8 @@ var config = {
   },
   "maxUploadSize": 104857600,
   "notificationAttentionTimeout": 20,
-  "locale": undefined
+  "locale": undefined,
+  "conversionFormats": ['epub', 'mobi']
 }
 
 var authConfig = {

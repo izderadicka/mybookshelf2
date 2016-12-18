@@ -8,13 +8,14 @@ import {WSClient} from 'lib/ws-client';
 import {EventAggregator} from 'aurelia-event-aggregator';
 import {Router} from 'aurelia-router';
 import {SourceMove} from './source-move';
+import {Configure} from 'lib/config/index';
 
 let logger = LogManager.getLogger('ebooks');
 
-@inject(ApiClient, WSClient, Access, DialogService, EventAggregator, Router)
+@inject(ApiClient, WSClient, Access, DialogService, EventAggregator, Router, Configure)
 export class Ebook {
   ebook
-  constructor(client, ws, access, dialog, event, router ) {
+  constructor(client, ws, access, dialog, event, router, config) {
     this.client=client;
     this.ws = ws;
     this.access=access;
@@ -24,6 +25,7 @@ export class Ebook {
     this.token = access.token;
     this.canDownload=access.hasRole('user');
     this.canConvert=access.hasRole('user');
+    this.conversionFormats = config.get('conversionFormats').map(fmt => {  return {value:fmt, text:fmt}});
     this.subscribeConvertEvents();
   }
 
@@ -176,10 +178,6 @@ export class Ebook {
           });
         };
       }
-  }
-
-  get conversionFormats() {
-    return [{text:'epub', value:'epub'}, {text:'mobi', value:'mobi'}];
   }
 
   get enableFormats() {

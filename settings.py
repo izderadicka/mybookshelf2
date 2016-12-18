@@ -64,6 +64,8 @@ CONVERSION_FORMATS = ['epub', 'mobi', 'fb2']
 CONVERTABLE_TYPES = ['doc', 'docx', 'odt', 'rtf', 'epub', 'mobi', 'fb2', 'htm', 'html', 'azw3', 'lit',
                      'pdb', 'chm', 'prc', 'txt', 'pdf', ]  # 'djvu' ,
 
+CONVERTED_BATCH_PREFIX = '__batch__'
+
 # these programs are used by engine backend
 IMAGE_MAGIC = '/usr/bin/convert'  # IMAGEMAGIC BINARY
 OOFFICE = '/usr/bin/soffice'  # OPEN OFFICE BINARY

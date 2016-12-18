@@ -344,7 +344,7 @@ class Source(Resource):
     
     def delete(self,id):
         source= model.Source.query.get_or_404(id)
-        can_change_object(source)
+        can_delete_object(source)
         logic.delete_source(source)
         return jsonify(id=id, success=True)
     
@@ -352,6 +352,35 @@ class UploadMeta(Resource, UpdateGetDeleteMixin):
     methods = ['GET']
     SCHEMA = schema.UploadSchema
     user_can_change = True
+    
+class Conversions(Resource, InsertListMixin):
+    methods = ['GET']
+    SCHEMA = schema.ConversionSchema
+    paginated = {'sortings': model.sortings['conversion']}
+    
+    def filter_list(self, q):
+        return q.filter(model.Auditable.created_by == current_user)
+    
+class Conversion(Resource):
+    def delete(self, id):
+        conv= model.Conversion.query.get_or_404(id)
+        can_delete_object(conv)
+        logic.delete_conversion(conv)
+        return jsonify(id=id, success=True)
+    
+    
+class ConversionBatches(Resource, InsertListMixin):
+    methods = ['GET']
+    SCHEMA = schema.ConversionBatchSchema
+    paginated = {'sortings': model.sortings['conversion-batch']}
+    
+class ConversionBatch(Resource):
+    def delete(self, id):
+        conv= model.ConversionBatch.query.get_or_404(id)
+        can_delete_object(conv)
+        logic.delete_conversion_batch(conv)
+        return jsonify(id=id, success=True)
+    
 
     
 ###################################################################################################
@@ -445,6 +474,12 @@ def download_converted(id):
     if conversion.created_by != current_user:
         abort(403, 'No Access')
     return logic.download_converted(conversion)
+
+def download_converted_batch(id):
+    batch = model.ConversionBatch.query.get_or_404(id)
+    if batch.created_by != current_user:
+        abort(403, 'No Access')
+    return logic.download_converted_batch(batch)
 
 
 
@@ -716,4 +751,11 @@ add_url(check_upload, '/upload/check', methods=['POST'])
 
 add_url(download,'/download/<int:id>')
 add_url(download_converted, '/download-converted/<int:id>')
+add_url(download_converted_batch, '/download-converted-batch/<int:id>')
+
+api.add_resource(Conversions, '/conversions/mime')
+api.add_resource(Conversion, '/conversions/<int:id>')
+api.add_resource(ConversionBatches, '/conversion-batches/mine')
+api.add_resource(ConversionBatch, '/conversion-batches/<int:id>')
+
 

@@ -1,7 +1,7 @@
 import os.path
 import re
 import asyncio
-from asexor.task import BaseSimpleTask, TaskError
+from asexor.task import BaseSimpleTask, TaskError, BaseMultiTask
 import settings
 from settings import UPLOAD_DIR, IMAGE_MAGIC, THUMBNAIL_SIZE, OOFFICE, CONVERSION_FORMATS, CONVERTABLE_TYPES,\
     BOOKS_CONVERTED_DIR, BOOKS_BASE_DIR, CALIBRE_META_TOOL, CALIBRE_CONVERT_TOOL, COVER_SIZE
@@ -10,6 +10,8 @@ import logging
 import engine.dal as dal
 from .utils import AsyncProxy
 import shutil
+import zipfile
+import time
 
 aos = AsyncProxy(os)
 
@@ -258,11 +260,11 @@ class ConvertTask(BaseSimpleTask):
     async def validate_args(self, *args, **kwargs):
         source_id= args[0]
         to_format = args[1]
+        self.batch_id = kwargs.get('batch_id')
         self.to_format=to_format
         self.source_id=source_id
         
         source_file, format = await dal.get_source_file(source_id)
-        
         self.user_id = await dal.get_user_id(self.user)
         
         if not self.user_id:
@@ -276,9 +278,12 @@ class ConvertTask(BaseSimpleTask):
         if to_format not in CONVERSION_FORMATS:
             raise TaskError('Not supported target format %s', to_format)
         
+        self.existing_conversion = None
         conv_id = await dal.get_conversion_id(source_id, self.user_id, to_format)
         if conv_id:
-            raise TaskError('This conversion already exists under id %d'%conv_id)
+            self.existing_conversion = conv_id
+            return ()
+            #raise TaskError('This conversion already exists under id %d'%conv_id)
         
         self.out_file =  os.path.splitext(source_file)[0]+'.'+to_format
         self.out_file_full = os.path.join(BOOKS_CONVERTED_DIR, str(self.user_id), self.out_file)
@@ -313,9 +318,15 @@ class ConvertTask(BaseSimpleTask):
         meta = await dal.get_meta(source_id)
         if meta:
             for key in meta:
-                params.extend(['--'+key, str(meta[key]) ])    
+                params.extend(['--'+key, str(meta[key]) ]) 
+                
+    async def execute(self, *args):
+        if not self.existing_conversion:
+            return await BaseSimpleTask.execute(self, *args)   
     
     async def parse_result(self, data): 
+        if self.existing_conversion:
+            return self.existing_conversion
         if not (await aos.path.exists(self.out_file_full)):
             raise TaskError('Converted file does not exists')
         if self.tmp_file:
@@ -327,7 +338,113 @@ class ConvertTask(BaseSimpleTask):
         conversion_id = await dal.add_conversion(os.path.join(str(self.user_id),self.out_file), 
                                                  self.to_format, 
                                                  self.source_id, 
-                                                 self.user)
+                                                 self.user,
+                                                 self.batch_id)
         return conversion_id
+        
+    
+class ConvertManyTask(BaseMultiTask):
+    NAME="convert-many"
+    
+    async def start(self, *args, **kwargs):
+        self._start_time = time.time()
+        if len(args) <3:
+            raise TaskError('3 params are required, object type, id and format')
+        what = args[0]
+        id = args[1]
+        to_format = args[2]
+        if to_format not in CONVERSION_FORMATS:
+            raise TaskError('Not supported target format %s', to_format)
+        
+        self.user_id = await dal.get_user_id(self.user)
+        if not self.user_id:
+            raise TaskError('Uknown user')
+        
+        bid = await dal.get_conversion_batch(what, id, to_format, self.user_id)
+        if bid:
+            raise TaskError('This conversion batch already exists as ID# %d'% bid)
+        
+        if what == 'bookshelf':
+            can_access = await dal.can_access_bookshelf(id, self.user_id)
+            if not can_access:
+                raise TaskError('Task not allowed')
+        ebooks = await dal.get_ebooks_ids_for_object(what, id)
+        
+        if not ebooks:
+            raise TaskError('No ebooks to convert')
+        
+        self.batch_id = await dal.create_conversion_batch(what, id, to_format, self.user_id)
+        
+        self.ready_sources = []
+        self.ready_conversions = []
+        
+        tasks_args=[]
+        
+        for ebook_id in ebooks:
+            conversion_id = await dal.get_existing_conversion(ebook_id, self.user_id, to_format)
+            if conversion_id:
+                self.ready_conversions.append(conversion_id)
+                continue
+            
+            source_id, format = await dal.get_conversion_candidate(ebook_id, to_format)
+            
+            if not source_id:
+                continue
+            
+            if format == to_format:
+                self.ready_sources.append(source_id)
+                
+            else:
+                tasks_args.append([(source_id, to_format), {'batch_id':self.batch_id}])
+                
+            
+        self.register_tasks(['convert']* len(tasks_args), tasks_args)
+                
+            
+    async def update_task_result(self, task_no, result=None, error=None, on_all_finished=None, 
+                                 on_progress = None):
+        if task_no is not None:
+            self.tasks_results[task_no] = result
+            self.done += 1
+            if on_progress:
+                on_progress(self.done / self.total_tasks)
+        if self.done == len(self.tasks) and on_all_finished:
+            files=[]
+            for source_id in self.ready_sources:
+                file, _ext = await dal.get_source_file(source_id)
+                files.append(os.path.join(settings.BOOKS_BASE_DIR, file))
+            for conversation_id in self.ready_conversions + self.tasks_results:
+                if conversation_id:
+                    file = await dal.get_conversion_file(conversation_id)
+                    files.append(os.path.join(settings.BOOKS_CONVERTED_DIR, file))
+                
+            loop = asyncio.get_event_loop()
+            zip_file = await loop.run_in_executor(None, self.zip_files, self.batch_id, self.user_id, files)
+            await dal.add_zip_to_batch(self.batch_id, zip_file)
+            
+            self.duration =  time.time() - self._start_time
+            on_all_finished({'results':self.batch_id, 'duration': self.duration})
+    
+    # must be called in executor        
+    def zip_files(self, batch_id, user_id, files ):
+        zip_file_relative = os.path.join(str(user_id), '%s%d.zip' %\
+                                      (settings.CONVERTED_BATCH_PREFIX, batch_id))
+        zip_file_name = os.path.join(settings.BOOKS_CONVERTED_DIR, zip_file_relative)
+        zip_file_dir = os.path.dirname(zip_file_name)
+        if not os.path.exists(zip_file_dir):
+            os.makedirs(zip_file_dir, exist_ok = True)
+            
+        zip_file=zipfile.ZipFile(zip_file_name, 'w', zipfile.ZIP_DEFLATED)  
+        for fname in files:
+            short_name=os.path.split(fname)[1]  or os.path.split(fname)[0]    
+            try:
+                zip_file.write(fname, short_name.strip())
+            except Exception:
+                logger.exception('Failed to add file %s to zip', fname)
+        
+        zip_file.close()
+        return zip_file_relative
+        
+        
         
     

@@ -6,6 +6,7 @@
       <span>${author.first_name} ${author.last_name}</span>
       <span class="actions">
       <a click.delegate="menuEdit.show($event)" if.bind="isEditable"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
+      <a click.delegate="menuConvert.show($event)" if.bind="isEditable"><i class="fa fa-cog" aria-hidden="true"></i></a>
     </span>
     </h2>
     <div class="row">
@@ -21,5 +22,6 @@
     </div>
     <ebook-panel loader.bind="loader"></ebook-panel>
     <context-menu items.bind="editActions" header="Edit" view-model.ref="menuEdit" action.bind="editAction"></context-menu>
+    <context-menu items.bind="conversionFormats" header="Convert All Author Ebooks to" view-model.ref="menuConvert" action.bind="convertMany"></context-menu>
   </section>
 </template>

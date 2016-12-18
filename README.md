@@ -47,3 +47,6 @@ yet to be done.
 
 Documentation - unfortunatelly it usually my weak part.
 
+Internationalization, Localization, Translation - I really do not like this type of work.  
+App is not ready, I guess it would not be too dificult to make it I18N, but it's not priority.
+
