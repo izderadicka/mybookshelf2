@@ -4,13 +4,15 @@
   <require from="components/series-card"></require>
   <section>
     <h2 class="page-title">
-      <span class="title"><span class="semi-icon shelf-image"></span> ${shelf.name}</span>
+      <span class="title"><span class="semi-icon shelf-image"></span> ${bookshelf.name}</span>
       <span class="actions">
       <a click.delegate="menuEdit.show($event)" if.bind="isEditable"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
+      <a click.delegate="menuConvert.show($event)" if.bind="canConvertMany"><i class="fa fa-cog" aria-hidden="true"></i></a>
     </span>
     </h2>
     <context-menu items.bind="editActions" header="Edit" view-model.ref="menuEdit" action.bind="editAction"></context-menu>
-    <p>${shelf.description}</p>
+    <context-menu items.bind="conversionFormats" header="Convert All Ebooks in This Bookshelf to" view-model.ref="menuConvert" action.bind="convertMany"></context-menu>
+    <p>${bookshelf.description}</p>
 
     <div class="container-fluid items-header vertically-spaced" css="display: ${paginator.lastPage===0?'none':'block'}">
         <h3 class="page-title"><i class="fa fa-file-text-o" aria-hidden="true"></i>

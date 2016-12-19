@@ -7,9 +7,12 @@
       <span>${series.title}</span>
       <span class="actions">
       <a click.delegate="menuEdit.show($event)" if.bind="isEditable"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
+      <a click.delegate="menuConvert.show($event)" if.bind="canConvertMany"><i class="fa fa-cog" aria-hidden="true"></i></a>
+
     </span>
     </h2>
     <context-menu items.bind="editActions" header="Edit" view-model.ref="menuEdit" action.bind="editAction"></context-menu>
+    <context-menu items.bind="conversionFormats" header="Convert All Ebooks in Series to" view-model.ref="menuConvert" action.bind="convertMany"></context-menu>
     <ebook-panel loader.bind="loader" sortings.one-time="sortings"></ebook-panel>
     <add-to-shelf-button what="series" item.bind="series"></add-to-shelf-button>
   </section>

@@ -2,21 +2,26 @@ import {inject, LogManager, bindable, computedFrom} from 'aurelia-framework';
 import {ApiClient} from 'lib/api-client';
 import {Access} from 'lib/access';
 import {Router} from 'aurelia-router';
+import {Configure} from 'lib/config/index';
+import {ConvertMany} from './abstract/convert-many';
+import {WSClient} from 'lib/ws-client';
 
 const logger = LogManager.getLogger('series');
 
-@inject(ApiClient, Access, Router)
-export class Series {
+@inject(ApiClient, Access, Router, Configure, WSClient)
+export class Series extends ConvertMany{
   sortings=[{name:'Series Index Asc.', key:'series_index'},
             {name:'Series Index Desc.', key:'-series_index'},
             {name:'Title A-Z', key:'title'},
             {name:'Title Z-A',key:'-title'},
             {name:'Recent First', key:'-created'},
             {name:'Oldest First', key: 'created'}];
-  constructor(client, access, router) {
+  constructor(client, access, router, config, wsClient) {
+    super(access, config, wsClient);
     this.client=client;
     this.access=access;
     this.router=router;
+    this.entity='series';
   }
 
   canActivate(params) {

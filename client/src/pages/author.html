@@ -6,7 +6,7 @@
       <span>${author.first_name} ${author.last_name}</span>
       <span class="actions">
       <a click.delegate="menuEdit.show($event)" if.bind="isEditable"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
-      <a click.delegate="menuConvert.show($event)" if.bind="isEditable"><i class="fa fa-cog" aria-hidden="true"></i></a>
+      <a click.delegate="menuConvert.show($event)" if.bind="canConvertMany"><i class="fa fa-cog" aria-hidden="true"></i></a>
     </span>
     </h2>
     <div class="row">

@@ -5,19 +5,25 @@ import {Router} from 'aurelia-router';
 import {DialogService} from 'aurelia-dialog';
 import {ShelfItemEditDialog} from './shelf-item-edit-dialog';
 import {ConfirmDialog} from 'components/confirm-dialog';
+import {ConvertMany} from './abstract/convert-many';
+import {WSClient} from 'lib/ws-client';
+import {Configure} from 'lib/config/index';
+
 
 const logger = LogManager.getLogger('shelf');
 
-@inject(ApiClient, Access, Router, DialogService)
-export class Shelf {
+@inject(ApiClient, Access, Router, DialogService, Configure, WSClient)
+export class Shelf extends ConvertMany{
   sortings = [{name:'Order A-Z', key:'order'}, {name:'Order Z-A', key:'-order'},
               {name:'Recent First', key:'-created'}, {name:'Oldest First', key:'created'} ]
-  constructor(client, access, router, dialog) {
+  constructor(client, access, router, dialog, config, wsClient) {
+    super(access, config, wsClient);
     this.client = client;
     this.access = access;
     this.router = router;
     this._loader = null;
     this.dialog = dialog;
+    this.entity = 'bookshelf';
 
   }
 
@@ -29,7 +35,7 @@ export class Shelf {
   canActivate(params) {
     return this.client.getOne('bookshelves', params.id)
     .then(data => {
-      this.shelf = data;
+      this.bookshelf = data;
       return true;
       })
     .catch(error => {
@@ -44,7 +50,7 @@ export class Shelf {
 
   updateLoader() {
     this._loader = (page, pageSize, sort) =>
-      this.client.getMany(`bookshelves/${this.shelf.id}/items`, page, pageSize, sort);
+      this.client.getMany(`bookshelves/${this.bookshelf.id}/items`, page, pageSize, sort);
   }
 
   @computedFrom('_loader')
@@ -53,7 +59,7 @@ export class Shelf {
   }
 
   get isEditable() {
-    return this.shelf && this.access.canEdit(this.shelf.created_by);
+    return this.bookshelf && this.access.canEdit(this.bookshelf.created_by);
   }
 
   get editActions() {
@@ -65,10 +71,10 @@ export class Shelf {
     return action => {
     switch (action) {
       case 'edit':
-        this.router.navigateToRoute('shelf-edit', {id:this.shelf.id})
+        this.router.navigateToRoute('shelf-edit', {id:this.bookshelf.id})
       break;
       case 'merge':
-      this.router.navigateToRoute('shelf-merge', {id: this.shelf.id});
+      this.router.navigateToRoute('shelf-merge', {id: this.bookshelf.id});
       break;
     }
   }

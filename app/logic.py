@@ -165,7 +165,7 @@ def download_converted(conversion):
 
 def download_converted_batch(batch):
     fname = os.path.join(current_app.config['BOOKS_CONVERTED_DIR'], batch.zip_location)
-    down_name = batch.name + '.zip'
+    down_name = remove_diacritics(batch.name) + '.zip'
     return stream_response(fname, mimetype='application/zip', 
                            headers={'Content-Disposition': 'attachment; filename="%s"' % down_name})
 

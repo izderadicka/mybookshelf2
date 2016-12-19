@@ -25,7 +25,7 @@
           </li>
           <li>
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"i
-             if.bind="router.navigation.length>3">
+             if.bind="router.navigation.length>3 && isAuthenticated">
             More <span class="caret"></span></a>
             <ul class="dropdown-menu">
               <li repeat.for="row of router.navigation | slice: 3 |authFilter: isAuthenticated" class="${row.isActive ? 'active' : ''}">

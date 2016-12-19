@@ -149,17 +149,16 @@ def create_tables(add_data=False, create_directories=False):
 
 @manager.command
 def migrate_tables():
+    import psycopg2
     print('This will migrate database to latest schema, you are advised to backup database before running this command')
     if prompt_bool('Do you want to continue?'):
         mdir = os.path.join(SQL_DIR, 'migration')
-        try:
-            versions=model.Version.query.all()
-        except ProgrammingError:
-            old_version = 0
-        else:
-            if len(versions)>1 or len(versions)<1:
-                raise Exception('Invalid version information in DB')
-            old_version = versions[0].version
+        version_obj=model.Version.query.one_or_none()
+           
+        if not version_obj:
+                version_obj=model.Version(version=0, version_id=1)
+                db.session.add(version_obj)
+        old_version = version_obj.version
         if old_version == db_version:
             print('DB is at correct version %d'% old_version)
         scripts = []
@@ -171,14 +170,22 @@ def migrate_tables():
                     scripts.append((version, os.path.join(mdir,script)))
                     
         scripts.sort()
-        connection = db.engine.raw_connection()  # @UndefinedVariable
+        connection = psycopg2.connect(database=settings.DB_NAME,
+                                      user = settings.DB_USER,
+                                      password = settings.DB_PASSWORD,
+                                      host = settings.DB_HOST,
+                                      port = settings.DB_PORT)
+        connection.autocommit = True
+        #connection = db.engine.raw_connection()  # @UndefinedVariable
         try:
             c = connection.cursor()
             for v,fname in scripts:
                 script = open(fname, 'rt', encoding='utf-8-sig').read()
                 print('Upgrading database to version %d'% v)
                 res = c.execute(script)
-                connection.commit()
+                version_obj.version = v
+                db.session.commit()
+                #connection.commit()
         finally:
             connection.close()
                 
