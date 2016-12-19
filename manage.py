@@ -203,7 +203,7 @@ def drop_tables():
 
 
 @manager.command
-def cleanup(uploads_older_then=24, conversions_older_then=24 * 7):
+def cleanup(uploads_older_then=24, conversions_older_then=24 * 7, purge_empty_ebooks_dirs=False):
     since = datetime.now() - timedelta(hours=float(uploads_older_then))
     for upload in model.Upload.query.filter(model.Upload.created < since):
         logic.delete_upload(upload)
@@ -217,7 +217,9 @@ def cleanup(uploads_older_then=24, conversions_older_then=24 * 7):
 
     db.session.commit()
     purge_empty_dirs(settings.BOOKS_CONVERTED_DIR, delete_root=False)
-    purge_empty_dirs(settings.BOOKS_BASE_DIR, delete_root=False)
+    
+    if purge_empty_ebooks_dirs:
+        purge_empty_dirs(settings.BOOKS_BASE_DIR, delete_root=False)
 
 
 if __name__ == "__main__":

@@ -292,7 +292,7 @@ async def get_conversion_candidate(ebook_id, to_format):
                                  .order_by(nullslast(desc(source.c.quality))))
         res = await res.first()  
         if res:
-            return res
+            return res.as_tuple()
         
         #TODO: Consider optimal selection of the source 
         # in previous version we first selected format (from available convertable in ebook)
