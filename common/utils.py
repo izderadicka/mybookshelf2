@@ -67,24 +67,30 @@ def check_pwd(p, hash):
     return hash == bcrypt.hashpw(p, hash)
 
 
-def create_token(user, secret, valid_minutes=24 * 60):
+def create_token(user, secret, valid_hours=24):
     token = jwt.encode({'id': user.id,
                            'user_name': user.user_name,
                            'email': user.email,
                            'roles':  list(user.all_roles),
-                           'exp': datetime.utcnow() + timedelta(hours=valid_minutes)}, secret, algorithm='HS256')
+                           'exp': datetime.utcnow() + timedelta(hours=valid_hours)}, secret, algorithm='HS256')
     
     return token.decode('ascii')
 
+def create_refresh_token(user, secret, valid_hours=24):
+    token = jwt.encode({'id': user.id,
+                        'exp': datetime.utcnow() + timedelta(hours=valid_hours)}, secret, algorithm='HS256')
+    
+    return token.decode('ascii') 
 
-def verify_token(token, secret):
+
+def verify_token(token, secret, validate_expiration=True):
     try:
         token = token.encode('ascii')
     except UnicodeEncodeError:
         logger.exception('Invalid token - char encoding')
         return
     try:
-        claim = jwt.decode(token, secret)
+        claim = jwt.decode(token, secret, options={'verify_exp': validate_expiration})
     except jwt.InvalidTokenError:
         logger.exception('Invalid token')
         return None

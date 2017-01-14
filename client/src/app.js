@@ -20,7 +20,7 @@ export class App {
         response: response => {
           if (response && response.status == 401) {
             logger.warn('Not authenticated!');
-            this.router.navigateToRoute('login');
+            this.access.redirectToLogin();
             throw new Error('Not autherticated!');
 
           } else if (response && response.status >= 300)

@@ -1,12 +1,14 @@
-from flask import request, redirect, flash, render_template, url_for, jsonify, Blueprint, abort
+from flask import request, redirect, flash, render_template, url_for, jsonify, Blueprint, abort,\
+    current_app
 from flask_login import LoginManager, login_user, logout_user, current_user, login_required
 from functools import wraps
-from common.utils import check_pwd, create_token, verify_token
+from common.utils import check_pwd, create_token, create_refresh_token, verify_token
 import app.model as model
 from sqlalchemy import or_
 from sqlalchemy.orm.exc import NoResultFound
 import logging
 from app.cors import cors_enabled
+import re
 
 logger = logging.getLogger('access')
 
@@ -113,9 +115,40 @@ def login():
                 if not check_pwd(credentials['password'], user.password):
                     return jsonify(error='Invalid Login')
                 resp = jsonify(
-                    access_token=create_token(user, SECRET_KEY, TOKEN_VALIDITY_HOURS or 4))
+                    access_token=create_token(user, SECRET_KEY, TOKEN_VALIDITY_HOURS or 4),
+                    refresh_token = create_refresh_token(user, 
+                                                         current_app.config['SECRET_KEY2'], 
+                                                         current_app.config['TOKEN_REFRESH_HOURS']))
                 # resp.headers.extend(cors_headers)
                 return resp
+            elif credentials and credentials.get('refresh_token'):
+                header = request.headers.get('Authorization')
+                if not header:
+                    abort(400, 'Need authorization header to refresh token')
+                m = re.match(r'Bearer\s+(.+)', header, re.IGNORECASE)
+                if not m:
+                    abort(400, 'Invalid authorization header')
+                token = m.group(1)
+                claim = verify_token(token,  SECRET_KEY, validate_expiration=False)
+                if not claim:
+                    abort(400, 'Invalid token')
+                    
+                user_id = claim['id']
+                refresh_claim = verify_token(credentials['refresh_token'], current_app.config['SECRET_KEY2'])
+                if not refresh_claim:
+                    abort(400, 'Invalid refresh token')
+                    
+                if not user_id == refresh_claim['id']:
+                    abort(400, 'Inconsistent tokens')
+                    
+                user = model.User.query.get(user_id)
+                if not user:
+                    return jsonify(error='Invalid Login')
+                
+                return jsonify(
+                    access_token=create_token(user, SECRET_KEY, TOKEN_VALIDITY_HOURS or 4))
+                
+                
             else:
                 logger.info('Failed JSON login with %s', credentials)
                 abort(400, 'Provide credentials')
@@ -125,8 +158,9 @@ def login():
                 request.form['username'], request.form['password'])
 
             if user:
-                logger.info('User logged in %s ', user.user_name)
-                login_user(user)
+                remember_me = request.form.get('rememberme')
+                logger.info('User logged in %s , remember me is %s', user.user_name, remember_me)
+                login_user(user, remember=remember_me)
                 # request.args.get("next")
                 return redirect('/')
             else:

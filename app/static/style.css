@@ -84,3 +84,8 @@ table.sources {
 .converted-ebooks {
     margin: 1em 0;
 }
+
+input[type="checkbox"] {
+    transform: scale(3);
+    margin: 20px;
+}

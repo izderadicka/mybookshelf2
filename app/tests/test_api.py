@@ -2,11 +2,13 @@ from .basecase import TestCase
 from urllib.parse import quote
 import flask
 from flask_login import current_user
+from common.utils import verify_token
 import app
 import settings
 import os.path
 import shutil
 import json
+import time
 
 test_file = os.path.join(os.path.dirname(__file__),
                          'data/Kissinger, Henry - Roky v Bilem dome.epub')
@@ -18,7 +20,7 @@ class TestApi(TestCase):
 
     def __init__(self, *args, **kwargs):
         super(TestApi, self).__init__(*args, **kwargs)
-        self.headers = None
+        self.headers = {}
         self.token = None
 
     def setUp(self):
@@ -36,6 +38,8 @@ class TestApi(TestCase):
                                content_type='application/json')
         token = res.json.get('access_token')
         self.assertTrue(token)
+        refresh = res.json.get('refresh_token')
+        self.assertTrue(refresh)
         self.headers = {'Authorization': 'Bearer %s' % token}
         self.token = token
 
@@ -58,7 +62,41 @@ class TestApi(TestCase):
                 return resp
             return req
         raise AttributeError('Attribute %s not found' % name)
-
+    
+    def test_login(self):
+        res = self.post('/login', data='{"username":"%s", "password":"%s"}' % ('admin', 'admin'),
+                               content_type='application/json')
+        token = res.get('access_token')
+        self.assertTrue(token)
+        refresh = res.get('refresh_token')
+        self.assertTrue(refresh)
+        cfg = flask.current_app.config
+        
+        l1 = verify_token(token, cfg['SECRET_KEY'])
+        self.assertEqual(l1['id'], 1)
+        
+        l2 = verify_token(refresh, cfg['SECRET_KEY2'])
+        self.assertEqual(l1['id'], l2['id'])
+        
+        # refresh token
+        time.sleep(1)
+        
+        res = self.post('/login', data = json.dumps({'refresh_token':refresh}),
+                               content_type='application/json', 
+                               headers={'Authorization': 'Bearer %s'%token})
+        self.assertTrue(res['access_token'])
+        
+        new_token = res['access_token']
+        l3=verify_token(new_token, cfg['SECRET_KEY'])
+        self.assertEqual(l3['user_name'], 'admin')
+        
+        old_exp = l1['exp']
+        new_exp = l3['exp']
+        
+        self.assertTrue(int(old_exp) < int(new_exp))
+        
+        
+        
     def test_api(self):
         res = self.get('/api/ebooks', failure=True)
         self.assert401(res)

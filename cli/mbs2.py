@@ -93,7 +93,8 @@ def main():
     token = resp.json().get('access_token')
     if token:
         http = MySession(prefix_url=opts.api_url)
-        http.mount('http', requests.adapters.HTTPAdapter(max_retries=Retry(total=5, status_forcelist=[500])))
+        http.adapters.clear()
+        http.mount('http', requests.adapters.HTTPAdapter(max_retries=Retry(total=5, status_forcelist=[500,502,503])))
         http.headers['Authorization'] = 'bearer '+token
         loop = asyncio.get_event_loop()
         run_loop_in_thread(loop)

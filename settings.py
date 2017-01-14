@@ -29,8 +29,17 @@ WAMP_URI = os.getenv('MBS2_WAMP_URI', '{scheme}://{host}:{port}/ws'.\
                      format(scheme= 'wss' if WAMP_SECURE else 'ws',host=WAMP_HOST, port=WAMP_PORT))
 
 SQLALCHEMY_TRACK_MODIFICATIONS = False
+
 SECRET_KEY = 'Pjk5EzGOcCOG5Rf1deqpZAvz17uUdZmWxJa3X/izSns'
+SESSION_PROTECTION = 'strong'
+REMEMBER_COOKIE_HTTPONLY = True
+# REMEMBER_COOKIE_DURATION = 365
+#this key is used for refresh token only 
+SECRET_KEY2 = 'b7ssYqnBFu3+11NGxPT+lHfAIiTgpMG9EhKC1MRR1VWCN75n1zMhWouem2lPa7VUi7+U7xJKhYvfXjKldo9e2g'
 TOKEN_VALIDITY_HOURS = 4
+TOKEN_REFRESH_HOURS = 365 * 24 # validity of refresh token
+
+
 MAX_CONTENT_LENGTH = 100 * 1024 * 1024
 
 CACHE_CONTROL = 'max-age=20'

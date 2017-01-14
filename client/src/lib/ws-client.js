@@ -42,6 +42,7 @@ export class WSClient {
     if (! this.access.authenticated) throw new Error('Not Authenticated');
     if (this.conn) {
       logger.warn('Connection already exists');
+      this.conn.close();
     }
     let connUrl = `${location.protocol ==='https:'?'wss:':'ws:'}//${this.config.get('wamp.host', location.hostname)}:${this.config.get('wamp.port')}${this.config.get('wamp.path')}`;
     this.conn = new autobahn.Connection({
