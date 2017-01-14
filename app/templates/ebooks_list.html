@@ -1,6 +1,7 @@
 {% import 'macros.html' as m %}
+{{m.render_page_info(ebooks)}}
 <div id="ebooks_list">
-{% for book in ebooks %}
+{% for book in ebooks.items %}
 <div class="row">
 <div class="c12">
 <div class="title"><a href="{{url_for('minimal.ebook_detail', id=book.id)}}">{{book.title}}</a></div>
@@ -12,3 +13,4 @@
 </div>
 {% endfor %}
 </div>
+{{m.render_pagination(ebooks, additional_query)}}

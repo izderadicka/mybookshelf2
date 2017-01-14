@@ -7,7 +7,9 @@ from common.utils import create_token
 from engine.client import WAMPClient
 import os.path
 import asyncio
+import functools
 from sqlalchemy import desc
+from urllib.parse import urlencode
 
 IN_UWSGI = False
 try:
@@ -20,12 +22,29 @@ except ImportError:
 bp = Blueprint('minimal', __name__)
 loop = asyncio.get_event_loop()
 
+def paginated(pg_size=24, max_pg_size=100):
+    def _inner(fn):
+        @functools.wraps(fn)
+        def _wrap(*args, **kwargs):
+            page_no = int(request.args.get('page') or 1)
+            page_size = int(request.args.get('page_size') or pg_size)
+            if page_size > max_pg_size:
+                page_size = max_pg_size
+                
+            kwargs['page'] = page_no
+            kwargs['page_size'] = page_size
+                
+            return fn(*args, **kwargs)
+        return _wrap
+    return _inner
+
 @bp.route('/')
 #@login_required
-def main():
+@paginated()
+def main(page=1, page_size=24):
     ebooks=None
     if not current_user.is_anonymous and current_user.has_role('user'):
-        ebooks=model.Ebook.query.order_by(desc(model.Ebook.created)).paginate(1,24).items
+        ebooks=model.Ebook.query.order_by(desc(model.Ebook.created)).paginate(page, page_size)
         
     return render_template('main.html', ebooks=ebooks)
 
@@ -44,18 +63,20 @@ def thumb(id):
 
 @bp.route('/search', methods=['GET'])
 @login_required
-def search():
+@paginated()
+def search(page=1, page_size=24):
     search = ''
     ebooks = None
     if request.args.get('search'):
         search = request.args['search'].strip()
 
         if search:
-            ebooks = logic.search_query(model.Ebook.query, search).limit(50).all()
-            if not ebooks:
+            ebooks = logic.search_query(model.Ebook.query, search).paginate(page, page_size)
+            if not ebooks.total:
                 flash('No ebooks found!')
 
-    return render_template('search.html', search=search, ebooks=ebooks)
+    return render_template('search.html', search=search, ebooks=ebooks,
+                           additional_query = '&'+urlencode({'search':search}) if search else '')
 
 
 @bp.route('/ebooks/<int:id>')
