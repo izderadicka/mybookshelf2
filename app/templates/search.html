@@ -11,7 +11,7 @@ class="smooth wide" value="{{search}}">
 {% for message in get_flashed_messages() %}
     <div class="msg warning">{{ message }}</div>
  {% endfor %}
-{% if ebooks %}
+{% if ebooks.total %}
 {%include "ebooks_list.html"%}
 {%endif%}
 {%endblock%}

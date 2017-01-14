@@ -12,6 +12,7 @@ from sqlalchemy_utils import TSVectorType, JSONType
 from sqlalchemy.dialects.postgresql import JSON, TSVECTOR
 from common.utils import initials
 import datetime
+from flask_sqlalchemy import BaseQuery
 
 model_base = app.db.Model or declarative_base()
 
@@ -121,7 +122,7 @@ class Author(Base, Auditable):
     last_name = Column(String(128), nullable=False)
     first_name = Column(String(128), nullable=True)
     description = Column(Text)
-    ebooks = relationship('Ebook', secondary=ebook_authors, lazy="dynamic")
+    ebooks = relationship('Ebook', secondary=ebook_authors, lazy="dynamic", query_class=BaseQuery)
 
     def __repr__(self):
         return super(Author, self).__repr__(['first_name', 'last_name'])

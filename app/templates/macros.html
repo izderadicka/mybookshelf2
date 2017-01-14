@@ -3,7 +3,9 @@
 <span>Many authors</span>
 {%else%}
 {%for a in authors%}
+<a href="{{url_for('minimal.author_detail', id=a.id)}}">
 <span>{%if a.first_name%}{{a.first_name}} {%endif%}{{a.last_name}}</span>
+</a>
 {%if not loop.last%}, {%endif%}
 {%endfor%}
 {%endif%}

@@ -86,6 +86,23 @@ def ebook_detail(id):
     converted = logic.query_converted_sources_for_ebook(ebook.id, current_user).limit(100).all()
     return render_template('ebook.html', ebook=ebook, formats=['epub', 'mobi'], converted=converted)
 
+@bp.route('/authors/<int:id>')
+@login_required
+@paginated()
+def author_detail(id, page=1, page_size=24):
+    author = model.Author.query.get_or_404(id)
+    ebooks = author.ebooks.order_by(model.Ebook.title).paginate(page, page_size)
+    return render_template('author.html', ebooks=ebooks, author=author)
+
+@bp.route('/series/<int:id>')
+@login_required
+@paginated()
+def series_detail(id, page=1, page_size=24):
+    series = model.Series.query.get_or_404(id)
+    
+    ebooks = model.Ebook.query.filter(model.Ebook.series == series).order_by(model.Ebook.title).paginate(page, page_size)
+    return render_template('series.html', ebooks=ebooks, series=series)
+
 @bp.route('/ebooks/<int:id>/convert', methods=['POST'])
 @access.role_required('user')
 def convert_source(id):

@@ -5,7 +5,7 @@
 <div class="title">{{ebook.title}}</div>
 <div class="authors">{{m.render_authors(ebook.authors,False)}}</div>
 {% if ebook.series %}
-<div class="series">{{ebook.series.title}} #{{ebook.series_index}}</div>
+<div class="series"><a href="{{url_for('minimal.series_detail', id=ebook.series.id)}}">{{ebook.series.title}}</a> #{{ebook.series_index}}</div>
 {%endif %}
 <div>
 {% for message in get_flashed_messages() %}
