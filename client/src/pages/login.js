@@ -26,6 +26,7 @@ export class Login{
       }
     }
     )
+    .catch(err=> logger.debug(`Cannot refresh session: ${err}`))
 
     }
 
