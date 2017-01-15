@@ -154,6 +154,7 @@ export class Access {
     window.localStorage.removeItem(REFRESH_TOKEN);
     this.auth.logout();
     this.event.publish('user-logged-out');
+    this.router.navigateToRoute('login');
 
   }
 
