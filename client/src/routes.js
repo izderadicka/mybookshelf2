@@ -5,7 +5,15 @@ export const ROUTES =
     moduleId: 'pages/welcome',
     title: 'Welcome',
     auth: true
-  }, {
+  },
+  {
+    route: 'user',
+    name: 'user',
+    moduleId: 'pages/profile',
+    title: 'User Profile',
+    auth: true
+  },
+  {
     route: 'ebooks',
     name: 'ebooks',
     moduleId: 'pages/ebooks',

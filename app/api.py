@@ -359,7 +359,7 @@ class Conversions(Resource, InsertListMixin):
     paginated = {'sortings': model.sortings['conversion']}
     
     def filter_list(self, q):
-        return q.filter(model.Auditable.created_by == current_user)
+        return q.filter(model.Conversion.created_by == current_user)
     
 class Conversion(Resource):
     def delete(self, id):
@@ -373,6 +373,9 @@ class ConversionBatches(Resource, InsertListMixin):
     methods = ['GET']
     SCHEMA = schema.ConversionBatchSchema
     paginated = {'sortings': model.sortings['conversion-batch']}
+    
+    def filter_list(self, q):
+        return q.filter(model.ConversionBatch.created_by == current_user)
     
 class ConversionBatch(Resource):
     def delete(self, id):

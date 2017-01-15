@@ -39,8 +39,8 @@
           <li if.bind="!isAuthenticated"><a data-toggle="collapse" data-target="#skeleton-navigation-navbar-collapse.in"
             route-href='route:login'>Login</a>
           </li>
-          <li if.bind="isAuthenticated"><a click.delegate="" data-toggle="collapse"
-            data-target="#skeleton-navigation-navbar-collapse.in" href='#'>
+          <li if.bind="isAuthenticated"><a route-href="route:user" data-toggle="collapse"
+            data-target="#skeleton-navigation-navbar-collapse.in">
             <i class="fa fa-user fa-2x" aria-hidden="true"></i>  <span class="visible-xs-inline">Profile</span></a>
           </li>
           <li if.bind="isAuthenticated"><a click.delegate="access.logout()" data-toggle="collapse"

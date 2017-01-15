@@ -88,9 +88,15 @@ class GenreSchema(ModelSchema):
         
 class ConversionSchema(ModelSchema):
     format = fields.Function(serialize=lambda o: o.format.extension)
+    has_file = fields.Function(serialize = lambda o: bool(o.location))
+    ebook = fields.Function(serialize = lambda o: o.source.ebook.authors_str +': ' + o.source.ebook.title)
     class Meta:
         model = model.Conversion
         exclude = ('version_id',)
+    
+    @classmethod
+    def create_list_serializer(cls):
+        return cls(many=True, only=("id", "format", "has_file", 'ebook'))
         
 class ConversionBatchSchema(ModelSchema):
     format = fields.Function(serialize=lambda o: o.format.extension)

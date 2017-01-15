@@ -69,6 +69,12 @@ export class Access {
     }
   }
 
+  get currentUserInfo() {
+    if (this.auth.isAuthenticated()) {
+      return this.auth.getTokenPayload();
+    }
+  }
+
   canEdit(userId) {
     let token = this.auth.getTokenPayload();
     if (! token) return false;
