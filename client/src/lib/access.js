@@ -1,6 +1,6 @@
 import {AuthService} from 'aurelia-auth';
 import {Authentication} from 'aurelia-auth/authentication'
-import {inject, LogManager} from 'aurelia-framework';
+import {inject, LogManager, BindingEngine} from 'aurelia-framework';
 import {EventAggregator} from 'aurelia-event-aggregator';
 import {Router} from 'aurelia-router';
 import {HttpClient, json} from 'aurelia-fetch-client';
@@ -9,15 +9,18 @@ let logger=LogManager.getLogger('access');
 
 const REFRESH_TOKEN = 'aurelia_refresh_token';
 
-@inject(AuthService, Authentication, EventAggregator, Router, HttpClient)
+@inject(AuthService, Authentication, EventAggregator, Router, HttpClient, BindingEngine)
 export class Access {
-  constructor(auth, authUtil, event, router, http) {
+  constructor(auth, authUtil, event, router, http, bindingEngine) {
     this.auth=auth;
     this.util=authUtil;
     this.event=event;
     this.router = router;
     this.http = http;
     logger.debug(`AuthUtil ${authUtil}`);
+
+    bindingEngine.propertyObserver(this, 'authenticated')
+    .subscribe((n,o) => this.authenticatedChanged(n,o));
   }
 
   get token() {
@@ -92,6 +95,14 @@ export class Access {
     return this.auth.isAuthenticated();
   }
 
+  authenticatedChanged(newValue, oldValue ) {
+
+    if (! newValue && this.token) {
+      logger.debug('Session expired');
+      this.event.publish('user-session-expired');
+    }
+  }
+
   refreshLogin() {
     let refreshToken = this.refreshToken;
     if (! refreshToken) return Promise.reject(new Error('No valid refresh token available'));
@@ -109,6 +120,9 @@ export class Access {
               .then(resp => {
                 let newToken = resp.access_token
                 if (newToken) {
+                  let loginRoute = this.util.getLoginRoute();
+                  if (window.location.hash !== '#'+loginRoute)
+                    this.util.setInitialUrl(window.location.href);
                   this.auth.setToken(newToken);
                   this.event.publish('user-logged-in', {user:this.currentUser});
                 } else {

@@ -18,18 +18,14 @@ export class Login{
 
     canActivate() {
     if (this.access.authenticated) return false;
-    logger.debug('Login view canActivate');
-    return this.access.refreshLogin().
-    then(() => {
+    return this.access.refreshLogin()
+    .then(res => {
       if (this.access.authenticated) {
-        this.router.navigateBack();
+        logger.debug('Login refreshed');
         return false;
       }
-      else {
-        return true;
-      }
-      })
-    .catch(() => true);
+    }
+    )
 
     }
 

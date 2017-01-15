@@ -35,6 +35,7 @@ export class WSClient {
 
     event.subscribe('user-logged-in', (evt) => this.connect(evt.user));
     event.subscribe('user-logged-out', () => this.disconnect());
+    event.subscribe('user-session-expired', () => this.disconnect());
 
   }
 
@@ -97,7 +98,8 @@ export class WSClient {
   }
 
   onConnectionClose(reason, details) {
-    logger.warn(`WAMP connection closed ${reason} : ${JSON.stringify(details)}`);
+    if (!details || details.reason !== 'wamp.close.normal')
+      logger.warn(`WAMP connection closed ${reason} : ${JSON.stringify(details)}`);
     this.conn=null;
     this.session=null;
   }
