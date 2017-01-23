@@ -26,7 +26,7 @@ Features:
 
 For more information see [project homepage](http://zderadicka.eu/projects/python/mybookshelf2-ebooks-management-and-sharing/)
 
-Project is now almost in beta stage (I'm using it for my ebooks collection for some time), 
+Project is now  in beta stage (I'm using it for my ebooks collection for several month), 
 I think it's reasonably stable for people to try it.
 
 Can be easily deployed using Docker - look at README.md in deploy directory. 
@@ -34,10 +34,7 @@ Can be easily deployed using Docker - look at README.md in deploy directory.
 Missing parts
 -------------
 
-Mass conversion - All ebooks of an author, series, bookshelf. It was available in previous version, I found it quite useful.
-So this will be probably next priority.
-
-Online user mamagement - registration, password change/reset, rights assigment - as it is not priority for myself 
+Online user mamagement - registration, password change/reset, rights assigment - as it is not priority for myself now, 
 it's not yet implemented.  Users can be now managed by command line utility ```manage.py```.
 
 User preferences/profile -  prefered formats for conversion, conversion parameters, external info sources, 
@@ -48,5 +45,5 @@ yet to be done.
 Documentation - unfortunatelly it usually my weak part.
 
 Internationalization, Localization, Translation - I really do not like this type of work.  
-App is not ready, I guess it would not be too dificult to make it I18N, but it's not priority.
+App is not ready, I guess it would not be too dificult to make it I18N, but it's not a priority.
 

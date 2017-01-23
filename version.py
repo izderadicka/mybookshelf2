@@ -1,3 +1,3 @@
 
-__version__ ='0.2.2'
+__version__ ='0.3' # beta 1
 __db_version = 2
