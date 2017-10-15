@@ -18,10 +18,10 @@ class Upload(Action):
         parser.add_argument('--file', type=str, required=True, help = "ebook file")
         parser.add_argument('--file-name', help="alternative file name to use for upload")
         parser.add_argument('--title', help='title')
-        parser.add_argument('--author', nargs='*', help="author written as Last, First (can have many authors)" )
+        parser.add_argument('--author', action='append', help="author written as Last, First (can have many authors, option can repeat)" )
         parser.add_argument('--series', help='series title')
         parser.add_argument('--series-index', type=int, help='book index in series ')
-        parser.add_argument('--genre', nargs='*', help='genre (can have many genres')
+        parser.add_argument('--genre', action='append', help='genre (can have many genres, option can repeat')
         parser.add_argument('--language', help='language code like cs, en ...')
         parser.add_argument('--quality', type=float, help='Quality of file 0 - 100 (spelling, pictures, formating, but not literal quality/popularity of book')
         parser.add_argument('--json', action="store_true", help='Output JSON object representing updated/created ebook after successful upload')
@@ -33,11 +33,16 @@ class Upload(Action):
         if self.opts.language:
             meta['language'] = {'code': self.opts.language}
         if self.opts.author:
+            if len(self.opts.author)>20:
+                raise ActionError('Too many auhtors!')
             meta['authors'] = list(map(parse_author, self.opts.author))
+            
         if self.opts.series and self.opts.series_index is not None:
             meta['series']= {'title': self.opts.series}
             meta['series_index'] = self.opts.series_index
         if self.opts.genre:
+            if len(self.opts.genre)> 20:
+                raise ActionError('Too many genres')
             meta['genres'] = list(map(lambda i : {'name': i.strip()}, self.opts.genre))
         
         return meta

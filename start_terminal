@@ -1,7 +1,8 @@
 #!/bin/bash
 VENV="venv/bin/activate"
 
-export PYTHONPATH=~/workspace/asexor:~/workspace/mybookshelf2
+#export PYTHONPATH=~/workspace/asexor:~/workspace/mybookshelf2
+export PYTHONPATH=~/workspace/mybookshelf2
 
 gnome-terminal \
 --tab  -e "bash --rcfile $VENV -ci 'cd engine && crossbar start'" \
