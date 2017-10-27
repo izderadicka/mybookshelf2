@@ -36,7 +36,7 @@ docker-compose build crossbar
 ```
 For stage environment you should also use SSL, put your server private key and certificate into ssl directory as `server.key.pem` and `server.cert.pem` (basically in format suitable for nginx server, certificate should contain also intermediate CA ceritificates. If you want to create your own certificates check [this nice article](https://jamielinux.com/docs/openssl-certificate-authority/index.html) how to build your own CA.
 
-Create database tables and data directories:
+Create database tables and data directories (retry if fails due to server connection error):
 ```shell
 docker-compose run --rm app python3 manage.py create_tables -a -c
 ```
