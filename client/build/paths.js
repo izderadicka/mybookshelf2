@@ -3,7 +3,6 @@ var outputRoot = 'dist/';
 var exportSrvRoot = 'export/';
 
 module.exports = {
-  mins: 'mins/**/*.js',
   root: appRoot,
   source: appRoot + '**/*.js',
   json: appRoot + '**/*.json',

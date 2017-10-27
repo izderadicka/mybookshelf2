@@ -7,11 +7,9 @@ var config = {
     "port": 6006,
     "path": "/api"
   },
-  "wamp": {
+  "backend-ws": {
     "host":"",
-    "port": 8080,
-    "path": "/ws",
-    "realm": "realm1"
+    "port": 8080
   },
   "maxUploadSize": 104857600,
   "notificationAttentionTimeout": 20,

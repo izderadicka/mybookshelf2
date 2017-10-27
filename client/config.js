@@ -30,9 +30,11 @@ System.config({
     "diacritic": "npm:diacritic@0.0.2",
     "fetch": "github:github/fetch@1.1.0",
     "font-awesome": "npm:font-awesome@4.7.0",
+    "izderadicka/asexor_js_client": "github:izderadicka/asexor_js_client@master",
     "jquery": "npm:jquery@2.2.4",
     "select2": "github:select2/select2@4.0.3",
     "text": "github:systemjs/plugin-text@0.0.8",
+    "autobahn": "@empty",
     "github:jspm/nodelibs-assert@0.1.0": {
       "assert": "npm:assert@1.4.1"
     },

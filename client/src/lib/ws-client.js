@@ -3,8 +3,7 @@ import {Access} from 'lib/access';
 import {inject,LogManager} from 'aurelia-framework';
 import {Configure} from 'lib/config/index';
 import {EventAggregator} from 'aurelia-event-aggregator';
-
-import autobahn from 'mins/autobahn.min';
+import {AsexorClient, WampAsexorClient, LongPollAsexorClient} from 'izderadicka/asexor_js_client';
 
 const logger = LogManager.getLogger('ws-client');
 
@@ -25,13 +24,10 @@ function connected(target, prop, descriptor) {
 @inject(Configure, Notification, EventAggregator, Access)
 export class WSClient {
   conn = null;
-  session = null;
   constructor(config, notif, event, access) {
     this.notif = notif;
     this.access = access;
     this.config = config;
-
-    window.AUTOBAHN_DEBUG = true;
 
     event.subscribe('user-logged-in', (evt) => this.connect(evt.user));
     event.subscribe('user-logged-out', () => this.disconnect());
@@ -45,22 +41,16 @@ export class WSClient {
       logger.warn('Connection already exists');
       this.conn.close();
     }
-    let connUrl = `${location.protocol ==='https:'?'wss:':'ws:'}//${this.config.get('wamp.host', location.hostname)}:${this.config.get('wamp.port')}${this.config.get('wamp.path')}`;
-    this.conn = new autobahn.Connection({
-      url: connUrl,
-      realm: this.config.get('wamp.realm'),
-      authmethods: ["ticket"],
-      authid: userEmail,
-      onchallenge: (session, method, extra) => this.onChallenge(session, method, extra)
-    });
-    logger.debug('WAMP connection requested');
-    this.conn.onopen = (session, details) => this.onConnectionOpen(session, details);
-    this.conn.onclose = this.onConnectionClose;
-    this.conn.open();
+    let wsHost = `${this.config.get('backend-ws.host', location.hostname)}:${this.config.get('backend-ws.port')}`;
+    this.conn = new AsexorClient(wsHost, this.access.token);
+    logger.debug('WS connection requested');
+    this.conn.connect()
+      .then( () => this.onConnectionOpen())
+      .catch((err) => this.onConnectionClose(err));
   }
 
   get isConnected() {
-    return (this.session !== null)
+    return (this.conn !== null && this.conn.active);
   }
 
   disconnect() {
@@ -68,32 +58,16 @@ export class WSClient {
       this.conn.close();
       logger.debug('Disconnected WS connection');
       this.conn = null;
-      this.session = null;
+      
     }
   }
 
-  receiveNotification(args, kwargs, options) {
-    logger.debug(`Notification ${JSON.stringify(args)}, ${JSON.stringify(kwargs)}`);
-    this.notif.update(args[0], kwargs);
-  }
-
-  onChallenge(session, method, extra) {
-    logger.debug(`Authentication required, method ${method}`);
-    if (method === 'ticket') {
-      return this.access.token;
-    } else {
-      throw new Error('invalid auth method');
-    }
-
-  }
-
-  onConnectionOpen(session, details) {
-    logger.debug('WAMP connection opened : ' + JSON.stringify(details));
-    this.session = session
-    session.subscribe('eu.zderadicka.asexor.task_update', (args, kwargs, options) =>
-        this.receiveNotification(args, kwargs, options))
-      .then(sub => logger.debug('WAMP subscribed to notifications'),
-        err => logger.error('WAMP Failed to subscribe to notifications ' + JSON.stringify(err)));
+  onConnectionOpen() {
+    logger.debug('WS connection opened');
+    this.conn.subscribe((taskId, data) => {
+    logger.debug(`Notification for task ${taskId} with data ${JSON.stringify(data)}`);
+    this.notif.update(taskId, data);
+    });
 
   }
 
@@ -101,12 +75,11 @@ export class WSClient {
     if (!details || details.reason !== 'wamp.close.normal')
       logger.warn(`WAMP connection closed ${reason} : ${JSON.stringify(details)}`);
     this.conn=null;
-    this.session=null;
   }
 
   @connected
   extractMeta(fileName, originalFileName=null, proposedMeta={}) {
-    return this.session.call('eu.zderadicka.asexor.run_task', ['metadata',fileName, proposedMeta])
+    return this.conn.exec('metadata', [fileName, proposedMeta])
     .then(taskId => {
       this.notif.start(taskId,
         {
@@ -123,7 +96,7 @@ export class WSClient {
 
   @connected
   convertSource(source, format, ebook) {
-    return this.session.call('eu.zderadicka.asexor.run_task', ['convert', source.id, format])
+    return this.conn.exec('convert',  [source.id, format])
       .then(taskId => {
         this.notif.start(taskId,
           {
@@ -140,7 +113,7 @@ export class WSClient {
 
   @connected
   convertMany(entityName, entity, format) {
-    return this.session.call('eu.zderadicka.asexor.run_task', ['convert-many', entityName, entity.id, format])
+    return this.conn.exec('convert-many', [entityName, entity.id, format])
       .then(taskId => {
         this.notif.start(taskId,
           {
@@ -157,7 +130,7 @@ export class WSClient {
 
   @connected
   changeCover(uploadedCover, ebook) {
-    return this.session.call('eu.zderadicka.asexor.run_task', ['cover', uploadedCover, ebook.id])
+    return this.conn.exec('cover', [uploadedCover, ebook.id])
     .then(taskId => {
       this.notif.start(taskId,
         {
