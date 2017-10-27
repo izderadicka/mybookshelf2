@@ -1,11 +1,10 @@
 #!/bin/bash
-VENV="venv/bin/activate"
+VENV="~/.virtualenvs/mbs2_new/bin/activate"
 
-#export PYTHONPATH=~/workspace/asexor:~/workspace/mybookshelf2
-export PYTHONPATH=~/workspace/mybookshelf2
+export PYTHONPATH=~/workspace/asexor:~/workspace/mybookshelf2
+#export PYTHONPATH=~/workspace/mybookshelf2
 
 gnome-terminal \
---tab  -e "bash --rcfile $VENV -ci 'cd engine && crossbar start'" \
 --tab  -e "bash --rcfile $VENV" \
 --tab  -e "bash --rcfile $VENV" \
 --tab  -e "bash --rcfile $VENV" \

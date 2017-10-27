@@ -4,7 +4,7 @@ import app.model as model
 import app.logic as logic
 import app.access as access
 from common.utils import create_token
-from engine.client import WAMPClient
+#from engine.client import WAMPClient
 import os.path
 import asyncio
 import functools

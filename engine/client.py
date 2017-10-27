@@ -1,4 +1,4 @@
-from autobahn.asyncio.wamp import ApplicationSession
+#from autobahn.asyncio.wamp import ApplicationSession
 import logging
 import sys
 import os
@@ -6,8 +6,8 @@ import asyncio
 import ssl as ssllib
 from asyncio import get_event_loop, set_event_loop
 import threading
-from autobahn.wamp.types import ComponentConfig
-from autobahn.asyncio.websocket import WampWebSocketClientFactory
+#from autobahn.wamp.types import ComponentConfig
+#from autobahn.asyncio.websocket import WampWebSocketClientFactory
 from urllib.parse import urlparse
 from asexor.config import Config as AsexorConfig
 import time

@@ -3,11 +3,10 @@ import sys
 import asyncio
 import logging, logging.handlers
 import asexor
-from asexor.runner import ApplicationRunnerRawSocket
-from asexor.executor import Executor
-from asexor.config import Config
+from asexor.backend_runner import Runner
+from asexor.ws_backend import WsAsexorBackend
+from asexor.config import Config, NORMAL_PRIORITY
 from asexor.task import load_tasks_from
-from autobahn.wamp.exception import ApplicationError
 import time
 from urllib.parse import urlunsplit
 sys.path.append(os.path.join(os.path.dirname(__file__),'..'))
@@ -19,16 +18,26 @@ import settings
 
 log = logging.getLogger('engine')
 
-
-def authenticate(realm, user_id, details):
-    log.debug('Got auth request for %s')
-    token = details.get('ticket')
+async def authenticate(token):
+    log.debug('Got auth request for with token %s', token)
     payload = verify_token(token, settings.SECRET_KEY)
-    if payload and user_id == payload['email']:
-        if 'user' in payload['roles']:
-            log.debug('Authenticaticated user %s to role user', user_id)
-            return 'user'
-    return 'anonymous'
+    if payload and payload['email'] and 'user' in payload['roles']:
+        user_id = payload['email']
+        role='user'
+        # Do roles mapping as we need only one role - most permitting
+        for r in ['admin', 'superuser', 'trusted_user']:
+            if r  in payload['roles']:
+                role = r
+                break
+        log.debug('Authenticaticated user %s to role %s', user_id, role)
+        return user_id, role
+    return None, None
+
+# Not needed now
+# async def authorization_not_guest(task_name, role):
+#     if role == 'guest':
+#         return False
+#     return True
 
 
 if __name__ == '__main__':
@@ -43,7 +52,8 @@ if __name__ == '__main__':
     parser.add_argument(
         '-d', '--debug', action='store_true', help='enable debug')
     parser.add_argument('--log-file', help='log file')
-    parser.add_argument('--crossbar-uri', help='WAMP router URI - can be tcp://host:port or path to unix socket (depends on router configuration)')
+    parser.add_argument('--ws-port', type=int, help='WebSocket backend port, default 8080')
+    parser.add_argument('--ws-addr', help="Address to listen on for WebSocket backend, default 0.0.0.0")
     parser.add_argument('--test-tasks', action='store_true', help='Add two test tasks date and sleep')
     opts = parser.parse_args()
     level = 'info'
@@ -64,20 +74,31 @@ if __name__ == '__main__':
     Config.AUTHENTICATION_PROCEDUTE = authenticate
     Config.AUTHENTICATION_PROCEDURE_NAME = "eu.zderadicka.mybookshelf.authenticate"
 
-    #path = os.path.join(os.path.dirname(__file__), '.crossbar/socket1')
-    if opts.crossbar_uri:
-        url=opts.crossbar_uri
-    elif os.getenv('MBS2_CROSSBAR_URI'):
-        url = os.getenv('MBS2_CROSSBAR_URI')
-    else:
-        host = os.getenv('MBS2_CROSSBAR_HOST', 'localhost')
-        port = int(os.getenv('MBS2_CROSSBAR_PORT', 9080))
-        url = 'tcp://%s:%d' % (host,port)
+    ws_port=opts.ws_port if opts.ws_port else \
+        int(os.getenv('MBS2_WS_PORT',8080))
+    ws_addr=opts.ws_addr if opts.ws_addr else \
+        os.getenv('MBS2_WS_ADDR', '0.0.0.0')
+    
         
-    runner = ApplicationRunnerRawSocket(
-        url,
-        u"realm1",
-    )
+    # Common ASEXOR configs
+    Config.PRIORITY_MAP= {'guest': NORMAL_PRIORITY-1,
+                          'user': NORMAL_PRIORITY,
+                          'trusted_user': NORMAL_PRIORITY,
+                          'superuser': NORMAL_PRIORITY+1,
+                          'admin': NORMAL_PRIORITY+2 }
+    
+    #Config.AUTHORIZATION_PROCEDURE = authorization_not_guest
+    
+    # t limit queue size, if full next requests will be rejected
+    Config.TASKS_QUEUE_MAX_SIZE = 10000
+    
+    # basic code to start aiohttp WS ASEXOR backend
+    Config.WS.AUTHENTICATION_PROCEDURE = authenticate
+    protocols =[(WsAsexorBackend, {'port': ws_port, 'host': ws_addr})]
+        
+    runner = Runner(protocols)
     dal.init()
-    runner.run(Executor, logging_level=level)
-    dal.close()
+    try:
+        runner.run()
+    finally:
+        dal.close()
