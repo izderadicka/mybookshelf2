@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -e -x
 function read_password {
 
 eval local existing=\$$2
@@ -39,17 +39,19 @@ else
 echo Uknown environment
 exit 1
 fi
-
+export CURRENT_USER=$(id -u):$(id -g)
 docker build -t mbs2-ubuntu .
 read_password "Mybookshelf2 admin password: " MBS2_ADMIN_PASSWORD
-docker-compose run --rm  app python3 manage.py create_tables -a -c
+docker-compose up -d db
+sleep 3
+docker-compose run --user $CURRENT_USER --rm  app python3 manage.py create_tables -a -c
 docker-compose run --rm  app python3 manage.py change_password admin -p "$MBS2_ADMIN_PASSWORD"
 echo 
 
 CLIENT_IMAGE=mbs2-client-build-image
 docker build -t $CLIENT_IMAGE -f Dockerfile-build-client .
 if [[ "$1" = "development" ]]; then
-docker run --rm --use $(id -u):$(id -g) --name mbs2-client-watch -it -v $(pwd)/..:/code -p 9000:9000  $IMAGE /watch_client_cmd.sh
+
 cat <<EOF
 #####################################################
 Now MyBookself2 is running in developement mode
@@ -58,9 +60,12 @@ In browser you can open simple client as http://localhost:6006
 and full client with http://localhost:9000
 
 Both client code and server code (apart of backend)
-are in watch mode - so any changes to 
+are in watch mode - so any changes are applied immediatelly
+######################################################
 EOF
-
+docker-compose up
 fi
+
+
 
 

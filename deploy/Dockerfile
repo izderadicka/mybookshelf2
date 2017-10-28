@@ -20,7 +20,10 @@ RUN apt-get update &&\
 # RUN locale-gen en_US.UTF-8
 # ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
     
-RUN mkdir /code
+RUN mkdir /code &&\
+    mkdir /data &&\
+    chmod a+rwx /data
+
 WORKDIR /code
 ADD requirements.txt /code/
 RUN pip3 install -r requirements.txt
