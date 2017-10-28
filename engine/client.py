@@ -10,6 +10,7 @@ from asexor.ws_client import AsexorClient
 import time
 from functools import partial
 from common.utils import extract_token
+from asexor.raw_client import DelegatedRawSocketAsexorClient
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 log = logging.getLogger('client')
@@ -42,6 +43,42 @@ def stop_loop(loop=None):
 class Ignore:
     pass
     
+class DelegatedClient():
+    def __init__(self, token, url, loop, no_wait=False):
+        log.debug("Starting delegated client")
+        self.loop = loop or get_event_loop()
+        
+        async def run_client(loop):
+            self.session = DelegatedRawSocketAsexorClient(url, token, loop)
+            try:
+                await self.session.start()
+            except Exception:
+                log.exception("Cannot start client")
+                await self.session.stop()
+                raise
+            
+        fut = asyncio.run_coroutine_threadsafe(run_client(self.loop), self.loop)
+        if not no_wait:
+            fut.result(WAIT_TIMEOUT)
+        
+    def close(self):
+        #leave session
+        async def leave():
+            await self.session.stop()
+        fut = asyncio.run_coroutine_threadsafe(leave(), self.loop)
+        fut.result(WAIT_TIMEOUT)
+        
+    def is_active(self):
+        return self.session and self.session.active
+        
+    def call_no_wait(self, user, role, method, *args, **kwargs):
+        if not self.is_active():
+            raise Exception('Missing or inactive sesssion')
+        async def do_call():
+            return await self.session.execute(user, role, method, *args, **kwargs)
+        future = asyncio.run_coroutine_threadsafe(do_call(), self.loop)
+        return future.result(MAX_TIMEOUT)
+        
 
 class WSClient():
 
@@ -107,5 +144,6 @@ class WSClient():
         async def do_call():
             task_id =  await self.session.execute(method, *args, **kwargs)
             self._pending_tasks[task_id] = Ignore
+            return task_id
         future = asyncio.run_coroutine_threadsafe(do_call(), self.loop)
         return future.result(MAX_TIMEOUT)

@@ -9,6 +9,7 @@ from asexor.config import Config, NORMAL_PRIORITY
 from asexor.task import load_tasks_from
 import time
 from urllib.parse import urlunsplit
+from asexor.raw_backend import RawSocketAsexorBackend
 sys.path.append(os.path.join(os.path.dirname(__file__),'..'))
 import engine.dal as dal
 from engine.tasks import init
@@ -33,6 +34,12 @@ async def authenticate(token):
         return user_id, role
     return None, None
 
+async def authenticate_delegated(token):
+    log.debug("Authentication delegated session")
+    if token.decode('utf-8') == settings.DELEGATED_TOKEN:
+        return 'delegated', 'user'
+    return None, None
+
 # Not needed now
 # async def authorization_not_guest(task_name, role):
 #     if role == 'guest':
@@ -54,19 +61,25 @@ if __name__ == '__main__':
     parser.add_argument('--log-file', help='log file')
     parser.add_argument('--ws-port', type=int, help='WebSocket backend port, default 8080')
     parser.add_argument('--ws-addr', help="Address to listen on for WebSocket backend, default 0.0.0.0")
+    parser.add_argument('--delegated-port', type=int, help="Port for delegated calls, default 9080")
+    parser.add_argument('--delegated-addr', help="Address to listen for delegated calls, default 127.0.0.1")
+    parser.add_argument('--disable-delegated', action="store_true", help="Delegated calls can be done only through trusted connection from trusted source, you may want to disable them")
     parser.add_argument('--test-tasks', action='store_true', help='Add two test tasks date and sleep')
     opts = parser.parse_args()
-    level = 'info'
+    
+    level = logging.INFO
     if opts.debug:
-        level = 'debug'
+        level = logging.DEBUG
     if opts.log_file:
         handler = logging.handlers.RotatingFileHandler(opts.log_file, maxBytes=10*1024*1024, 
                                                        backupCount=3)
         handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s %(name)s %(message)s'))
         root_logger=logging.getLogger()
         root_logger.addHandler(handler)
-        if opts.debug:
-            root_logger.setLevel(logging.DEBUG)
+        root_logger.setLevel(level)
+    else:
+        logging.basicConfig(level=level)
+        logging.getLogger().setLevel(level)
         
     if opts.test_tasks:
         load_tasks_from('simple_tasks', os.path.join(os.path.dirname(asexor.__file__), '../test/tasks'))
@@ -78,6 +91,10 @@ if __name__ == '__main__':
         int(os.getenv('MBS2_WS_PORT',8080))
     ws_addr=opts.ws_addr if opts.ws_addr else \
         os.getenv('MBS2_WS_ADDR', '0.0.0.0')
+    delegated_addr = opts.delegated_addr if opts.delegated_addr else \
+        os.getenv('MBS2_DELEGATED_ADDR', '127.0.0.1')
+    delegated_port = opts.delegated_port if opts.delegated_port else \
+        int(os.getenv('MBS2_DELEGATED_PORT', 9080))
     
         
     # Common ASEXOR configs
@@ -95,6 +112,12 @@ if __name__ == '__main__':
     # basic code to start aiohttp WS ASEXOR backend
     Config.WS.AUTHENTICATION_PROCEDURE = authenticate
     protocols =[(WsAsexorBackend, {'port': ws_port, 'host': ws_addr})]
+    
+    if not opts.disable_delegated:
+        Config.RAW.AUTHENTICATION_PROCEDURE=authenticate_delegated
+        protocols.append((RawSocketAsexorBackend, {'url': 'tcp://%s:%d'% (delegated_addr,delegated_port), 
+                                                   'delegated': True,
+                                                   'no_update': True}))
         
     runner = Runner(protocols)
     dal.init()

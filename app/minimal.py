@@ -4,12 +4,13 @@ import app.model as model
 import app.logic as logic
 import app.access as access
 from common.utils import create_token
-#from engine.client import WAMPClient
 import os.path
 import asyncio
 import functools
 from sqlalchemy import desc
 from urllib.parse import urlencode
+from engine.client import DelegatedClient
+import threading
 
 IN_UWSGI = False
 try:
@@ -17,7 +18,8 @@ try:
     import uwsgidecorators
     IN_UWSGI = True
 except ImportError:
-    pass
+    delegated_client = None
+    delegated_client_lock = threading.Lock()
 
 bp = Blueprint('minimal', __name__)
 loop = asyncio.get_event_loop()
@@ -103,23 +105,30 @@ def series_detail(id, page=1, page_size=24):
     ebooks = model.Ebook.query.filter(model.Ebook.series == series).order_by(model.Ebook.title).paginate(page, page_size)
     return render_template('series.html', ebooks=ebooks, series=series)
 
+
+
 @bp.route('/ebooks/<int:id>/convert', methods=['POST'])
 @access.role_required('user')
 def convert_source(id):
-    token = create_token(current_user, current_app.config['SECRET_KEY'], current_app.config['TOKEN_VALIDITY_HOURS'])
+    
     source_id = int(request.form['source_id'])
     format = request.form['format']
+    # this is bit hack as user can have more roles
+    role = current_user.roles[0].name
     if IN_UWSGI:
-        uwsgi.mule_msg(token +'|'+str(source_id)+'|'+format)
+        uwsgi.mule_msg(current_user.email+'|'+ role +'|'+str(source_id)+'|'+format)
         task_id=''
     else:
+        global delegated_client
         if not loop.is_running():
             abort(500, 'Event loop is not running')
-        client = WAMPClient(token, current_app.config['WAMP_URI'], loop=loop)
-        try:
-            task_id=client.call_no_wait('convert', source_id, format )
-        finally:
-            client.close()
+        with delegated_client_lock:
+            if not delegated_client or not delegated_client.is_active():
+                delegated_client= DelegatedClient(current_app.config['DELEGATED_TOKEN'], 
+                                                  current_app.config['DELEGATED_URI'], loop)
+                
+        task_id=delegated_client.call_no_wait(current_user.email, role, 'convert', source_id, format )
+        
         if not task_id:
             abort(500, 'No task id')
     

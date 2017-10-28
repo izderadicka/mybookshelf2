@@ -72,7 +72,7 @@ psql ebooks_test < ../sql/create_test_db.sql
 psql ebooks_test < init_db.sql
 ```
  
- For production (and possibly too for stage environment) do not forget to replace SECRET_KEY and SECRET_KEY2
+ For production (and possibly too for stage environment) do not forget to replace SECRET_KEY, SECRET_KEY2 and DELEGATED_TOKEN
  in settings.py with your own secrets!
  This command can generate good random string:
  ```

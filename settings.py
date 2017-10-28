@@ -22,11 +22,10 @@ SQLALCHEMY_DATABASE_URI = os.getenv('MBS2_DB_URI', 'postgresql://{user}:{passwor
                                             port=DB_PORT,
                                             user=DB_USER,
                                             password=DB_PASSWORD))
-WAMP_HOST = os.getenv('MBS2_WAMP_HOST','localhost')
-WAMP_PORT = os.getenv('MBS2_WAMP_PORT', 8080)
-WAMP_SECURE = os.getenv("MBS2_WAMP_SECURE", False)
-WAMP_URI = os.getenv('MBS2_WAMP_URI', '{scheme}://{host}:{port}/ws'.\
-                     format(scheme= 'wss' if WAMP_SECURE else 'ws',host=WAMP_HOST, port=WAMP_PORT))
+DELEGATED_HOST = os.getenv('MBS2_DELEGATED_HOST','localhost')
+DELEGATED_PORT = os.getenv('MBS2_DELEGATED_PORT', 9080)
+DELEGATED_URI = os.getenv('MBS2_DELEGATED_URI', 'tcp://{host}:{port}/ws'.\
+                     format(host=DELEGATED_HOST, port=DELEGATED_PORT))
 
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
@@ -38,6 +37,12 @@ REMEMBER_COOKIE_HTTPONLY = True
 SECRET_KEY2 = 'b7ssYqnBFu3+11NGxPT+lHfAIiTgpMG9EhKC1MRR1VWCN75n1zMhWouem2lPa7VUi7+U7xJKhYvfXjKldo9e2g'
 TOKEN_VALIDITY_HOURS = 4
 TOKEN_REFRESH_HOURS = 365 * 24 # validity of refresh token
+
+
+# This is token for delegated connection to backend
+# The connection must be over private trusted network, as this is fixed token, so it does not 
+# provide much security
+DELEGATED_TOKEN = 'SHsfvwv/proj7vie5BnsvhxZWnzga0AFzUjkFfQ27BG3IswYLCHXWhUNbuDO5B3MxTBtUMP7oNgN+QfDQ0uANQ'
 
 
 MAX_CONTENT_LENGTH = 100 * 1024 * 1024
