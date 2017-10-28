@@ -2,7 +2,7 @@ from threading import Thread
 import asyncio
 import settings
 from engine.client import run_loop_in_thread, DelegatedClient
-import uwsgi
+import uwsgi  # @UnresolvedImport
 import traceback
 # This is basic solution for bridging requests to WAMP in UWSGI
 # It's not ideal but should be sufficient for now

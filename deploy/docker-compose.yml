@@ -6,34 +6,17 @@ services:
       dockerfile: Dockerfile-db
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      
-  crossbar:
-    build:
-      context: .
-      dockerfile: Dockerfile-crossbar
-    image: mbs2-ubuntu
-    volumes:
-      - ${CODE_VOLUME}:/code
-    ports:
-      - 8080:8080
-    command: crossbar start --cbdir /crossbar --loglevel=info
-      
+            
   backend:
     build:
       context: .
       dockerfile: Dockerfile-backend
-      args:
-        - http_proxy
-        - https_proxy
-        - no_proxy
     volumes:
       - ${CODE_VOLUME}:/code
       - mbs2_data:/data
     depends_on:
-      - crossbar
       - db
     environment:
-      MBS2_CROSSBAR_HOST: crossbar
       MBS2_DB_HOST: db
       MBS2_DB_NAME: postgres
       MBS2_DATA_DIR: /data
@@ -49,21 +32,17 @@ services:
       - mbs2_data:/data
     ports:
       - 6006:6006
-      - "${MBS2_WEB_PORT}:443"
     depends_on:
       - db
-      - crossbar
       - backend
     environment:
       MBS2_DB_HOST: db
       MBS2_DB_NAME: postgres
-      MBS2_WAMP_HOST: crossbar
+      MBS2_DELEGATED_HOST: backend
       MBS2_DATA_DIR: /data
       MBS2_ENVIRONMENT:
-      MBS2_WAMP_SECURE:
+      
       
 volumes:
   mbs2_data:
     external: false
-  code:
-    external: true

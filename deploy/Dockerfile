@@ -24,10 +24,7 @@ RUN mkdir /code
 WORKDIR /code
 ADD requirements.txt /code/
 RUN pip3 install -r requirements.txt
-RUN mkdir /crossbar
-ADD crossbar.config.json /crossbar/config.json
-ADD ssl/server.cert.pem /crossbar/
-ADD ssl/server.key.pem /crossbar/
+
 
 
 
