@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 import argparse
 import requests
-from requests.packages.urllib3.util import Retry
+from requests.packages.urllib3.util import Retry  # @UnresolvedImport
 import logging
 import sys
 import os
@@ -10,7 +10,7 @@ from urllib.parse import urljoin
 from functools import wraps
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from cli.action import load_actions, ActionError, SoftActionError
-from engine.client import WAMPClient, run_loop_in_thread, stop_loop, join_loop
+from engine.client import WSClient, run_loop_in_thread, stop_loop, join_loop
 log = logging.getLogger('mbs2')
 
 
@@ -61,7 +61,7 @@ def main():
     p.add_argument(
         '--api-url', default='http://localhost:6006', help='Base URL for REST API')
     p.add_argument(
-        '--wamp-url', default='ws://localhost:8080/ws', help='WAMP Router URL')
+        '--ws-url', default='ws://localhost:8080/ws', help='Backend WS URL')
     p.add_argument('-u', '--user', help='User name')
     p.add_argument('-p', '--password', help='Password')
     p.add_argument('--debug', action='store_true', help='Debug logging')
@@ -98,7 +98,7 @@ def main():
         http.headers['Authorization'] = 'bearer '+token
         loop = asyncio.get_event_loop()
         run_loop_in_thread(loop)
-        client = WAMPClient(token, opts.wamp_url, loop=loop)
+        client = WSClient(token, opts.ws_url, loop=loop)
         try:
             action = action_class(http, client, opts)
             action.do()

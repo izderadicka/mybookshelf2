@@ -24,6 +24,7 @@ System.config({
     "aurelia-templating-binding": "npm:aurelia-templating-binding@1.0.0",
     "aurelia-templating-resources": "npm:aurelia-templating-resources@1.1.1",
     "aurelia-templating-router": "npm:aurelia-templating-router@1.0.0",
+    "autobahn": "@empty",
     "bluebird": "npm:bluebird@3.4.1",
     "bootstrap": "github:twbs/bootstrap@3.3.7",
     "bootstrap-drawer": "npm:bootstrap-drawer@1.0.6",
@@ -34,7 +35,6 @@ System.config({
     "jquery": "npm:jquery@2.2.4",
     "select2": "github:select2/select2@4.0.3",
     "text": "github:systemjs/plugin-text@0.0.8",
-    "autobahn": "@empty",
     "github:jspm/nodelibs-assert@0.1.0": {
       "assert": "npm:assert@1.4.1"
     },
