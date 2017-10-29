@@ -13,7 +13,7 @@ services:
     ports:
       - 9000:9000
       - 3001:3001
-    user: $CURRENT_USER
+    user: $MBS2_USER
     command: /watch_client_cmd.sh
 volumes:
   code:
