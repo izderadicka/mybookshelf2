@@ -20,12 +20,14 @@ services:
       MBS2_DB_HOST: db
       MBS2_DB_NAME: postgres
       MBS2_DATA_DIR: /data
+    user: $MBS2_USER
     command: /loop.sh python3 engine/backend.py
 
   app:
     build:
       context: .
       dockerfile: Dockerfile-app
+    user: $MBS2_USER
     command: /run_app.sh
     volumes:
       - ${CODE_VOLUME}:/code
@@ -40,6 +42,8 @@ services:
       MBS2_DB_NAME: postgres
       MBS2_DELEGATED_HOST: backend
       MBS2_DATA_DIR: /data
+      USER: ${MBS2_USER_NAME}
+      LOGNAME: ${MBS2_USER_NAME}
       MBS2_ENVIRONMENT:
       
       
