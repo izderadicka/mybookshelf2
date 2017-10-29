@@ -41,7 +41,7 @@ export class WSClient {
       logger.warn('Connection already exists');
       this.conn.close();
     }
-    let wsHost = `${this.config.get('backend-ws.host', location.hostname)}:${this.config.get('backend-ws.port')}`;
+    let wsHost = `${this.config.get('backend-ws.host', location.hostname)}:${this.config.get('backend-ws.port', location.port)}`;
     this.conn = new AsexorClient(wsHost, this.access.token);
     logger.debug('WS connection requested');
     this.conn.connect()

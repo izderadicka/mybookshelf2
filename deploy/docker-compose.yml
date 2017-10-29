@@ -27,13 +27,13 @@ services:
     build:
       context: .
       dockerfile: Dockerfile-app
+      args:
+        MBS2_ENVIRONMENT:
     user: $MBS2_USER
     command: /run_app.sh
     volumes:
       - ${CODE_VOLUME}:/code
       - mbs2_data:/data
-    ports:
-      - 6006:6006
     depends_on:
       - db
       - backend

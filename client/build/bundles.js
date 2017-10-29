@@ -39,7 +39,8 @@ module.exports = {
         "fetch",
         "jquery",
         "select2",
-        "select2/css/select2.css!text"
+        "select2/css/select2.css!text",
+        "izderadicka/asexor_js_client"
       ],
       "options": {
         "inject": true,

@@ -1,0 +1,16 @@
+version: '2'
+services:
+  proxy:
+    build:
+      context: .
+      dockerfile: Dockerfile-nginx
+    volumes:
+      - ${CODE_VOLUME}:/code
+      - mbs2_data:/data 
+    ports:
+      - 4443:443
+    depends_on:
+      - app
+volumes:
+  code:
+    external: true

@@ -3,7 +3,9 @@ services:
   backend:
     ports:
       - 8080:8080
-
+  app:
+    ports:
+      - 6006:6006
   client:
     build:
       context: .
