@@ -2,6 +2,9 @@ FROM ubuntu:16.04
 
 MAINTAINER ivan
 
+ARG MBS2_ENVIRONMENT
+ENV LANG C.UTF-8
+
 # additional 12.04 depedencies
 #   add-apt-repository -y  ppa:fkrull/deadsnakes &&\
 #    sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-pgdg main" >> /etc/apt/sources.list.d/pgdg.list' &&\
@@ -27,6 +30,10 @@ RUN mkdir /code &&\
 WORKDIR /code
 ADD requirements.txt /code/
 RUN pip3 install -r requirements.txt
+ADD requirements-dev.txt /code
+RUN if [ "X${MBS2_ENVIRONMENT}" = "Xdevelopment" ]; then \
+    pip3 install -r /code/requirements-dev.txt;\
+    fi
 
 
 

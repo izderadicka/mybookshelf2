@@ -7,6 +7,6 @@ RUN pip3 install uwsgi
 ADD uwsgi.ini /etc/
 ADD run_app.sh /
 ADD loop.sh /
-    
+
 WORKDIR /code
 

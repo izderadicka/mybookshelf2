@@ -46,7 +46,7 @@ else
     exit 1
 fi
 export $(cat .env | xargs)
-docker build -t mbs2-ubuntu .
+docker build -t mbs2-ubuntu --build-arg MBS2_ENVIRONMENT=$MBS2_ENVIRONMENT .
 read_password "Mybookshelf2 admin password: " MBS2_ADMIN_PASSWORD
 docker-compose up -d db
 sleep 3
@@ -56,7 +56,9 @@ docker-compose run --rm  app python3 manage.py change_password admin -p "$MBS2_A
 CLIENT_IMAGE=mbs2-client-build-image
 docker build -t $CLIENT_IMAGE -f Dockerfile-build-client .
 if [[ "$1" = "development" ]]; then
-
+    #create test database
+    cat ../sql/create_test_db.sql |  docker-compose run --rm -e PGPASSWORD="$MBS2_DB_PASSWORD" db psql -h db postgres postgres
+    cat init_test_db.sql |  docker-compose run --rm -e PGPASSWORD="$MBS2_DB_PASSWORD" db psql -h db ebooks_test postgres
     cat <<EOF
 #####################################################
 Now MyBookself2 is running in developement mode
@@ -66,6 +68,9 @@ and full client with http://localhost:9000
 
 Both client code and server code (apart of backend)
 are in watch mode - so any changes are applied immediatelly
+
+To run tests:
+docker-compose run --rm app py.test app common
 ######################################################
 EOF
     docker-compose up

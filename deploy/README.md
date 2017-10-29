@@ -41,13 +41,14 @@ docker-compose run --rm app python3 manage.py create_user user_name user_email
 
 For direct deployment (on OS, VM) study Docker Scripts - basically you'll need to install similar dependencies on that machine.
 
-For development alternatively  you can use python virtualenv and run db and other services locally (that's how I'm developing).
 
-To run tests you should also initialize test database( run as postgres superuser):
+In development deployment you can also run tests:
 ```
-psql ebooks_test < ../sql/create_test_db.sql
-psql ebooks_test < init_db.sql
+docker-compose run --rm app py.test app common
+docker-compose run --rm  backend py.test engine
 ```
+ 
+ For development alternatively  you can use python virtualenv and run db and other services locally (that's how I'm developing).
  
  For production (and possibly too for stage environment) do not forget to replace SECRET_KEY, SECRET_KEY2 and DELEGATED_TOKEN
  in settings.py with your own secrets!
