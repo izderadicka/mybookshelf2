@@ -71,6 +71,7 @@ are in watch mode - so any changes are applied immediatelly
 
 To run tests:
 docker-compose run --rm app py.test app common
+docker-compose run --rm  backend py.test engine
 ######################################################
 EOF
     docker-compose up
