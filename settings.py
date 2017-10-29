@@ -94,14 +94,16 @@ MAX_COVER_FILE_SIZE = 10*1024*1024
 
 class Testing:
     DB_NAME = 'ebooks_test'
-    DB_HOST = 'localhost'
+    DB_HOST = os.getenv('MBS2_DB_HOST', 'localhost')
+    DB_PORT = os.getenv('MBS2_DB_PORT', 5432)
     DB_USER = 'ebooks_test'
     DB_PASSWORD = 'ebooks'
 
-    SQLALCHEMY_DATABASE_URI = os.getenv('MBS2_TEST_DB_URI', 'postgresql://{user}:{password}@{host}/{db}'\
-                                        .format(db=DB_NAME,
-                                          host=DB_HOST,
-                                          user=DB_USER,
-                                          password=DB_PASSWORD))
+    SQLALCHEMY_DATABASE_URI = os.getenv('MBS2_DB_URI', 'postgresql://{user}:{password}@{host}:{port}/{db}'
+                                    .format(db=DB_NAME,
+                                            host=DB_HOST,
+                                            port=DB_PORT,
+                                            user=DB_USER,
+                                            password=DB_PASSWORD))
     TESTING = True
     DEBUG = True
