@@ -2,7 +2,7 @@
   <h4 class="notification header">${notification.text}</h4>
   <p if.bind="notification.error" class="text-danger">${notification.error}</p>
   <div class="notification status">Status: <span class.bind="notification.status">${notification.status}<span>
-    <span class="progress" if.bind="notification.status == 'progress'">${progress}%</span>
+    <span class="conversion-progress" if.bind="notification.status == 'progress'">${progress}%</span>
   <button class="btn btn-success btn-sm pull-right" click.trigger="navigate()" if.bind="isReady">Goto Conversions</button>
   </div>
 </template>

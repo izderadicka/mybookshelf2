@@ -453,3 +453,7 @@ input.form-control.sm {
     display: none;
   }
 }
+
+.notification.status .progress {
+  all: unset;
+}
