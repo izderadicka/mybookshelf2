@@ -26,7 +26,7 @@ if [[ "$1" == "stage" ]] && [[ ! -f ssl/server.key.pem || ! -f ssl/server.cert.p
     For stage environment you need to put server.key.pem and server.cert.pem into ssl directory
     You can generate test selfsigned certificate with openssl:
 
-    openssl req -newkey rsa:2048 -nodes -keyout ssl/server.key.pem -x509 -days 365 -out ssl/server.crt.pem \
+    openssl req -newkey rsa:2048 -nodes -keyout ssl/server.key.pem -x509 -days 365 -out ssl/server.cert.pem \
     -subj "/C=CZ/ST=Prague/L=Prague/O=Dummy Certificate/CN=localhost"
 EOF
 exit 1

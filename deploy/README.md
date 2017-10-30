@@ -24,7 +24,7 @@ Then change directory to deploy directory:
 ```
 cd mybookshelf2/deploy
 ```
-Run `./init.sh [development|stage]` and script will guide you though deployment.
+Run `./init.sh [development|stage]` and script will guide you though deployment. Script will ask you for two passwords - one for database and other for MyBookshelf2 admin user.
 
 For stage environment you will need SSL key, put your server private key and certificate into ssl directory as `server.key.pem` and `server.cert.pem` (basically in format suitable for nginx server, certificate should contain also intermediate CA ceritificates. If you want to create your own certificates check [this nice article](https://jamielinux.com/docs/openssl-certificate-authority/index.html) how to build your own CA.
 
