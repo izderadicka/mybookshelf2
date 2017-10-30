@@ -21,7 +21,7 @@ services:
       MBS2_DB_NAME: postgres
       MBS2_DATA_DIR: /data
     user: $MBS2_USER
-    command: /loop.sh python3 engine/backend.py
+    command: /loop.sh python3 engine/backend.py --delegated-addr 0.0.0.0
 
   app:
     build:

@@ -30,6 +30,8 @@ For stage environment you will need SSL key, put your server private key and cer
 
 For development environment you can then see full client at http://localhost:9000 and lite client as http://localhost:6006.
 
+For stage environment full client is at https://localhost:4443/client/ and lite client is at https://localhost:4443.
+
 
 Additional instuctions
 ======================
@@ -49,6 +51,8 @@ docker-compose run --rm  backend py.test engine
 ```
  
  For development alternatively  you can use python virtualenv and run db and other services locally (that's how I'm developing).
+
+ For stage environment deployment only deploy directory is needed.  Code is cloned from git repo - branch master.
  
  For production (and possibly too for stage environment) do not forget to replace SECRET_KEY, SECRET_KEY2 and DELEGATED_TOKEN
  in settings.py with your own secrets!

@@ -56,7 +56,7 @@ CODE_VOLUME=code
 MBS2_USER=10000:0
 MBS2_USER_NAME=usak
 EOF
-    docker run -e MBS2_BRANCH=new_asexor --env-file .env --rm  -it -v code:/code $CLIENT_IMAGE /build_client_cmd.sh 
+    docker run --env-file .env --rm  -it -v code:/code $CLIENT_IMAGE /build_client_cmd.sh 
     compose_files="-f docker-compose.yml -f docker-compose-stage.yml"
 else
     echo Uknown environment
