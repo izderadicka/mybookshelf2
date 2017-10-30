@@ -33,6 +33,7 @@ exit 1
 fi
 CURRENT_USER=$(id -u):$(id -g)
 read_password "Database password: "  MBS2_DB_PASSWORD
+read_password "Mybookshelf2 admin password: " MBS2_ADMIN_PASSWORD
 
 CLIENT_IMAGE=mbs2-client-build-image
 docker build -t $CLIENT_IMAGE -f Dockerfile-build-client .
@@ -64,7 +65,6 @@ else
 fi
 export $(cat .env | xargs)
 docker build -t mbs2-ubuntu --build-arg MBS2_ENVIRONMENT=$MBS2_ENVIRONMENT .
-read_password "Mybookshelf2 admin password: " MBS2_ADMIN_PASSWORD
 docker-compose $compose_files up -d db
 sleep 3
 docker-compose $compose_files run --user $MBS2_USER --rm  app python3 manage.py create_tables -a -c
