@@ -1,14 +1,12 @@
 import os.path
 import sys
 import asyncio
-import logging, logging.handlers
+import logging.handlers
 import asexor
 from asexor.backend_runner import Runner
 from asexor.ws_backend import WsAsexorBackend
 from asexor.config import Config, NORMAL_PRIORITY
 from asexor.task import load_tasks_from
-import time
-from urllib.parse import urlunsplit
 from asexor.raw_backend import RawSocketAsexorBackend
 sys.path.append(os.path.join(os.path.dirname(__file__),'..'))
 import engine.dal as dal
@@ -18,6 +16,8 @@ from multiprocessing import cpu_count
 import settings
 
 log = logging.getLogger('engine')
+
+WS_TIMEOUT = settings.TOKEN_VALIDITY_HOURS * 3600
 
 async def authenticate(token):
     log.debug('Got auth request for with token %s', token)
@@ -61,6 +61,8 @@ if __name__ == '__main__':
     parser.add_argument('--log-file', help='log file')
     parser.add_argument('--ws-port', type=int, help='WebSocket backend port, default 8080')
     parser.add_argument('--ws-addr', help="Address to listen on for WebSocket backend, default 0.0.0.0")
+    parser.add_argument('--ws-heartbeat', type=int, help='Server to send ping in x secs (to keep alive connection and check client status), default is off')
+    parser.add_argument('--ws-timeout', type=int, default=WS_TIMEOUT, help="Timeout to close websocket after x secs of inactivity, default is %d"%WS_TIMEOUT)
     parser.add_argument('--delegated-port', type=int, help="Port for delegated calls, default 9080")
     parser.add_argument('--delegated-addr', help="Address to listen for delegated calls, default 127.0.0.1")
     parser.add_argument('--disable-delegated', action="store_true", help="Delegated calls can be done only through trusted connection from trusted source, you may want to disable them")
@@ -108,6 +110,10 @@ if __name__ == '__main__':
     
     # t limit queue size, if full next requests will be rejected
     Config.TASKS_QUEUE_MAX_SIZE = 10000
+    
+    # WS hearbeat and timeout
+    Config.WS.HEARTBEAT =  opts.ws_heartbeat
+    Config.WS.INACTIVE_TIMEOUT = opts.ws_timeout
     
     # basic code to start aiohttp WS ASEXOR backend
     Config.WS.AUTHENTICATION_PROCEDURE = authenticate

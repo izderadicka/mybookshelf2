@@ -2,7 +2,7 @@
 import {NotificationBase} from './notification-base';
 
 export class NotificationMetadata extends NotificationBase{
-    navigate() {
+    navigateTo() {
       this.router.navigateToRoute('conversions');
     }
 

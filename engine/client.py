@@ -2,14 +2,9 @@ import logging
 import sys
 import os
 import asyncio
-import ssl as ssllib
 from asyncio import get_event_loop, set_event_loop
 import threading
-from urllib.parse import urlparse
 from asexor.ws_client import AsexorClient
-import time
-from functools import partial
-from common.utils import extract_token
 from asexor.raw_client import DelegatedRawSocketAsexorClient
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
@@ -82,14 +77,15 @@ class DelegatedClient():
 
 class WSClient():
 
-    def __init__(self, token, ws_url, loop=None):
+    def __init__(self, token, ws_url, session_id=None,loop=None):
         self.loop = loop or get_event_loop()
         self._pending_tasks = {}
         log.info('Starting client')
         self.session = None
+        self.session_id = session_id
 
         async def run_client(loop):
-            self.session = AsexorClient(ws_url, token, loop)
+            self.session = AsexorClient(ws_url, token, session_id=self.session_id, loop=loop)
             self.session.subscribe(self.task_callback)
             try:
                 await self.session.start()

@@ -21,6 +21,12 @@ function connected(target, prop, descriptor) {
   return descriptor;
 }
 
+export function randomSessionId(sz=16) {
+  let r = new Uint8Array(sz);
+  crypto.getRandomValues(r);
+  return Array.from(r, (byte) => ('0'+byte.toString(16)).slice(-2)).join('')
+}
+
 @inject(Configure, Notification, EventAggregator, Access)
 export class WSClient {
   conn = null;
@@ -28,6 +34,7 @@ export class WSClient {
     this.notif = notif;
     this.access = access;
     this.config = config;
+    this.sessionId = randomSessionId();
 
     event.subscribe('user-logged-in', (evt) => this.connect(evt.user));
     event.subscribe('user-logged-out', () => this.disconnect());
@@ -42,7 +49,7 @@ export class WSClient {
       this.conn.close();
     }
     let wsHost = `${this.config.get('backend-ws.host', location.hostname)}:${this.config.get('backend-ws.port', location.port)}`;
-    this.conn = new AsexorClient(wsHost, this.access.token);
+    this.conn = new AsexorClient(wsHost, this.access.token, this.sessionId);
     logger.debug('WS connection requested');
     this.conn.connect()
       .then( () => this.onConnectionOpen())
@@ -63,7 +70,7 @@ export class WSClient {
   }
 
   onConnectionOpen() {
-    logger.debug('WS connection opened');
+    logger.debug(`WS connection opened with session id ${this.sessionId}`);
     this.conn.subscribe((taskId, data) => {
     logger.debug(`Notification for task ${taskId} with data ${JSON.stringify(data)}`);
     this.notif.update(taskId, data);
