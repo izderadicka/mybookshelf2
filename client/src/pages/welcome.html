@@ -1,7 +1,13 @@
 <template>
   <require from="components/ebook-tiles"></require>
   <div class="container-fluid">
-    <h1> Recent Ebooks</h1>
-    <ebook-tiles mininum.one-time="64"></ebook-tiles>
+    <h2 class="page-title"> Recent Ebooks
+      <span class="actions">
+        <a href="#" click.delegate="titles.reload()">
+          <i class="fa fa-refresh" aria-hidden="true"></i>
+        </a>
+      </span>
+    </h2>
+    <ebook-tiles view-model.ref="titles" mininum.one-time="64"></ebook-tiles>
   </div>
 </template>

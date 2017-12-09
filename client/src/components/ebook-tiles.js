@@ -45,12 +45,14 @@ export class EbookTiles {
     .catch(err => logger.error('Fetch error', err));
   }
 
-
-  countNumber() {
+  calcNeed() {
     let columns = Math.floor(this.container.width() / 100);
     let need = Math.ceil(this.mininum / columns) * columns;
     logger.debug(`Need = ${need}`);
-
+    return need;
+  }
+  countNumber() {
+    let need = this.calcNeed()
     if (! this.ebooks ) {
       this.loadEbooks(1, need);
     } else if (this.ebooks.length > need) {
@@ -84,5 +86,10 @@ export class EbookTiles {
 
   getThumbSource(ebook) {
     return this.http.baseUrl +'/thumb/'+ebook.id;
+  }
+
+  reload() {
+    let sz = this.calcNeed();
+    this.loadEbooks(1,sz);
   }
 }

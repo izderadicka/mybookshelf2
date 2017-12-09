@@ -13,9 +13,5 @@ export class Welcome {
   }
 
   activate() {
-  
   }
-
-
-
 }
