@@ -147,6 +147,7 @@ jspm_packages
 /.project
 /.pydevproject
 /cover/
+/.vscode
 
 Untitled*.ipynb
 /deploy.stage/
