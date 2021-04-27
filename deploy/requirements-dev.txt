@@ -1,7 +1,7 @@
 # development 
-pytest
-coverage>=4.0.3
+pytest~=3.0.3
+coverage~=4.2
 ipython>=4.1.2
 jupyter>=1.0.0
-Flask-Testing>=0.4.2
+Flask-Testing~=0.6.1
 #git+https://github.com/mysql/mysql-connector-python.git
