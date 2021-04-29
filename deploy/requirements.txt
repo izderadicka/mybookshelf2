@@ -18,3 +18,6 @@ filelock==2.0.6
 simplejson==3.10.0
 git+https://github.com/izderadicka/asexor.git
 
+#indirect dependencies that must be pinned
+Werkzeug==0.11.11
+
