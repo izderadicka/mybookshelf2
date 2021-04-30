@@ -1,4 +1,4 @@
-FROM ubuntu:16.04
+FROM ubuntu:18.04
 
 MAINTAINER ivan
 
@@ -14,11 +14,9 @@ ENV LANG C.UTF-8
 
 
 RUN apt-get update &&\
-    apt-get install -y python-software-properties wget libffi-dev  git build-essential &&\
-		apt-get install -y python3.5 libpq-dev python3.5-dev &&\
-		wget https://bootstrap.pypa.io/get-pip.py &&\
-    python3 get-pip.py &&\
-    rm get-pip.py
+    apt-get install -y software-properties-common wget libffi-dev  git build-essential &&\
+		apt-get install -y python3.6 libpq-dev python3.6-dev python3-pip
+		
     
 # RUN locale-gen en_US.UTF-8
 # ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'

@@ -4,13 +4,13 @@ How to deploy
 Solution consists of 4 components:
 - Database - must be PostgresSQL >= 9.5
 - Javascript client (must be built with Gulp)
-- Web and API server -  Flask - requires Python 3.5
-- backend server - requires Python 3.5
+- Web and API server -  Flask - requires Python 3.5+
+- backend server - requires Python 3.5+
 
 Currently Docker and Docker-Compose scripts are available in this dir to help deployment.
 There are two deployment models:
 - development - deployed locally, where you can edit code and play with it (server runs as Flask development server and client is served with BrowserSync)
-- staging - with deployment to production environment web server is running in uwsgi server behing nginx proxy. Static resources and client are server with nginx server. nginx also provides SSL termination.
+- staging - with deployment to production environment web server is running in uwsgi server behind nginx proxy. Static resources and client are server with nginx server. nginx also provides SSL termination.
 
 Basic deployment instructions
 =============================
@@ -26,14 +26,14 @@ cd mybookshelf2/deploy
 ```
 Run `./init.sh [development|stage]` and script will guide you though deployment. Script will ask you for two passwords - one for database and other for MyBookshelf2 admin user.
 
-For stage environment you will need SSL key, put your server private key and certificate into ssl directory as `server.key.pem` and `server.cert.pem` (basically in format suitable for nginx server, certificate should contain also intermediate CA ceritificates. If you want to create your own certificates check [this nice article](https://jamielinux.com/docs/openssl-certificate-authority/index.html) how to build your own CA.
+For stage environment you will need SSL key, put your server private key and certificate into ssl directory as `server.key.pem` and `server.cert.pem` (basically in format suitable for nginx server, certificate should contain also intermediate CA certificates. If you want to create your own certificates check [this nice article](https://jamielinux.com/docs/openssl-certificate-authority/index.html) how to build your own CA.
 
 For development environment you can then see full client at http://localhost:9000 and lite client as http://localhost:6006.
 
 For stage environment full client is at https://localhost:4443/client/ and lite client is at https://localhost:4443.
 
 
-Additional instuctions
+Additional instructions
 ======================
 
 If you need to  add other regular users it now possible only from command line:
