@@ -118,7 +118,7 @@ Unidecode==1.1.2
 uWSGI==2.0.14
 watchdog==0.8.3
 wcwidth==0.1.7
-Werkzeug==0.11.11
+Werkzeug==0.15.3
 widgetsnbextension==1.2.6
 yarl==0.13.0
 zope.interface==4.3.2
