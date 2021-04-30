@@ -91,7 +91,7 @@ pytz==2016.7
 PyYAML==3.12
 pyzmq==16.0.0
 qtconsole==4.2.1
-requests==2.11.1
+requests==2.20.0
 sdnotify==0.3.1
 service-identity==16.0.0
 setproctitle==1.1.10
