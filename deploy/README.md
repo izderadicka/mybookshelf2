@@ -32,6 +32,10 @@ For development environment you can then see full client at http://localhost:900
 
 For stage environment full client is at https://localhost:4443/client/ and lite client is at https://localhost:4443.
 
+### Clean up after docker compose deployment
+
+Use `./cleanup.sh` script.  WARNING: it'll remove all data and images used in deployment. When switching between development and stage type deployment full cleanup is required.
+
 
 Additional instructions
 ======================
