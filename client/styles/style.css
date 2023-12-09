@@ -376,8 +376,9 @@ nav .nav > li > a {
 
 @media (min-width: 768px) {
 
-  nav search form {
+  nav search {
     width: 32% !important;
+    float: left;
   }
 
   nav search .input-group {
