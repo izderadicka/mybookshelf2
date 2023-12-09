@@ -1,0 +1,20 @@
+<template>
+  <require from="components/autocomplete/autocomplete"></require>
+  <require from="components/merge-direction"></require>
+  <section>
+    <h2 class="page-title">Merge Author ${entity.first_name} ${entity.last_name}</h2>
+    <error-alert error.bind="error"></error-alert>
+    <div class="">
+      <merge-direction name="author" merge-to.bind="mergeTo"></merge-direction>
+      <div class="form-group">
+        <label class="control-label">Other Author</label>
+        <autocomplete loader.bind="loader" value-key.bind="getFullName" suggestion-template="./autocomplete-authors.html"
+        selected-value.bind="otherEntity" additional-class="form-control" filter.one-time="filterOutThisEntity"></autocomplete>
+      </div>
+      <div class="form-group">
+         <button type="button" class="btn btn-primary btn-lg" click.delegate="merge()" disabled.bind="!ready">Merge</button>
+        <button type="button" class="btn btn-default btn-lg" click.delegate="cancel()">Cancel</button>
+      </div>
+    </div>
+  </section>
+</template>

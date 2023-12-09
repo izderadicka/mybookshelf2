@@ -21,9 +21,9 @@ class Test(TestCase):
 
         ebook_data = {
             'title': 'Sedm lumpu slohlo pumpu', 'language': {'id': 1}}
-        errors = schema.ebook_deserializer_insert().validate(ebook_data)
+        errors = schema.EbookSchema.create_insert_serializer().validate(ebook_data)
         self.assertFalse(errors)
-        errors = schema.ebook_deserializer_insert().validate({})
+        errors = schema.EbookSchema.create_insert_serializer().validate({})
         self.assertTrue(errors)
 
         ebook_data = {'title': 'Povidky o nicem', 'language': 'cs',
@@ -37,23 +37,24 @@ class Test(TestCase):
 
         no_lang = deepcopy(ebook_data)
         del no_lang['language']
-        errors = schema.ebook_deserializer_insert().validate(no_lang)
+        errors = schema.EbookSchema.create_insert_serializer().validate(no_lang)
         self.assertTrue(errors)
 
         no_series = deepcopy(ebook_data)
         no_series['series'] = None
-        errors = schema.ebook_deserializer_update().validate(no_series)
+        errors = schema.EbookSchema.create_update_serializer().validate(no_series)
         if errors:
             print(errors)
         self.assertFalse(errors)
 
-        eb, errors = schema.ebook_deserializer_insert().load(ebook_data)
+        eb, errors = schema.EbookSchema.create_insert_serializer().load(ebook_data)
         self.assertFalse(errors)
 
         self.assertEqual(eb.title, ebook_data['title'])
         # db.session.flush()
         self.assertFalse(db.session.new)
         # self.assertFalse(db.session.dirty)
+        eb.base_dir='test'
         db.session.add(eb)
         self.assertTrue(db.session.new)
         db.session.commit()
@@ -81,7 +82,7 @@ class Test(TestCase):
 
         data = {'title': 'Povidky o necem',
                 'id': eb.id, 'version_id': eb.version_id}
-        updated_eb, errors = schema.ebook_deserializer_update().load(data)
+        updated_eb, errors = schema.EbookSchema.create_update_serializer().load(data)
 
         self.assertEqual(updated_eb.id, eb.id)
         self.assertFalse(errors)
@@ -103,7 +104,7 @@ class Test(TestCase):
 
         # must handle manually if not in one session
         version_id = data.pop('version_id')
-        updated_eb, errors = schema.ebook_deserializer_update().load(data)
+        updated_eb, errors = schema.EbookSchema.create_update_serializer().load(data)
         self.assertFalse(errors)
         if version_id != updated_eb.version_id:
             db.session.rollback()
@@ -121,9 +122,10 @@ class Test(TestCase):
         # test new series
         ns = deepcopy(ebook_data)
         ns['series'] = {'title': 'Maly bojovnik'}
-        eb, errors = schema.ebook_deserializer_insert().load(ns)
+        eb, errors = schema.EbookSchema.create_insert_serializer().load(ns)
         self.assertFalse(errors)
         self.assertTrue(inspect(eb.series).transient)
+        eb.base_dir='test'
         db.session.add(eb)
         self.assertTrue(inspect(eb.series).pending)
         print(eb.series)
@@ -138,7 +140,7 @@ class Test(TestCase):
         # test strange series
         strange = deepcopy(ebook_data)
         strange['series'] = {'pako': 'mako'}
-        eb, errors = schema.ebook_deserializer_insert().load(strange)
+        eb, errors = schema.EbookSchema.create_insert_serializer().load(strange)
         self.assertFalse(errors)
         db.session.add(eb)
         try:
@@ -154,9 +156,10 @@ class Test(TestCase):
         # test null series
         ns = deepcopy(ebook_data)
         ns['series'] = None
-        eb, errors = schema.ebook_deserializer_insert().load(ns)
+        eb, errors = schema.EbookSchema.create_insert_serializer().load(ns)
         self.assertFalse(errors)
         self.assertTrue(db.session.dirty)
+        eb.base_dir='test'
         db.session.add(eb)
         db.session.commit()
         ebook_id = eb.id
@@ -169,7 +172,7 @@ class Test(TestCase):
         # test empty series
         ns = deepcopy(ebook_data)
         ns['series'] = {}
-        eb, errors = schema.ebook_deserializer_insert().load(ns)
+        eb, errors = schema.EbookSchema.create_insert_serializer().load(ns)
         self.assertFalse(errors)
         self.assertTrue(db.session.dirty)
         db.session.add(eb)
@@ -182,7 +185,7 @@ class Test(TestCase):
         db.session.close()
         db.session.remove()
         #test series edit
-        eb, errors = schema.ebook_deserializer_update().load({'id':myebook_id, 'series':{'title': "Uplne nova"}})
+        eb, errors = schema.EbookSchema.create_update_serializer().load({'id':myebook_id, 'series':{'title': "Uplne nova"}})
         self.assertEqual(eb.title, 'Povidky o necem')
         self.assertTrue(inspect(eb).persistent and inspect(eb).modified)
         self.assertTrue(inspect(eb.series).pending)

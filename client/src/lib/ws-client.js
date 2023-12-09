@@ -3,24 +3,42 @@ import {Access} from 'lib/access';
 import {inject,LogManager} from 'aurelia-framework';
 import {Configure} from 'lib/config/index';
 import {EventAggregator} from 'aurelia-event-aggregator';
-
-import autobahn from 'mins/autobahn.min';
+import {AsexorClient, WampAsexorClient, LongPollAsexorClient} from 'izderadicka/asexor_js_client';
 
 const logger = LogManager.getLogger('ws-client');
+
+function connected(target, prop, descriptor) {
+  let fn = descriptor.value;
+  let wrapped = function() {
+    if (! this.isConnected) {
+      alert('WebSocket is not connected, reload application!');
+      return Promise.reject(new Error('Websocket is not connected'));
+    } else {
+      return fn.apply(this,arguments)
+    }
+  }
+  descriptor.value = wrapped;
+  return descriptor;
+}
+
+export function randomSessionId(sz=16) {
+  let r = new Uint8Array(sz);
+  crypto.getRandomValues(r);
+  return Array.from(r, (byte) => ('0'+byte.toString(16)).slice(-2)).join('')
+}
 
 @inject(Configure, Notification, EventAggregator, Access)
 export class WSClient {
   conn = null;
-  session = null;
   constructor(config, notif, event, access) {
     this.notif = notif;
     this.access = access;
     this.config = config;
-
-    window.AUTOBAHN_DEBUG = true;
+    this.sessionId = randomSessionId();
 
     event.subscribe('user-logged-in', (evt) => this.connect(evt.user));
     event.subscribe('user-logged-out', () => this.disconnect());
+    event.subscribe('user-session-expired', () => this.disconnect());
 
   }
 
@@ -28,23 +46,18 @@ export class WSClient {
     if (! this.access.authenticated) throw new Error('Not Authenticated');
     if (this.conn) {
       logger.warn('Connection already exists');
+      this.conn.close();
     }
-    let connUrl = `${location.protocol ==='https:'?'wss:':'ws:'}//${this.config.get('wamp.host', location.hostname)}:${this.config.get('wamp.port')}${this.config.get('wamp.path')}`;
-    this.conn = new autobahn.Connection({
-      url: connUrl,
-      realm: this.config.get('wamp.realm'),
-      authmethods: ["ticket"],
-      authid: userEmail,
-      onchallenge: (session, method, extra) => this.onChallenge(session, method, extra)
-    });
-    logger.debug('WAMP connection requested');
-    this.conn.onopen = (session, details) => this.onConnectionOpen(session, details);
-    this.conn.onclose = this.onConnectionClose;
-    this.conn.open();
+    let wsHost = `${this.config.get('backend-ws.host', location.hostname)}:${this.config.get('backend-ws.port', location.port)}`;
+    this.conn = new AsexorClient(wsHost, this.access.token, this.sessionId);
+    logger.debug('WS connection requested');
+    this.conn.connect()
+      .then( () => this.onConnectionOpen())
+      .catch((err) => this.onConnectionClose(err));
   }
 
   get isConnected() {
-    return (this.session !== null)
+    return (this.conn !== null && this.conn.active);
   }
 
   disconnect() {
@@ -52,51 +65,32 @@ export class WSClient {
       this.conn.close();
       logger.debug('Disconnected WS connection');
       this.conn = null;
-      this.session = null;
+      
     }
   }
 
-  receiveNotification(args, kwargs, options) {
-    logger.debug(`Notification ${JSON.stringify(args)}, ${JSON.stringify(kwargs)}`);
-    this.notif.update(args[0], kwargs);
-  }
-
-  onChallenge(session, method, extra) {
-    logger.debug(`Authentication required, method ${method}`);
-    if (method === 'ticket') {
-      return this.access.token;
-    } else {
-      throw new Error('invalid auth method');
-    }
-
-  }
-
-  onConnectionOpen(session, details) {
-    logger.debug('WAMP connection opened : ' + JSON.stringify(details));
-    this.session = session
-    session.subscribe('eu.zderadicka.asexor.task_update', (args, kwargs, options) =>
-        this.receiveNotification(args, kwargs, options))
-      .then(sub => logger.debug('WAMP subscribed to notifications'),
-        err => logger.error('WAMP Failed to subscribe to notifications ' + JSON.stringify(err)));
+  onConnectionOpen() {
+    logger.debug(`WS connection opened with session id ${this.sessionId}`);
+    this.conn.subscribe((taskId, data) => {
+    logger.debug(`Notification for task ${taskId} with data ${JSON.stringify(data)}`);
+    this.notif.update(taskId, data);
+    });
 
   }
 
   onConnectionClose(reason, details) {
-    logger.warn(`WAMP connection closed ${reason} : ${JSON.stringify(details)}`);
+    if (!details || details.reason !== 'wamp.close.normal')
+      logger.warn(`WAMP connection closed ${reason} : ${JSON.stringify(details)}`);
     this.conn=null;
-    this.session=null;
   }
 
+  @connected
   extractMeta(fileName, originalFileName=null, proposedMeta={}) {
-    if (! this.isConnected) {
-      alert('WebSocket is not connected, reload application!');
-      return Promise.reject(new Error('Websocket is not connected'));
-    }
-    return this.session.call('eu.zderadicka.asexor.run_task', ['metadata',fileName, proposedMeta])
+    return this.conn.exec('metadata', [fileName, proposedMeta])
     .then(taskId => {
       this.notif.start(taskId,
         {
-        text:`Extract Metadata from ${originalFileName || fileName}`,
+        text:`Extract metadata from ${originalFileName || fileName}`,
         status:"submitted",
         task:"metadata",
         taskId,
@@ -107,12 +101,9 @@ export class WSClient {
     });
   }
 
+  @connected
   convertSource(source, format, ebook) {
-    if (! this.isConnected) {
-      alert('WebSocket is not connected, reload application!');
-      return Promise.reject(new Error('Websocket is not connected'));
-    }
-    return this.session.call('eu.zderadicka.asexor.run_task', ['convert', source.id, format])
+    return this.conn.exec('convert',  [source.id, format])
       .then(taskId => {
         this.notif.start(taskId,
           {
@@ -125,6 +116,39 @@ export class WSClient {
         });
         return taskId;
       })
+  }
+
+  @connected
+  convertMany(entityName, entity, format) {
+    return this.conn.exec('convert-many', [entityName, entity.id, format])
+      .then(taskId => {
+        this.notif.start(taskId,
+          {
+          text:`Convert all ebooks for ${entityName} ${entity.last_name || entity.title || entity.name} to ${format}`,
+          status:"submitted",
+          task:"convert-many",
+          taskId,
+          entityId: entity.id,
+          entityName: entityName
+        });
+        return taskId;
+      })
+  }
+
+  @connected
+  changeCover(uploadedCover, ebook) {
+    return this.conn.exec('cover', [uploadedCover, ebook.id])
+    .then(taskId => {
+      this.notif.start(taskId,
+        {
+        text:`Update ebook ${ebook.title} cover image.`,
+        status:"submitted",
+        task:"cover",
+        taskId,
+        ebookId: ebook.id
+      });
+      return taskId;
+    })
   }
 
 }

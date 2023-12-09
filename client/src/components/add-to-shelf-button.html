@@ -1,0 +1,11 @@
+<template>
+  <div class="btn-group add-to-shelf-btn">
+    <button type="button" class="btn btn-lg btn-primary" click.delegate="showAddToShelf()"><i class="fa fa-plus" aria-hidden="true"></i> Add To Shelf </button>
+    <button type="button" class="btn btn-lg btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+      <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu">
+      <li repeat.for="shelf of shelves"><a href="#" click.delegate="addTo(shelf)">${shelf.name}</a></li>
+    </ul>
+  </div>
+</template>

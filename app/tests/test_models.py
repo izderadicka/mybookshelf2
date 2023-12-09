@@ -43,7 +43,8 @@ class Test(TestCase):
         
         na = model.Author(last_name='Usak', first_name='Kulisak')
         ns = model.Series(title='Voloviny')
-        nb = model.Ebook(title='Title', rating=100, language=model.Language.query.filter_by(name='Czech').one())
+        nb = model.Ebook(title='Title', rating=100, 
+                         language=model.Language.query.filter_by(name='Czech').one(), base_dir='test')
         db.session.add_all([na,ns, nb])
         nb.authors.extend([na, authors[0]])
         nb.series=ns
@@ -72,6 +73,13 @@ class Test(TestCase):
         self.assertTrue(u.has_role('user'))
         self.assertTrue(u.has_role('xxx', 'superuser'))
         self.assertFalse(u.has_role('xxx'))
+        
+        series=model.Series.query.get(1633)
+        self.assertEqual(series.title, 'Na stopě hrůzy')
+        self.assertEqual(len(series.authors),2)
+        self.assertTrue(any(map(lambda x: x.last_name =='Dark' and x.first_name =='Jason', series.authors)))
+        self.assertTrue(any(map(lambda x: x.last_name =='Tenkrat' and x.first_name =='Friedrich', series.authors)))
+        
 
 
 if __name__ == "__main__":

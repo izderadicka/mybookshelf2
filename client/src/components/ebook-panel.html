@@ -1,6 +1,5 @@
 <template>
-  <require from="components/authors"></require>
-
+  <require from="components/ebook-card"></require>
   <section class="ebook-panel">
     <div class="container-fluid items-header" css="display: ${paginator.lastPage===0?'none':'block'}">
       <h3 class="page-title"><i class="fa fa-file-text-o" aria-hidden="true"></i>
@@ -9,7 +8,7 @@
       <label class="sorter-label"><i class="fa fa-sort"></i></label>
       <sorter  sortings.one-time="sortings" view-model.ref="sorter"></sorter>
     </div>
-    </h2>
+  </h3>
   </div>
 
   <div class="alert alert-warning" role="alert" if.bind="paginator.lastPage === 0">
@@ -21,15 +20,7 @@
     <div class="container-fluid">
       <div class="row">
         <div class="col-sm-6 col-md-4 col-lg-3" repeat.for="ebook of paginator.data">
-          <div class='ebook-detail'>
-              <a route-href="route: ebook; params.bind: {id:ebook.id}"><div class="ebook-cover missing">
-                <img src.bind="getThumbSource(ebook)" if.bind="ebook.cover"
-                error.trigger="handleImgError($event)" load.trigger="handleImgLoad($event)"></div></a>
-            <div class="ebook-info">
-            <authors authors.one-time="ebook.authors" compact.bind="true"></authors>
-            <div class="ebook-title"><a route-href="route: ebook; params.bind: {id:ebook.id}">${ebook.title}</a></div>
-            <div class="ebook-series" if.bind="ebook.series">${ebook.series.title} #${ebook.series_index}</div>
-          </div>
+          <ebook-card ebook.bind="ebook"></ebook-card>
           </div>
         </div>
       </div>

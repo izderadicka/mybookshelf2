@@ -13,16 +13,10 @@ export class UploadResult {
   ebook;
   ebooksCandidates;
   ebooksSearched;
-  cover=new Image();
   error;
   constructor(client, router) {
     this.client=client;
     this.router = router;
-    // has to revoke object URL to release blob
-    this.cover.onload = function() {
-        URL.revokeObjectURL(this.src);
-      }
-
   }
 
   canActivate(model) {
@@ -62,16 +56,6 @@ export class UploadResult {
 
   }
 
-  attached() {
-    if (this.coverLoader)
-      this.coverLoader.then(blob => {
-        this.cover.src = URL.createObjectURL(blob);
-        document.getElementById('cover-holder').appendChild(this.cover);
-      })
-      .catch(err => {
-        logger.warn(`Cannot load cover for upload ${this.metaId}: ${err}`);
-      });
-  }
 
   createNew() {
     this.router.navigateToRoute('ebook-create', {upload: this.id});
@@ -86,6 +70,7 @@ get addToEbook() {
           errorDetail: res.error_details
         }
         else {
+          this.client.clearCache('ebooks');
           this.router.navigateToRoute('ebook', {
             id: ebookId
           });

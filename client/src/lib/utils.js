@@ -19,9 +19,11 @@ export function dispatchCustomEvent(event_name, elem, data) {
 export function rewriteURLParam(name, value) {
   let hash = window.location.hash;
   let parts=hash.split('?');
+  let newValue;
   if (value) {
-    window.location.hash=parts[0]+`?${name}=${value}`
+    newValue=parts[0]+`?${name}=${value}`
   } else {
-    window.location.hash=parts[0];
+    newValue=parts[0];
   }
+  if (newValue !== hash) window.location.hash = newValue;
 }

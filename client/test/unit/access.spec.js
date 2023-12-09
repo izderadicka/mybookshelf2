@@ -1,15 +1,17 @@
 import {Access} from 'lib/access';
 
+
 describe('When using Access class', () => {
   var auth = {getTokenPayload() {},
               isAuthenticated() {return true}},
       authUtil = {},
       event = {},
       router = {},
+      bindingEngine ={propertyObserver: ()=>{return {subscribe: ()=>{}}}},
       access;
 
   beforeEach(() => {
-      access = new Access(auth, authUtil, event, router)
+      access = new Access(auth, authUtil, event, router, undefined, bindingEngine)
     });
 
    it('there is no role if not in token', ()=>{

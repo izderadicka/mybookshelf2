@@ -1,0 +1,22 @@
+#!/bin/bash
+set -x -e
+ 
+BRANCH=master
+WD=/opt/mybookshelf2
+ 
+REFS=`cat`
+
+echo "Running $0"
+ 
+if [[  $REFS =~ "refs/heads/"$BRANCH ]] ; then
+        git --work-tree=$WD --git-dir=/home/ivan/repo/mbs2.git checkout -f $BRANCH
+        #pip install -r $WD/requirements.txt
+        cd $WD/client
+        cp /data/local/mbs2/config.js  src/config.js
+        gulp export
+        mbs2_ctl reload
+        echo "Succesfully deployed $BRANCH branch"
+else
+        echo "This is not our branch: $REFS"
+        exit 0
+fi

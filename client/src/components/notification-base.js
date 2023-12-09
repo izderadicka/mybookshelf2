@@ -1,12 +1,14 @@
 
 import {bindable, inject} from 'aurelia-framework'
 import {Router} from 'aurelia-router';
+import {NotificationsDrawer} from 'components/notifications-drawer';
 
-@inject(Router)
+@inject(Router, NotificationsDrawer)
 export class NotificationBase {
 
-    constructor(router) {
-      this.router=router
+    constructor(router, drawer) {
+      this.router = router;
+      this.drawer = drawer;
     }
 
     get isReady() {
@@ -17,7 +19,12 @@ export class NotificationBase {
       this.notification = model;
     }
 
-    navigate() {
+    navigateTo() {
       throw new Error('Not Implemented');
+    }
+
+    navigate() {
+      this.drawer.hide();
+      this.navigateTo();
     }
 }

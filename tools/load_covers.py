@@ -35,6 +35,7 @@ def main():
     session = Session()
     
     http = HTTPSession()
+    http.adapters.clear()
     http.mount('http', HTTPAdapter(
     max_retries=Retry(total=5, status_forcelist=[500])
     )

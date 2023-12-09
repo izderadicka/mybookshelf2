@@ -7,12 +7,25 @@ import hashlib
 import logging
 import mimetypes
 import os.path
+import shutil
 
 logger = logging.getLogger('utils')
 
-
+def deep_get(d,k, default=None): 
+    parts=k.split('.')
+    for k in parts:
+        if isinstance(d, dict):
+            d= d.get(k)
+        else:
+            return default
+        
+    return d or default
+    
 def mimetype_from_file_name(fname):
     return mimetypes.guess_type(fname, False)[0]
+
+def ext_from_mimetype(mimetype):
+    return mimetypes.guess_extension(mimetype)
 
 
 def success_error(fn):
@@ -54,24 +67,30 @@ def check_pwd(p, hash):
     return hash == bcrypt.hashpw(p, hash)
 
 
-def create_token(user, secret, valid_minutes=24 * 60):
+def create_token(user, secret, valid_hours=24):
     token = jwt.encode({'id': user.id,
                            'user_name': user.user_name,
                            'email': user.email,
                            'roles':  list(user.all_roles),
-                           'exp': datetime.utcnow() + timedelta(hours=valid_minutes)}, secret, algorithm='HS256')
+                           'exp': datetime.utcnow() + timedelta(hours=valid_hours)}, secret, algorithm='HS256')
     
     return token.decode('ascii')
 
+def create_refresh_token(user, secret, valid_hours=24):
+    token = jwt.encode({'id': user.id,
+                        'exp': datetime.utcnow() + timedelta(hours=valid_hours)}, secret, algorithm='HS256')
+    
+    return token.decode('ascii') 
 
-def verify_token(token, secret):
+
+def verify_token(token, secret, validate_expiration=True):
     try:
         token = token.encode('ascii')
     except UnicodeEncodeError:
         logger.exception('Invalid token - char encoding')
         return
     try:
-        claim = jwt.decode(token, secret)
+        claim = jwt.decode(token, secret, options={'verify_exp': validate_expiration})
     except jwt.InvalidTokenError:
         logger.exception('Invalid token')
         return None
@@ -153,3 +172,104 @@ def parse_author(author):
     if len(parts) > 1:
         a['first_name'] = ' '.join(parts[:-1])
     return a
+
+def copy_cover(cover_file, dst_dir, ebook_id, config):
+    src = os.path.join(config['UPLOAD_DIR'], cover_file)
+    cover_out = os.path.join(dst_dir, os.path.split(cover_file)[1])
+    dst = os.path.join(
+        config['BOOKS_BASE_DIR'], cover_out)
+    os.makedirs(os.path.dirname(dst), exist_ok=True)
+    shutil.copy(src, dst)
+    
+    thumb = config['THUMBNAIL_FILE']
+    thumb_file = os.path.join(os.path.split(cover_file)[0], thumb)
+    src = os.path.join(config['UPLOAD_DIR'], thumb_file)
+    if os.access(src, os.R_OK):
+        dst = os.path.join(
+            config['THUMBS_DIR'], '%d.jpg'%ebook_id)
+        shutil.copy(src, dst)
+    return cover_out
+
+def lev_i(a,b):
+    if a:
+        a=a.lower()
+    if b:
+        b=b.lower()
+        
+    return lev(a,b)
+
+def lev(a,b):
+    """ Calculates edit (Levenshtein) distance between two strings 
+    """
+    
+    n, m = len(a), len(b)
+    if n > m:
+        # Make sure n <= m, to use O(min(n,m)) space
+        a,b = b,a
+        n,m = m,n
+      
+    current = range(n+1)
+    for i in range(1,m+1):
+        previous, current = current, [i]+[0]*n
+        for j in range(1,n+1):
+            add, delete = previous[j]+1, current[j-1]+1
+            change = previous[j-1]
+            if a[j-1] != b[i-1]:
+                change = change + 1
+            current[j] = min(add, delete, change)
+            
+    return current[n]
+
+def damlev_i(a,b):
+    if a:
+        a=a.lower()
+    if b:
+        b=b.lower()
+        
+    return damlev(a,b)
+    
+def damlev(seq1, seq2):
+    """Calculate the Damerau-Levenshtein distance between sequences.
+
+    This distance is the number of additions, deletions, substitutions,
+    and transpositions needed to transform the first sequence into the
+    second. Although generally used with strings, any sequences of
+    comparable objects will work.
+
+    Transpositions are exchanges of *consecutive* characters; all other
+    operations are self-explanatory.
+
+    This implementation is O(N*M) time and O(M) space, for N and M the
+    lengths of the two sequences.
+
+    >>> dameraulevenshtein('ba', 'abc')
+    2
+    >>> dameraulevenshtein('fee', 'deed')
+    2
+
+    It works with arbitrary sequences too:
+    >>> dameraulevenshtein('abcd', ['b', 'a', 'c', 'd', 'e'])
+    2
+    """
+    # codesnippet:D0DE4716-B6E6-4161-9219-2903BF8F547F
+    # Conceptually, this is based on a len(seq1) + 1 * len(seq2) + 1 matrix.
+    # However, only the current and two previous rows are needed at once,
+    # so we only store those.
+    oneago = None
+    thisrow = list(range(1, len(seq2) + 1)) + [0]
+    for x in range(len(seq1)):
+        # Python lists wrap around for negative indices, so put the
+        # leftmost column at the *end* of the list. This matches with
+        # the zero-indexed strings and saves extra calculation.
+        twoago, oneago, thisrow = oneago, thisrow, [0] * len(seq2) + [x + 1]
+        for y in range(len(seq2)):
+            delcost = oneago[y] + 1
+            addcost = thisrow[y - 1] + 1
+            subcost = oneago[y - 1] + (seq1[x] != seq2[y])
+            thisrow[y] = min(delcost, addcost, subcost)
+            # This block deals with transpositions
+            if (x > 0 and y > 0 and seq1[x] == seq2[y - 1]
+                and seq1[x-1] == seq2[y] and seq1[x] != seq2[y]):
+                thisrow[y] = min(thisrow[y], twoago[y - 2] + 1)
+    return thisrow[len(seq2) - 1]
+

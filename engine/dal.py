@@ -5,7 +5,8 @@ import asyncio
 import os
 import sys
 import app.model as model
-from sqlalchemy.sql import select, or_, and_, func
+from sqlalchemy.sql import select, or_, and_, func, desc
+from sqlalchemy.sql.expression import nullslast, case
 
 DSN = 'dbname={db} user={user} password={password} host={host}'.format(db=settings.DB_NAME,
                                                                        host=settings.DB_HOST,
@@ -66,7 +67,7 @@ async def add_upload(fname, cover, meta, size, hash, user_email):
         return new_id
 
     
-async def add_conversion(fname, format, source_id, user_email):
+async def add_conversion(fname, format, source_id, user_email, batch_id=None):
     format_id = await get_format_id(format)
     user_id = await get_user_id(user_email)
     async with engine.acquire() as conn:
@@ -76,7 +77,8 @@ async def add_conversion(fname, format, source_id, user_email):
                                                    source_id=source_id,
                                                    created_by_id=user_id,
                                                    modified_by_id=user_id,
-                                                   version_id=1
+                                                   version_id=1,
+                                                   batch_id = batch_id
                                                    ))
         new_id = (await res.fetchone())[0]
         return new_id
@@ -171,7 +173,13 @@ async def get_source_file(id):
             return res.as_tuple()
         else:
             return None,None
-
+        
+async def get_conversion_file(id):
+    async with engine.acquire() as conn:
+        conversion=model.Conversion.__table__
+        res = await conn.execute(select([conversion.c.location]).where(conversion.c.id==id))
+        return await res.scalar()
+        
 async def get_conversion_id(source_id, user_id, format):
     async with engine.acquire() as conn:
         conversion = model.Conversion.__table__
@@ -183,6 +191,18 @@ async def get_conversion_id(source_id, user_id, format):
         if res:
             return res[0]
         
+async def get_ebook_dir(ebook_id):  
+    async with engine.acquire() as conn:
+        ebook = model.Ebook.__table__
+        res = await conn.execute(select([ebook.c.base_dir]).where(ebook.c.id == ebook_id))   
+        res = await res.fetchone()
+        if res:
+            return res[0]
+        
+async def update_ebook_cover(ebook_id, cover):  
+    async with engine.acquire() as conn:
+        ebook = model.Ebook.__table__   
+        res = await conn.execute(ebook.update().values(cover=cover).where(ebook.c.id == ebook_id))
         
 async def get_meta(source_id):
     async with engine.acquire() as conn:
@@ -231,5 +251,121 @@ async def get_meta(source_id):
             
         return meta
     
+async def get_ebooks_ids_for_object(object_name, id):
+    async with engine.acquire() as conn:
+        if object_name.lower() == 'author':
+            
+            q = select([model.ebook_authors.c.ebook_id]).where(model.ebook_authors.c.author_id == id)
+        elif object_name.lower()  == 'series':
+            ebook = model.Ebook.__table__
+            q = select([ebook.c.id]).where(ebook.c.series_id == id)
+        elif object_name.lower()  == 'bookshelf':
+            bookshelf_item = model.BookshelfItem.__table__
+            q = select([bookshelf_item.c.ebook_id]).where(and_(bookshelf_item.c.ebook_id != None, 
+                                                           bookshelf_item.c.bookshelf_id == id)).distinct()
+        else:
+            raise ValueError('Invalid object_name')
+        
+        res = await conn.execute(q)
+        res = await res.fetchall()
+        
+        return list(map(lambda x: x[0], res))
+    
+    
+async def can_access_bookshelf(shelf_id, user_id):
+    async with engine.acquire() as conn:
+        bookshelf = model.Bookshelf.__table__
+        res = await conn.execute(select([bookshelf.c.public, bookshelf.c.created_by_id])\
+                           .where(bookshelf.c.id == shelf_id))
+        is_public, owner_id = (await res.fetchone())
+        return (is_public or owner_id == user_id)
+
+        
+async def get_conversion_candidate(ebook_id, to_format):     
+    to_format_id = await get_format_id(to_format)
+    async with engine.acquire() as conn:
+        source = model.Source.__table__
+        format = model.Format.__table__
+        res = await conn.execute(select([source.c.id, format.c.extension]).where(and_(source.c.ebook_id == ebook_id,
+                                                                  source.c.format_id == to_format_id,
+                                                                  source.c.format_id == format.c.id))\
+                                 .order_by(nullslast(desc(source.c.quality))))
+        res = await res.first()  
+        if res:
+            return res.as_tuple()
+        
+        #TODO: Consider optimal selection of the source 
+        # in previous version we first selected format (from available convertable in ebook)
+        # and then one with best quality -   so actually the other way around  
+        q=select([source.c.id, format.c.extension])\
+        .where(and_(source.c.format_id == format.c.id, source.c.ebook_id == ebook_id)).order_by(nullslast(desc(source.c.quality)))
+        async for row in conn.execute(q):
+            if row.extension in settings.CONVERTABLE_TYPES:
+                return row.id, row.extension
+            
+        return None, None
+            
+async def get_conversion_batch(entity_name, entity_id, format, user_id): 
+    entity_name = entity_name.upper()
+    format_id = await get_format_id(format)
+    async with engine.acquire() as conn:
+        batch=model.ConversionBatch.__table__
+        
+        res = await conn.execute(select([batch.c.id]).where(and_(batch.c.for_entity == entity_name,
+                                                           batch.c.entity_id == entity_id,
+                                                           batch.c.format_id == format_id,
+                                                           batch.c.created_by_id == user_id
+                                                           )))   
+        return await res.scalar()
+         
+async def create_conversion_batch(entity_name, entity_id, format, user_id):
+    entity_name = entity_name.upper()
+    if entity_name == 'AUTHOR':
+        author = model.Author.__table__
+        q = select([case([(author.c.first_name == None, author.c.last_name)],
+                   else_ = author.c.first_name + ' ' + author.c.last_name)])\
+            .where(author.c.id == entity_id)
+    elif entity_name == 'SERIES':
+        series = model.Series.__table__
+        q = select([series.c.title]).where(series.c.id == entity_id)
+    elif entity_name == 'BOOKSHELF':
+        shelf = model.Bookshelf.__table__
+        q = select([shelf.c.name]).where(shelf.c.id == entity_id)
+    else:
+        raise ValueError('Invalid entity name')
+    
+    format_id = await get_format_id(format)
+    
+    async with engine.acquire() as conn:
+        batch = model.ConversionBatch.__table__
+        res = await conn.execute(q)
+        name = await res.scalar()
+        name = "Books for %s %s" % (entity_name.lower(), name)
+        res = await conn.execute(batch.insert()\
+                                 .values(name=name, for_entity=entity_name,
+                                    entity_id=entity_id, format_id=format_id,
+                                    created_by_id = user_id,
+                                    modified_by_id = user_id, version_id =1 )\
+                                 .returning(batch.c.id))
+        
+        return await res.scalar()
+        
+        
+async def add_zip_to_batch(batch_id, zip_file):
+    async with engine.acquire() as conn:
+        batch = model.ConversionBatch.__table__
+        res = await conn.execute(batch.update().values(zip_location = zip_file).where(batch.c.id == batch_id))
+        
+async def get_existing_conversion(ebook_id, user_id, to_format):
+    format_id = await get_format_id(to_format)
+    async with engine.acquire() as conn:
+        source = model.Source.__table__
+        conversion = model.Conversion.__table__
+        res = await conn.execute(select([conversion.c.id]).select_from(conversion.join(source))\
+                           .where(and_(source.c.ebook_id == ebook_id,
+                                       conversion.c.created_by_id == user_id,
+                                       conversion.c.format_id == format_id))\
+                           .order_by(nullslast(desc(source.c.quality)))) 
+        return await res.scalar()
 
         

@@ -7,7 +7,7 @@ class Test(Action):
     def do(self):
         print("Request to API")
         resp = self.http.get('/api/ebooks', params={'page':1,'page_size':10})
-        data = resp.json()
+        data = resp
         print("Got %d ebooks of %d"% (len(data['items']), data['total']))
         print("Calling remote method sleep 1")
         now =time()

@@ -1,0 +1,21 @@
+<template>
+  <require from="components/autocomplete/autocomplete"></require>
+  <ai-dialog>
+    <ai-dialog-header>
+    <h2 class="page-title">Move source "${source.format}"</h2>
+  </ai-dialog-header>
+    <ai-dialog-body>
+    <error-alert error.bind="error"></error-alert>
+      <div class="form-group">
+        <label class="control-label">To Other Ebook</label>
+        <autocomplete loader.bind="loader" value-key="title" suggestion-template="./autocomplete-ebooks.html"
+        selected-value.bind="otherEbook" additional-class="form-control" filter.one-time="filterOutThisEbook"></autocomplete>
+      </div>
+    </ai-dialog-body>
+
+      <ai-dialog-footer>
+         <button type="button" class="btn btn-primary btn-lg" click.delegate="controller.ok(otherEbook)" disabled.bind="!ready">Move</button>
+        <button type="button" class="btn btn-default btn-lg" click.delegate="controller.cancel()">Cancel</button>
+      </ai-dialog-footer>
+  </ai-dialog>
+</template>

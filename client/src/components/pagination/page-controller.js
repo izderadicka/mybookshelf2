@@ -16,7 +16,7 @@ export class PageController {
   @bindable noSort=false;
 
   constructor() {
-    logger.debug('Constructing PageContoller');
+    logger.debug('Constructing PageContoller - history state is ' + JSON.stringify(history.state));
 
     if (history.state) {
       const state=history.state;
@@ -45,7 +45,7 @@ export class PageController {
   }
 
   loadPage(page, unbinded=false) {
-    //if (this.loading) return Promise.resolve(null);
+    //if (! this.loader) return Promise.resolve(null);
     logger.debug(`Loading page ${page}, ${this.sort} by ${this.loader.name}`);
     this.loading=true;
     this.error=null;
@@ -57,6 +57,16 @@ export class PageController {
               this.error={error:'Page Load Error', errorDetail:err};
             })
       .then(() => this.loading=false);
+  }
+
+  get reloadPage() {
+    return (wasDelete) => {
+      if (this.data && this.data.length ===1 && wasDelete && this.page>1) {
+        this.page=this.page-1;
+      } else {
+        this.loadPage(this.page);
+      }
+    }
   }
 
   pageChanged(newPage) {

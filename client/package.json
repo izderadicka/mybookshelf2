@@ -70,6 +70,7 @@
       "aurelia-animator-css": "npm:aurelia-animator-css@^1.0.0-rc.1.0.0",
       "aurelia-auth": "npm:aurelia-auth@^3.0.2",
       "aurelia-bootstrapper": "npm:aurelia-bootstrapper@^1.0.0-rc.1.0.0",
+      "aurelia-dependency-injection": "npm:aurelia-dependency-injection@^1.2.0",
       "aurelia-dialog": "npm:aurelia-dialog@^1.0.0-beta.3.0.0",
       "aurelia-event-aggregator": "npm:aurelia-event-aggregator@^1.0.0",
       "aurelia-fetch-client": "npm:aurelia-fetch-client@^1.0.0-rc.1.0.0",
@@ -89,6 +90,7 @@
       "diacritic": "npm:diacritic@^0.0.2",
       "fetch": "github:github/fetch@^1.0.0",
       "font-awesome": "npm:font-awesome@^4.6.3",
+      "izderadicka/asexor_js_client": "github:izderadicka/asexor_js_client@master",
       "jquery": "npm:jquery@^2.2.4",
       "select2": "github:select2/select2@^4.0.3",
       "text": "github:systemjs/plugin-text@^0.0.8"

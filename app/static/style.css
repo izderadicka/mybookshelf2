@@ -84,3 +84,18 @@ table.sources {
 .converted-ebooks {
     margin: 1em 0;
 }
+
+input[type="checkbox"] {
+    transform: scale(3);
+    margin: 20px;
+}
+
+.pagination .buttons {
+	width: 340px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.series a, .authors a {
+	text-decoration: none;
+}

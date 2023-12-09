@@ -7,13 +7,15 @@ import {ConfirmDialog} from 'components/confirm-dialog';
 import {WSClient} from 'lib/ws-client';
 import {EventAggregator} from 'aurelia-event-aggregator';
 import {Router} from 'aurelia-router';
+import {SourceMove} from './source-move';
+import {Configure} from 'lib/config/index';
 
 let logger = LogManager.getLogger('ebooks');
 
-@inject(ApiClient, WSClient, Access, DialogService, EventAggregator, Router)
+@inject(ApiClient, WSClient, Access, DialogService, EventAggregator, Router, Configure)
 export class Ebook {
   ebook
-  constructor(client, ws, access, dialog, event, router ) {
+  constructor(client, ws, access, dialog, event, router, config) {
     this.client=client;
     this.ws = ws;
     this.access=access;
@@ -23,10 +25,7 @@ export class Ebook {
     this.token = access.token;
     this.canDownload=access.hasRole('user');
     this.canConvert=access.hasRole('user');
-    this.cover = new Image();
-    this.cover.onload = function() {
-        URL.revokeObjectURL(this.src);
-      }
+    this.conversionFormats = config.get('conversionFormats').map(fmt => {  return {value:fmt, text:fmt}});
     this.subscribeConvertEvents();
   }
 
@@ -68,7 +67,9 @@ export class Ebook {
       .then(b => {
         this.ebook=b;
         if (b.cover)
-          this.coverLoader = this.client.getCover('ebooks', b.id);
+          this.coverLoader = this.client.getCover('ebooks', b.id)
+        else
+          this.coverLoader = null;
         return true;
         })
       .catch(err => {
@@ -77,8 +78,19 @@ export class Ebook {
       });
   }
 
-  activate(params) {
+  activate(params, route) {
     this.updateConverted();
+    this.updateShelves();
+    route.navModel.setTitle(`Ebook "${this.ebook.title}"`);
+
+  }
+
+  get updateShelves() {
+    return () => {
+    this.client.getManyUnpaged(`bookshelves/with-ebook/${this.ebook.id}`)
+    .then(res => this.shelves = res.items)
+    .catch(err => logger.error('Error fetching shelves'));
+  }
   }
 
   updateConverted() {
@@ -87,27 +99,19 @@ export class Ebook {
     .catch(err => logger.error('Cannot get converted sources',err));
   }
 
-  attached() {
-    if (this.coverLoader)
-    this.coverLoader.then (blob => {
-      this.cover.src = URL.createObjectURL(blob);
-      document.getElementById('cover-holder').appendChild(this.cover);
-      })
-    .catch(err => {
-      logger.warn(`Cannot load cover for ebook ${this.ebook.id}: ${err}`);
-    });
-
-  }
-
   get searchString() {
     let s=''
     if (this.ebook.authors)
-      s += this.ebook.authors.slice(0,2).map(a=> a.first_name? a.first_name+' '+a.last_name: a.last_name).join(' ');
+      s += this.ebook.authors.slice(0,2).map(a=> a.last_name).join(' ');
     s += ' '+ this.ebook.title;
     return encodeURIComponent(s);
   }
 
   canDeleteSource(source) {
+    return this.access.canDelete(source.created_by);
+  }
+
+  canMoveSource(source) {
     return this.access.canEdit(source.created_by);
   }
 
@@ -121,22 +125,41 @@ export class Ebook {
       })
       .then(resp => {
         if (!resp.wasCancelled) {
-        this.client.delete('sources', source.id)
-          .then(res => {
-            if (res.error) {
-              logger.error('Source delete failed: ' + res.error + ' '+ res.error_details);
-              alert('Cannot delete: '+ res.error);
-            } else {
-              let idx = this.ebook.sources.findIndex(x => x === source)
-              if (idx >= 0) this.ebook.sources.splice(idx, 1);
-              this.updateConverted();
-            }
-          })
-          .catch(err => {
-            logger.error('Server error: ' + err);
-          })
+        this.removeSource(source, 'Source delete failed:', this.client.delete('sources', source.id));
         }
       });
+  }
+
+  removeSource(source, msg, promise) {
+    let showError = function(msg, error, errorDetail) {
+      logger.error(msg + ' ' + error + ' '+ JSON.stringify(errorDetail));
+      alert(msg + ' ' + error);
+    }
+
+    promise
+    .then(res => {
+      if (res.error) {
+        showError(msg, res.error, res.error_details);
+      } else {
+        let idx = this.ebook.sources.findIndex(x => x === source)
+        if (idx >= 0) this.ebook.sources.splice(idx, 1);
+        this.updateConverted();
+      }
+    })
+    .catch(err => {
+      showError('Server error:', err);
+    })
+  }
+
+  moveSource(source) {
+    this.dialog.open({viewModel:SourceMove, model:{ebookId:this.ebook.id, sourceId:source.id}})
+    .then(resp=> {
+      if (!resp.wasCancelled) {
+        logger.debug('Moving to ', resp.output);
+        this.removeSource(source, 'Source move failed:',
+        this.client.post(`sources/${source.id}/move`, {other_ebook_id: resp.output.id}));
+      }
+    });
   }
 
   get convertSource() {
@@ -155,10 +178,6 @@ export class Ebook {
           });
         };
       }
-  }
-
-  get conversionFormats() {
-    return [{text:'epub', value:'epub'}, {text:'mobi', value:'mobi'}];
   }
 
   get enableFormats() {
@@ -183,6 +202,7 @@ export class Ebook {
         this.router.navigateToRoute('ebook-edit', {id:this.ebook.id})
       break;
       case 'cover':
+        this.router.navigateToRoute('cover-edit', {id:this.ebook.id})
       break;
       case 'merge':
       this.router.navigateToRoute('ebook-merge', {id: this.ebook.id});
@@ -190,6 +210,18 @@ export class Ebook {
     }
   }
   }
+
+  get updateRating() {
+    return rating => {
+      this.client.post(`ebooks/${this.ebook.id}/rate`, {rating})
+      .then( res => {
+        if (res.error) throw new Error('Rating update error '+ res.error);
+        this.ebook.rating = res.rating;
+        this.ebook.rating_count = res.rating_count;
+      })
+    }
+  }
+
 
 
 }

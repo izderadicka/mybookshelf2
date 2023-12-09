@@ -147,4 +147,62 @@ class TestDAL(TestCase):
         q = dal.get_conversion_id(2, 1, 'epub')
         conv_id = loop.run_until_complete(q)
         self.assertTrue(conv_id is None)
+        q = dal.get_ebook_dir(61944)
+        base_dir = loop.run_until_complete(q)
+        self. assertEqual(base_dir, 'Kissinger Henry/Roky v Bilem dome(cs)')
+        q =dal.update_ebook_cover(61944, 'Kissinger Henry/Roky v Bilem dome(cs)/cover.jpg')
+        loop.run_until_complete(q)
+        
+        eb = model.Ebook.query.get(61944)
+        self.assertEqual(eb.cover, 'Kissinger Henry/Roky v Bilem dome(cs)/cover.jpg')
+        
+        shelf = model.Bookshelf(name='Testovaci')
+        db.session.add(shelf)
+        db.session.commit()
+        
+        q = dal.get_ebooks_ids_for_object('author', 8015 )
+        ebooks_ids = loop.run_until_complete(q)
+        self.assertEqual(len(ebooks_ids), 4)
+        
+        q = dal.get_ebooks_ids_for_object('series', 1633 )
+        ebooks_ids = loop.run_until_complete(q)
+        self.assertEqual(len(ebooks_ids), 4)
+        
+        q = dal.get_ebooks_ids_for_object('bookshelf', 1 )
+        ebooks_ids = loop.run_until_complete(q)
+        self.assertEqual(len(ebooks_ids), 0)
+        
+        q = dal.get_conversion_candidate(58694, 'epub')
+        res = loop.run_until_complete(q)
+        self.assertEqual(res, (54463, 'epub')) 
+        
+        q = dal.get_conversion_candidate(58694, 'mobi')
+        res = loop.run_until_complete(q)
+        self.assertEqual(res, (54463, 'epub')) 
+        
+        
+        for entity_name, entity_id, name in (('author', 8015, 'Jason Dark'), 
+                                       ('series', 1633, 'Na stopě hrůzy'), 
+                                       ('bookshelf', 1, 'Testovaci')):
+            q = dal.create_conversion_batch(entity_name, entity_id, 'epub', 1)
+            batch_id = loop.run_until_complete(q)
+            self.assertTrue(batch_id)
+            
+            batch = model.ConversionBatch.query.get(batch_id)
+            self.assertTrue(batch.name.find(name) >=0, 'Contains %s'%name)
+            
+            q = dal.get_conversion_batch(entity_name, entity_id, 'epub', 1)
+            rb_id = loop.run_until_complete(q)
+            self.assertEqual(rb_id, batch_id)
+            
+        q = dal.add_zip_to_batch(batch_id, '1/mybatch.zip')
+        loop.run_until_complete(q)
+        db.session.expire(batch)
+        batch = model.ConversionBatch.query.get(batch_id)
+        self.assertEqual(batch.zip_location, '1/mybatch.zip')
+        
+        q = dal.get_existing_conversion(58694, 1, 'epub')
+        conv_id = loop.run_until_complete(q)
+        self.assertTrue(conv_id is None)
+        
         

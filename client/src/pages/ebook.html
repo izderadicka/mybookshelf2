@@ -1,10 +1,12 @@
 <template>
   <require from="components/authors"></require>
-   <require from="components/genres-converter"></require>
-   <require from="components/context-menu/context-menu"></require>
-   <require from="components/rating/rating"></require>
-   <require from="components/size-converter"></require>
-   <require from="components/date-converter"></require>
+  <require from="components/genres-converter"></require>
+  <require from="components/context-menu/context-menu"></require>
+  <require from="components/rating/rating"></require>
+  <require from="components/size-converter"></require>
+  <require from="components/date-converter"></require>
+  <require from="components/add-to-shelf-button"></require>
+  <require from="components/cover"></require>
   <section>
     <h2 class="page-title">
       <span class="title">${ebook.title}</span>
@@ -14,60 +16,74 @@
     </h2>
     <authors authors.bind="ebook.authors"></authors>
     <div class="ebook-panel">
-    <div class="ebook-cover-big" id="cover-holder">
+      <cover loader.bind="coverLoader"></cover>
+      <div class="ebook-details">
+        <ul class="list-group ebook-properties">
+          <li class="list-group-item">
+            <label class="ebook-detail-label">Language:</label>
+            <span class="ebook-language">${ebook.language.name}</span>
+          </li>
+          <li class="list-group-item" if.bind="ebook.series">
+            <label class="ebook-detail-label">Series:</label>
+            <span class="ebook-detail-value"><a route-href="route:series; params.bind: {id: ebook.series.id}">${ebook.series.title}</a> #${ebook.series_index}</span>
+          </li>
+          <li class="list-group-item">
+            <label class="ebook-detail-label">Genres:</label>
+            <span class="ebook-detail-value">${ebook.genres | genres}</span>
+          </li>
+          <li class="list-group-item" if.bind="ebook.rating">
+            <label class="ebook-detail-label">Rating:</label>
+            <span class="ebook-rating"><rating size="1.5" rating.bind="ebook.rating" read-only="1"></rating></span>
+            <span class="rating-count-ebook-detail">(${ebook.rating_count})</span>
+          </li>
+          <li class="list-group-item">
+            <label class="ebook-detail-label">My Rating:</label>
+            <span class="ebook-rating"><rating size=2 rating.bind="ebook.my_rating" on-rating-change.one-time="updateRating"></rating></span>
+          </li>
+          <li class="list-group-item">
+            <label class="ebook-detail-label">Created:</label>
+            <span class="ebook-date">${ebook.created | date}</span>
+          </li>
+          <li class="list-group-item">
+            <label class="ebook-detail-label">Find Details On:</label>
+            <a if.bind="ebook.language.code=='cs'" class="ext-link" target="_blank" href="http://www.databazeknih.cz/search?q=${searchString}">DatabazeKnih</a>
+            <a class="ext-link" target="_blank" href="http://www.goodreads.com/search?q=${searchString}">GoodReads</a>
+          </li>
+          <li class="list-group-item" if.bind="shelves && shelves.length">
+            <label class="ebook-detail-label">In Bookshelves:</label>
+            <a class="shelves-item" repeat.for="shelf of shelves" route-href="route:shelf; params.bind:{id: shelf.id}">${shelf.name} (${shelf.owner})  </a>
+          </li>
+          <li class="list-group-item" if.bind="convertedSources.length">
+            <label class="ebook-detail-label">Recently Converted To:</label>
+            <a class="converted-sources-item" repeat.for="converted of convertedSources" href="${client.baseUrl}/api/download-converted/${converted.id}?bearer_token=${token}">${converted.format} </a>
+          </li>
+        </ul>
+        <add-to-shelf-button what="ebook" item.bind="ebook" after-add-cb.one-time="updateShelves"></add-to-shelf-button>
+      </div>
     </div>
-    <div class="ebook-details">
-    <ul class="list-group ebook-properties">
-      <li class="list-group-item">
-        <label class="ebook-detail-label">Language:</label>
-        <span class="ebook-language">${ebook.language.name}</span>
-      </li>
-      <li class="list-group-item" if.bind="ebook.series">
-        <label class="ebook-detail-label">Series:</label>
-        <span class="ebook-detail-value">${ebook.series.title} #${ebook.series_index}</span>
-      </li>
-      <li class="list-group-item">
-        <label class="ebook-detail-label">Genres:</label>
-        <span class="ebook-detail-value">${ebook.genres | genres}</span>
-      </li>
-      <li class="list-group-item">
-        <label class="ebook-detail-label">Rating:</label>
-        <span class="ebook-rating"><rating size=2 rating.bind="ebook.rating"></rating></span>
-      </li>
-      <li class="list-group-item">
-        <label class="ebook-detail-label">Created:</label>
-        <span class="ebook-date">${ebook.created | date}</span>
-      </li>
-      <li class="list-group-item">
-        <label class="ebook-detail-label">Find Details On:</label>
-        <a if.bind="ebook.language.code=='cs'" class="ext-link" target="_blank" href="http://www.databazeknih.cz/search?q=${searchString}">DatabazeKnih</a>
-        <a class="ext-link" target="_blank" href="http://www.goodreads.com/search?q=${searchString}">GoodReads</a>
-      </li>
-      <li class="list-group-item" if.bind="convertedSources.length">
-        <label class="ebook-detail-label">Recently Converted To:</label>
-        <a class="converted-sources-item" repeat.for="converted of convertedSources"
-        href="${client.baseUrl}/api/download-converted/${converted.id}?bearer_token=${token}">${converted.format} </a>
-      </li>
-
-    </ul>
-  </div>
-  </div>
     <table class="table">
-      <tr><th>Format</th><th>Size</th><th>Quality</th><th>Action</th></tr>
+      <tr>
+        <th>Format</th>
+        <th>Size</th>
+        <th>Quality</th>
+        <th>Actions</th>
+      </tr>
       <tr repeat.for="source of ebook.sources">
         <td>${source.format}</td>
         <td>${source.size | size}</td>
-        <td><rating rating.bind="source.quality" read-only="1"></rating></td>
-        <td class="ebook-actions"><a if.bind="canDownload" href="${client.baseUrl}/api/download/${source.id}?bearer_token=${token}" title="Download File">
+        <td>
+          <rating rating.bind="source.quality" read-only="1"></rating>
+        </td>
+        <td class="ebook-actions">
+          <a if.bind="canDownload" href="${client.baseUrl}/api/download/${source.id}?bearer_token=${token}" title="Download File">
             <i class="fa fa-download source-action"></i></a>
-          <a if.bind="canConvert" href="#" click.delegate="menuConvert.show($event, source)"
-            title.bind="source.error || 'Convert'"><i class="fa fa-cog source-action ${source.active? 'fa-spin':''} ${source.error?'text-danger':''}"></i></a>
+          <a if.bind="canConvert" href="#" click.delegate="menuConvert.show($event, source)" title.bind="source.error || 'Convert'"><i class="fa fa-cog source-action ${source.active? 'fa-spin':''} ${source.error?'text-danger':''}"></i></a>
           <a if.bind="canDeleteSource(source)" href="#" click.delegate="deleteSource(source)" title="Delete File"><i class="fa fa-minus-circle source-action"></i></a>
+          <a if.bind="canMoveSource(source)" href="#" click.delegate="moveSource(source)" title="Move This File to Other Ebook"><i class="fa fa-arrow-right source-action"></i></a>
         </td>
       </tr>
     </table>
-    <context-menu items.bind="conversionFormats" header="Convert to"
-    view-model.ref="menuConvert" action.bind="convertSource" is-enabled.one-time="enableFormats"></context-menu>
+    <context-menu items.bind="conversionFormats" header="Convert to" view-model.ref="menuConvert" action.bind="convertSource" is-enabled.one-time="enableFormats"></context-menu>
     <context-menu items.bind="editActions" header="Edit" view-model.ref="menuEdit" action.bind="editAction"></context-menu>
   </section>
 

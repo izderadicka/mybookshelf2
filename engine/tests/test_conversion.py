@@ -5,8 +5,8 @@ import asyncio
 from app.tests.basecase import TestCase
 from engine import dal
 from settings import Testing
-from settings import BOOKS_CONVERTED_DIR
-from engine.tasks import ConvertTask
+from settings import BOOKS_CONVERTED_DIR, BOOKS_BASE_DIR
+from engine.tasks import ConvertTask, ConvertManyTask
 import app.model as model
 
 dal.DSN = 'dbname={db} user={user} password={password} host={host}'.format(db=Testing.DB_NAME,
@@ -15,17 +15,22 @@ dal.DSN = 'dbname={db} user={user} password={password} host={host}'.format(db=Te
                                                                            password=Testing.DB_PASSWORD
                                                                            )
 
-class TestMeta(TestCase):
+ebook_file=os.path.join(BOOKS_BASE_DIR, 'Kissinger, Henry/Roky v Bilem dome/Kissinger, Henry - Roky v Bilem dome (1).docx')
+
+class TestConversion(TestCase):
 
     def setUp(self):
         TestCase.setUp(self)
         dal.init()
+        os.makedirs(os.path.dirname(ebook_file), exist_ok=True)
+        shutil.copy(os.path.join(os.path.dirname(__file__), 'files/Kissinger, Henry - Roky v Bilem dome (1).docx'), ebook_file)
         
        
     def tearDown(self):
         TestCase.tearDown(self)
         dal.close()
         shutil.rmtree(os.path.join(BOOKS_CONVERTED_DIR, '1/Kissinger, Henry'), ignore_errors=True)
+        shutil.rmtree(os.path.join(BOOKS_BASE_DIR, 'Kissinger, Henry'), ignore_errors=True)
         
     
     def test_convert(self):
@@ -41,6 +46,29 @@ class TestMeta(TestCase):
         c = model.Conversion.query.get(conv_id)
         self.assertEqual(c.location, book )
         self.assertEqual(c.created_by.user_name, 'admin')
+        
+        
+    def test_multi(self):
+        t = ConvertManyTask(user='admin@example.com')
+        loop = asyncio.get_event_loop()
+        run= loop.run_until_complete
+        run(t.start('author', 8015, 'epub'))
+        
+        self.assertEqual(len(t.tasks)+len(t.ready_sources), 4)
+        self.assertEqual(len(t.tasks),4)
+        self.assertEqual(t.tasks, ['convert']*4)
+        tasks=[72201, 73674, 74027, 74100]
+        self.assertEqual(list(map(lambda x: x[0][0], t.tasks_args)), tasks)
+        
+        
+        for i in range(4):
+            st = run(t.next_task())
+            self.assertEqual(st.task_args[0], tasks[i])
+            self.assertEqual(st.task_args[1], 'epub')
+            
+        st = run(t.next_task())
+        self.assertTrue(st is None)
+        
         
         
         

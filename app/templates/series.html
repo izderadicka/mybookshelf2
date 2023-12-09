@@ -1,0 +1,12 @@
+{% import 'macros.html' as m %}
+{% extends "base.html" %}
+{%block title%}{{series.title}}{%endblock%}
+{% block content %}
+<h1>{{series.title}}</h1>
+{% for message in get_flashed_messages() %}
+    <div class="msg warning">{{ message }}</div>
+ {% endfor %}
+{% if ebooks %}
+{%include "ebooks_list.html"%}
+{%endif%}
+{% endblock %}

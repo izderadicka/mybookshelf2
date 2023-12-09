@@ -5,4 +5,4 @@ RUN npm install jspm gulp -g
 
 ADD build_client_cmd.sh /
 ADD watch_client_cmd.sh /
-ADD config.js /tmp/
+

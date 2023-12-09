@@ -5,24 +5,22 @@ import {ApiClient} from 'lib/api-client';
 import {Access} from 'lib/access';
 import {Ebook} from 'models/ebook';
 import {DialogService} from 'aurelia-dialog';
-import {ConfirmDialog} from 'components/confirm-dialog';
+import {Edit} from './abstract/edit';
 
 let logger = LogManager.getLogger('ebook-edit')
 
 @inject(ApiClient, Router, Access, DialogService)
-export class EditEbook {
-  ebook;
-  originalEbook;
+export class EditEbook extends Edit{
+   ebook;
   _languages;
   _genres;
   @bindable _series;
   _seriesSelected;
 
   constructor(client, router, access, dialog) {
-    this.client = client;
-    this.router = router;
-    this.access = access;
-    this.dialog = dialog;
+    super(client, router, access, dialog);
+    this.viewRoute = 'ebook';
+    this.modelEntity = 'ebooks';
   }
 
 /*
@@ -36,9 +34,10 @@ export class EditEbook {
 
   canActivate(params) {
     if (params.id !== undefined) {
-    return this.client.getOne('ebooks', params.id)
+    return this.client.getOne('ebooks', params.id, true)
       .then(b => {
         this.ebook=new Ebook(b);
+        this.model=this.ebook;
         this._series = b.series ? b.series.title : undefined;
         logger.debug(`Ebook data ${JSON.stringify(b)}`);
         return this.access.canEdit(b.created_by);
@@ -48,6 +47,7 @@ export class EditEbook {
 
     } else {
       this.ebook = new Ebook();
+      this.model = this.ebook;
       this._series = undefined;
       return true;
     }
@@ -84,9 +84,6 @@ export class EditEbook {
       if (this.meta) this.prefill()});
   }
 
-  deactivate() {
-    if (this.ebook) this.ebook.dispose();
-  }
 
   prefill() {
     if (this.meta.title) this.ebook.title = this.meta.title;
@@ -114,99 +111,22 @@ export class EditEbook {
     else this.ebook.series = {title: this._series};
   }
 
-  save() {
-    //logger.debug(`Saving ${JSON.stringify(this.ebook)}`);
-    this.error=undefined;
 
-    if (this.validate()) {
-      let data = this.ebook.prepareData();
-      if (!data || ! Object.keys(data).length) {
-        this.error={error:'No changes to save'};
-        return
-      }
-      let result;
-      if (this.ebook.id) {
-        result = this.client.patch('ebooks', data, this.ebook.id)
-      } else {
-        result = this.client.post('ebooks', data);
-      }
-
-      result.then(res => {
-        if (res.error) {
-          this.error={error:res.error, errorDetail:res.error_details}
-        } else if (res.id) {
-          let action = this.uploadId ? this.client.addUploadToEbook(res.id, this.uploadId, this.meta.quality || null) : Promise.resolve({})
-           action.then(res2 => {
-              if (res2.error) this.error = {
-                error: res2.error,
-                errorDetail: res2.error_details }
-              else
-                this.router.navigateToRoute('ebook', {id:res.id});
-              })
-            .catch(err => this.error={error:"Server error attaching source", errorDetail:err});
-
-        } else {
-          this.error = {error:'Invalid respose', errorDetail: 'Ebook ID is missing'}
-        }
-      })
-      .catch(err => this.error={error:'Request failed', errorDetail:err})
-
-
-    } else {
-      logger.debug(`Validation fails`)
-    }
+  doAfterSave(entity_id) {
+    let action = this.uploadId ? this.client.addUploadToEbook(entity_id, this.uploadId, this.meta.quality || null) : Promise.resolve({})
+     return action.then(res2 => {
+        if (res2.error)
+          throw new Error(`Cannot add upload to this ebook: ${res2.error}, ${res2.error_details}`)
+        });
   }
 
-  validate() {
-    $('.has-error').removeClass('has-error');
-    $('.help-block').remove();
-    let errors = [];
-
-    let addError = function (what,err) {
-      errors.push(err);
-      let grp=$(`#${what}-input-group`);
-      grp.addClass('has-error');
-      $('<span>').addClass('help-block').text(err).appendTo(grp);
-
-    }
-    this.ebook.validate(addError);
-    return errors.length === 0
-  }
-
-  cancel() {
-    if (this.ebook.id) {
-      this.router.navigateToRoute('ebook', {id:this.ebook.id});
-    } else {
-      this.router.navigate('welcome')
-    }
-  }
 
   get seriesLoader() {
     return start => this.client.getIndex('series', start);
   }
 
-  canDelete() {
-    return this.ebook.id && this.access.canDelete(this.ebook.created_by);
-  }
-
-  delete() {
-    this.error=undefined;
-    this.dialog.open({viewModel:ConfirmDialog, model: {action:'Delete', message:`Do you want to delete ebook ${this.ebook.title}`}})
-    .then(response => {
-      if (!response.wasCancelled && this.ebook.id) {
-        this.client.delete('ebooks', this.ebook.id)
-        .then(res => {
-          if (res.error) {
-            this.error={error:res.error, errorDetail:res.error_details}
-          } else {
-            this.router.navigateToRoute('welcome');
-          }
-        })
-        .catch(err=> this.error={error:'Delete error', errorDetail:err})
-
-      }
-    });
-
+  get deleteConfirmMessage() {
+    return `Do you want to delete ebook ${this.ebook.title}?`;
   }
 
 }

@@ -1,8 +1,16 @@
 #!/bin/bash
-set -e
+set -e -x
+rm -r /code/* || true
+git clone --depth 1 -b ${MBS2_BRANCH:-master}  https://github.com/izderadicka/mybookshelf2 /tmp/code
+rm -rf /tmp/code/.git /tmp/code/data /tmp/code/tests /tmp/code/tools /tmp/code/deploy
+mv /tmp/code/* /code
+rm -r /tmp/code
+
 cd /code/client
-cp /tmp/config.js /code/client/src/config.js
+sed -i -r 's/"port": (6006|8080)/"port": null/g' src/config.js
 npm install
+# if you have problem with reaching github API limit use line below
+#jspm config registries.github.auth your_github_token
 jspm install -y
 export no_proxy=localhost
 xvfb-run gulp test

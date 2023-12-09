@@ -7,7 +7,7 @@ import app.schema as schema
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm import aliased
 from sqlalchemy import inspect
-from common.utils import remove_diacritics, file_hash
+from common.utils import remove_diacritics, file_hash, copy_cover, mimetype_from_file_name
 import os.path
 import filelock
 import shutil
@@ -30,7 +30,7 @@ def safe_int(v, for_=''):
 
 
 def preprocess_search_query(text):
-    text = re.sub('[:.;_-]', ' ', text, re.UNICODE)
+    text = re.sub(r'\W', ' ', text, re.UNICODE)
     tokens = text.split()
     tokens = map(lambda t: t.strip(), tokens)
     return ' & '.join(['%s:*' % t for t in tokens])
@@ -46,48 +46,18 @@ def search_query(q, search):
 def filter_ebooks(q, filter):
     return q.filter(func.unaccent(model.Ebook.title).ilike(func.unaccent(text("'%%%s%%'" % filter))))
 
-
-def paginated(default_page_size=10, max_page_size=100, sortings=None):
-    def wrapper(fn):
-        @wraps(fn)
-        def inner(*args, **kwargs):
-            page_size = safe_int(
-                request.args.get('page_size'), 'page_size') or default_page_size
-            if page_size > max_page_size:
-                abort(400, 'Page size bigger then maximum')
-            kwargs['page_size'] = page_size
-            kwargs['page'] = safe_int(request.args.get('page'), 'page') or 1
-            sort_in = request.args.get('sort')
-            if sortings:
-                sort = sortings.get(sort_in)
-                if sort_in and not sort:
-                    abort(400, 'Invalid sort key %s' % sort_in)
-                kwargs['sort'] = sortings.get(request.args.get('sort'))
-            else:
-                if sort_in:
-                    abort(400, 'Sorting not supported')
-            return fn(*args, **kwargs)
-        return inner
-    return wrapper
+def filter_shelves(q, filter):
+    return q.filter(func.unaccent(model.Bookshelf.name).ilike(func.unaccent(text("'%%%s%%'" % filter))))
 
 
-def paginate(q, page, page_size, sort, serializer):
-    if sort:
-        q = q.order_by(*sort)
-    pager = q.paginate(page, page_size)
-    return {'page': pager.page,
-            'page_size': pager.per_page,
-            'total': pager.total,
-            'items': serializer.dump(pager.items).data}
-
-
-def create_new_location(source, upload):
+def create_new_location(source, upload, move=False):
     base_dir = current_app.config['BOOKS_BASE_DIR']
     if isinstance(upload, model.Upload):
         new_file = os.path.join(current_app.config['UPLOAD_DIR'], upload.file)
     else:
         new_file = upload
-    new_location = norm_file_name(source)
+    new_location = os.path.join(source.ebook.base_dir, os.path.basename(norm_file_name(source)))
+    #if source.ebook.base_dir else norm_file_name(source) #TODO: Remove this WA
     ebook_dir = os.path.join(base_dir, os.path.split(new_location)[0])
     if not os.path.exists(ebook_dir):
         os.makedirs(ebook_dir, exist_ok=True)
@@ -98,8 +68,10 @@ def create_new_location(source, upload):
             name, ext = os.path.splitext(new_location)
             new_location = name + '(%d)' % index + ext
             index += 1
-        # TODO: consider copy for better safety?
-        shutil.move(new_file, os.path.join(base_dir, new_location))
+        if move:
+            shutil.move(new_file, os.path.join(base_dir, new_location))
+        else:
+            shutil.copy(new_file, os.path.join(base_dir, new_location))
 
     return new_location
 
@@ -119,18 +91,24 @@ def norm_file_name(source, ext=''):
 
     return new_name_rel
 
+def _safe_file_name(name):
+    return name.replace('/', '-')
+
 
 def norm_file_name_base(ebook):
     config = current_app.config
+    data = {'author': _safe_file_name(ebook.authors_str),
+            'title': _safe_file_name(ebook.title),
+            'language': ebook.language.code,
+            }
+    if ebook.series:
+        data.update({'serie': _safe_file_name(ebook.series.title),
+                    'serie_index': ebook.series_index or 0})
     if ebook.series and config.get('BOOKS_FILE_SCHEMA_SERIE'):
-        new_name_rel = config.get('BOOKS_FILE_SCHEMA_SERIE') % {'author': ebook.authors_str,
-                                                                'title': ebook.title,
-                                                                'serie': ebook.series.title,
-                                                                'serie_index': ebook.series_index or 0}
+        new_name_rel = config.get('BOOKS_FILE_SCHEMA_SERIE') % data
         # TODO: might need to spplit base part
     else:
-        new_name_rel = config.get('BOOKS_FILE_SCHEMA') % {'author': ebook.authors_str,
-                                                          'title': ebook.title}
+        new_name_rel = config.get('BOOKS_FILE_SCHEMA') % data
     new_name_rel = remove_diacritics(new_name_rel)
     assert(len(new_name_rel) < 4096)
     return new_name_rel
@@ -168,7 +146,7 @@ def download(id):
     fname = os.path.join(current_app.config['BOOKS_BASE_DIR'], source.location)
 
     down_name = norm_file_name(source)
-    down_name = os.path.split(fname)[-1]
+    down_name = os.path.split(down_name)[-1]
     response = stream_response(fname, mimetype=source.format.mime_type,
                                headers={'Content-Disposition': 'attachment; filename="%s"' % down_name})
 
@@ -185,17 +163,26 @@ def download_converted(conversion):
 
     return response
 
+def download_converted_batch(batch):
+    fname = os.path.join(current_app.config['BOOKS_CONVERTED_DIR'], batch.zip_location)
+    down_name = remove_diacritics(batch.name) + '.zip'
+    return stream_response(fname, mimetype='application/zip', 
+                           headers={'Content-Disposition': 'attachment; filename="%s"' % down_name})
 
-def check_file(mime_type, size, hash):
+
+def check_file(mime_type, size, hash, extension=None):
     if size > current_app.config['MAX_CONTENT_LENGTH']:
         logger.warn('File too big %d (limit is %d)', size,
                     current_app.config['MAX_CONTENT_LENGTH'])
         return {'error': 'file too big'}
-
+    if not mime_type and extension:
+        mime_type = mimetype_from_file_name('x.'+extension) or ''
     t = model.Format.query.filter_by(mime_type=mime_type.lower()).all()
+    if not t and extension:
+        t = model.Format.query.filter_by(extension=extension).all()
     if not t:
-        logger.warn('Unsupported mime type %s', mime_type)
-        return {'error': 'unsupported file type'}
+        logger.warn('Unsupported mime type %s ext %s', mime_type, extension)
+        return {'error': 'unsupported file type %s, extension %s'%(mime_type, extension)}
 
     sources = model.Source.query.filter_by(size=size, hash=hash).all()
     if sources:
@@ -206,10 +193,13 @@ def check_file(mime_type, size, hash):
 def check_uploaded_file(mime_type, fname):
     size = os.stat(fname).st_size
     hash = file_hash(fname)
-    return check_file(mime_type, size, hash)
+    extension = os.path.splitext(fname)[1]
+    if extension:
+        extension=extension[1:]
+    return check_file(mime_type, size, hash, extension)
 
 
-def _run_query(q):
+def run_query_limited(q):
     return q.count(), q.limit(current_app.config.get('MAX_INDEX_SIZE', 100)).all()
 
 
@@ -223,36 +213,31 @@ def series_index(start):
     q = model.Series.query
     q = q.filter(func.unaccent(model.Series.title).ilike(
         func.unaccent(start + '%'))).order_by(model.Series.title)
-    count = q.count()
-    q = q.limit(current_app.config.get('MAX_INDEX_SIZE', 100)).subquery(
-        'series_view')
-    q = aliased(model.Series, q)
-    session_author = db.session.query(q, model.Author).outerjoin(model.Ebook).join(
-        model.Ebook.authors).order_by(q.title, model.Author.id).all()
-    res = []
-    current = None
-    for series, author in session_author:
-        if series == current:
-            series.authors.append(author)
-        else:
-            current = series
-            res.append(series)
-            series.authors = [author] if author else []
-    return count, res
+    return run_query_limited(q)
 
 
 def ebooks_index(start):
     q = model.Ebook.query
     q = q.filter(func.unaccent(model.Ebook.title).ilike(
         func.unaccent(start + '%'))).order_by(model.Ebook.title)
-    return _run_query(q)
+    return run_query_limited(q)
+
+def shelves_index(start, user):
+    q = model.Bookshelf.query
+    if user:
+        q=q.filter(model.Bookshelf.created_by == user)
+    else:
+        q=q.filter(model.Bookshelf.public == True, model.Bookshelf.created_by != user)
+    q = q.filter(func.unaccent(model.Bookshelf.name).ilike(
+        func.unaccent(start + '%'))).order_by(model.Bookshelf.name)
+    return run_query_limited(q)
 
 
 def authors_index(start):
     q = model.Author.query
     q = q.filter(func.unaccent(model.Author.last_name + ', ' + model.Author.first_name)
                  .ilike(func.unaccent(start + '%'))).order_by(model.Author.last_name, model.Author.first_name)
-    return _run_query(q)
+    return run_query_limited(q)
 
 
 def clear_ebook_data(data):
@@ -331,7 +316,19 @@ def check_ebook_entity(ebook, current_user=None):
                      replace_author)
 
     # deduplicate authors
-
+    if len(ebook.authors)>1: 
+        duplicates=set()
+        
+        for i, author in enumerate(ebook.authors):
+            dups = list(filter(lambda a: a.last_name == author.last_name and\
+                                      a.first_name == author.first_name, ebook.authors[i+1:] ))
+            duplicates.update(dups)
+            
+        for dup in duplicates:
+            ebook.authors.remove(dup)
+        
+def update_ebook_base_dir(ebook):
+    ebook.base_dir= os.path.split(norm_file_name(ebook))[0]
 
 def delete_source(source):
     db.session.delete(source)
@@ -346,11 +343,11 @@ def delete_source(source):
     # purging of empty dirs must be done when system is offline
     
 
-def delete_ebook(ebook):
+def delete_ebook(ebook, keep_cover=False):
     files_to_delete=[os.path.join(current_app.config['BOOKS_BASE_DIR'], source.location)
                      for source in ebook.sources]
     r = db.session.delete(ebook)  # @UndefinedVariable
-    if ebook.cover:
+    if ebook.cover and not keep_cover:
         files_to_delete.append(os.path.join(current_app.config['BOOKS_BASE_DIR'], ebook.cover))
     files_to_delete.append(os.path.join(
             current_app.config['THUMBS_DIR'], '%d.jpg'%ebook.id))
@@ -375,22 +372,28 @@ def delete_conversion(conversion):
     except IOError:
         logger.warn('Conversion file %s cannot be deleted', conversion.location)
     db.session.delete(conversion)
+    
+def delete_conversion_batch(batch):
+    for conv in model.Conversion.query.filter(model.Conversion.batch == batch):
+        delete_conversion(conv)
+        
+    if batch.zip_location:
+        try:
+          os.remove(os.path.join(current_app.config['BOOKS_CONVERTED_DIR'], batch.zip_location))
+        except IOError:
+            logger.warn('Conversion batch file %s cannot be deleted', batch.zip_location)  
+            
+    db.session.delete(batch)
+    
 
-def update_cover(upload, ebook):
-    src = os.path.join(current_app.config['UPLOAD_DIR'], upload.cover)
-    cover_file = os.path.split(upload.cover)[1]
-    dst_dir = os.path.split(norm_file_name(ebook))[0]
-    dst = os.path.join(
-        current_app.config['BOOKS_BASE_DIR'], dst_dir, cover_file)
-    shutil.copy(src, dst)
-    ebook.cover = os.path.join(dst_dir, cover_file)
-    thumb = "thumbnail.jpg"
-    thumb_file = os.path.join(os.path.split(upload.cover)[0], thumb)
-    src = os.path.join(current_app.config['UPLOAD_DIR'], thumb_file)
-    if os.access(src, os.R_OK):
-        dst = os.path.join(
-            current_app.config['THUMBS_DIR'], '%d.jpg'%ebook.id)
-        shutil.copy(src, dst)
+def update_cover(upload, ebook, config=None):
+    if not config:
+        config = current_app.config
+    dst_dir = ebook.base_dir #if ebook.base_dir else os.path.split(norm_file_name(ebook))[0]
+    cover_file = upload.cover
+    ebook_id=ebook.id
+    cover_out = copy_cover(cover_file, dst_dir, ebook_id, config)
+    ebook.cover = cover_out
         
 def query_converted_sources_for_ebook(ebook_id, user=None):
     q = model.Conversion.query.join(model.Conversion.source)\
@@ -406,11 +409,40 @@ def filter_ebooks_by_genres(q,genres):
             .having(func.count(model.Ebook.id) == len(genres))
     
 
-def merge_ebook(ebook, other):   
+def merge_ebooks(ebook, other):   
     with db.session.no_autoflush:     
-        for s in other.sources:
-            other.sources.remove(s)
-            ebook.sources.append(s)
+        ebook.sources.extend(list(other.sources))
+        other.sources.clear()
+        keep_cover= ebook.cover == other.cover
+        delete_ebook(other, keep_cover)
+        
+def merge_shelves(shelf, other):   
+    with db.session.no_autoflush:   
+        for item in other.items.all():
+            if not ((item.ebook and shelf.items.filter(model.BookshelfItem.ebook == item.ebook)).one_or_none() \
+                or (item.series and shelf.items.filter(model.BookshelfItem.series == item.series).one_or_none())):
+                item.bookshelf = shelf
+    db.session.flush()
+    db.session.delete(other)  
+    db.session.commit()
+        
+def merge_authors(author, other):
+    with db.session.no_autoflush:
+        for ebook in other.ebooks:
+            ebook.authors.append(author)
             
-        delete_ebook(other)
+    db.session.delete(other)
+    db.session.commit()
+    
+def merge_series(series, other):
+    model.Ebook.query.filter(model.Ebook.series_id==other.id).update({model.Ebook.series_id: series.id}, 
+                                                               synchronize_session=False)
+    #db.session.flush()
+    db.session.delete(other)
+    db.session.commit()
+                 
+            
+def calc_avg_ebook_rating(ebook_id):
+    return db.session.query(func.avg(model.EbookRating.rating), func.count(model.EbookRating.id))\
+                            .filter(model.EbookRating.ebook_id == ebook_id).one()
     

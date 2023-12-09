@@ -3,8 +3,29 @@
 <span>Many authors</span>
 {%else%}
 {%for a in authors%}
+<a href="{{url_for('minimal.author_detail', id=a.id)}}">
 <span>{%if a.first_name%}{{a.first_name}} {%endif%}{{a.last_name}}</span>
+</a>
 {%if not loop.last%}, {%endif%}
 {%endfor%}
 {%endif%}
 {%- endmacro%}
+
+{% macro render_pagination(pagination,additional_query) %}
+  
+  <div class=pagination>
+  <div class="buttons">
+  {% if pagination.has_prev %}
+  
+  <a href="?page_size={{pagination.per_page}}&page={{pagination.prev_num}}{{additional_query|safe}}" class="btn btn-black smooth">Previous</a>
+  {% endif %}
+  {% if pagination.has_next %}
+  <a href="?page_size={{pagination.per_page}}&page={{pagination.next_num}}{{additional_query|safe}}" class="btn btn-black smooth">Next</a>
+  {% endif %}
+  </div>
+  </div>
+{% endmacro %}
+
+{% macro render_page_info(pagination) %}
+<h3>Page {{pagination.page}} of {{pagination.pages}}</h3>
+{% endmacro %}

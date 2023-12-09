@@ -1,0 +1,13 @@
+<template>
+  <section>
+  <div class="container-fluid vertically-spaced">
+  <ul class="nav nav-tabs nav-justified top-tabs">
+    <li role="presentation" repeat.for="item of router.navigation" class="${item.isActive?'active':''}">
+      <a href="${item.href}">${item.title}</a></li>
+  </ul>
+</div>
+<div class="container-fluid vertically-spaced">
+<router-view></router-view>
+</div>
+</section>
+</template>

@@ -10,4 +10,13 @@ export class ErrorAlert {
   clearError() {
     this.error=undefined;
   }
+
+  @computedFrom('error.errorDetail')
+  get detail() {
+    if (this.error) {
+    if (this.error.errorDetail instanceof Error)
+      return `${this.error.errorDetail.name}: ${this.error.errorDetail.message}`
+    else
+      return JSON.stringify(this.error.errorDetail);
+  }}
 }

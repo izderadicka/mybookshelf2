@@ -1,0 +1,25 @@
+<template>
+  <require from="components/error-alert"></require>
+  <require from="components/edit-buttons"></require>
+  <section>
+    <h2 class="page-title">Edit Ebook</h2>
+    <error-alert error.bind="error"></error-alert>
+    <div class="">
+
+      <div class="form-group" id="name-input-group">
+        <label class="control-label">Name</label>
+        <input class="form-control" type="text" value.bind="model.name">
+      </div>
+
+      <div class="form-group" id="description-input-group">
+          <label class="control-label">Description</label>
+          <textarea name="note" value.bind="model.description"></textarea>
+        </div>
+        <div class="form-group" id="public-input-group">
+        <label class = "control-label"><input type="checkbox" checked.bind="model.public"> Bookshelf Is Public</label>
+      </div>
+      <edit-buttons></edit-buttons>
+
+    </div>
+  </section>
+</template>

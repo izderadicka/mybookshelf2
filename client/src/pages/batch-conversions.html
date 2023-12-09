@@ -1,0 +1,32 @@
+<template>
+
+
+  <div class="container-fluid items-header vertically-spaced" css="display: ${paginator.lastPage===0?'none':'block'}">
+      <h3 class="page-title"><i class="fa fa-file-text-o" aria-hidden="true"></i>
+        ${paginator.page} of ${paginator.lastPage}
+    <div class='sorter' if.bind="sortings.length">
+      <label class="sorter-label"><i class="fa fa-sort"></i></label>
+      <sorter  sortings.one-time="sortings" view-model.ref="sorter"></sorter>
+    </div>
+  </h3>
+  </div>
+
+  <page-controller view-model.ref='paginator' loader.bind="loader" sort.bind="sorter.sort"
+  page-size="12" no-sort.bind="!sortings.length"></page-controller>
+
+  <div class="container-fluid vertically-spaced">
+    <ul class="list-group">
+      <li class="list-group-item" repeat.for="item of paginator.data">
+        <h3>${item.name} (${item.format})
+          <a if.bind="item.has_file" href="${client.baseUrl}/api/download-converted-batch/${item.id}?bearer_token=${token}" title="Download Zip Archive">
+            <i class="fa fa-download source-action"></i></a>
+        </h3>
+      </li>
+    </ul>
+  </div>
+
+  <pager page.two-way="paginator.page" last-page.bind="paginator.lastPage" loading.bind="paginator.loading"></pager>
+
+   <error-alert error.bind="paginator.error" dismissible.one-time="false"></error-alert>
+
+</template>

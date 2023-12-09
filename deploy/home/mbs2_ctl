@@ -1,0 +1,37 @@
+#!/bin/bash
+LOG_DIR=/data/local/mbs2/log
+export MBS2_DATA_DIR=/data/ebooks/mbs2
+export PYTHONPATH=/opt/mybookshelf2
+cd /opt/mybookshelf2
+
+start() {
+uwsgi -c /etc/uwsgi.ini --daemonize=$LOG_DIR/uwsgi.log
+python3.5 engine/backend.py --log-file=$LOG_DIR/backend.log 1>/dev/null 2>&1 &
+echo $! > /data/local/mbs2/backend.pid
+}
+
+stop() {
+  kill `cat /data/local/mbs2/backend.pid`
+  kill -INT `cat /data/local/mbs2/uwsgi.pid`
+  }
+
+reload() {
+  kill `cat /data/local/mbs2/backend.pid`
+  kill -HUP `cat /data/local/mbs2/uwsgi.pid`
+  python3.5 engine/backend.py --log-file=$LOG_DIR/backend.log 1>/dev/null 2>&1 &
+  echo $! > /data/local/mbs2/backend.pid
+  }
+case $1 in
+  start)
+  start
+  ;;
+  stop)
+  stop
+  ;;
+  reload)
+  reload
+  ;;
+  *)
+  echo Usage $0 "start|stop|reload"
+  ;;
+esac

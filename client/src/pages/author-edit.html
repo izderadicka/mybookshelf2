@@ -1,0 +1,23 @@
+<template>
+  <require from="components/error-alert"></require>
+  <require from="components/edit-buttons"></require>
+  <section>
+    <h2 class="page-title">Edit Author</h2>
+    <error-alert error.bind="error"></error-alert>
+    <div class="">
+
+      <div class="form-group" id="first_name-input-group">
+        <label class="control-label">First Name</label>
+        <input class="form-control" type="text" value.bind="model.first_name">
+      </div>
+
+      <div class="form-group" id="last_name-input-group">
+        <label class="control-label">Last Name</label>
+        <input class="form-control" type="text" value.bind="model.last_name">
+      </div>
+
+      <edit-buttons></edit-buttons>
+
+    </div>
+  </section>
+</template>

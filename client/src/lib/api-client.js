@@ -2,6 +2,7 @@ import {HttpClient, json} from 'aurelia-fetch-client';
 import {inject} from 'aurelia-framework';
 import $ from 'bootstrap';
 import {Configure} from 'lib/config/index';
+import {PidiCache} from './pidi-cache';
 
 @inject(Configure, HttpClient)
 export class ApiClient {
@@ -9,7 +10,8 @@ export class ApiClient {
     this.http=http;
     this.apiPath=config.get('api.path');
     this.baseUrl=http.baseUrl;
-    this._cache= new Map();
+    this._cache = new Map();
+    this._cache2 = new PidiCache(60);
   }
 
   getUrl(r, query=null) {
@@ -19,7 +21,7 @@ export class ApiClient {
   post(resource, data) {
     return this.http.fetch(this.getUrl(resource),
     {method:'POST',
-    body:json(data)
+      body:json(data)
     })
     .then(resp => resp.json())
   }
@@ -43,15 +45,15 @@ export class ApiClient {
   }
 
   getManyUnpagedCached(resource) {
-    let now = new Date()
-    if (this._cache.has(resource) && (now- this._cache.get(resource).ts) < 60*3600*1000) {
+    let now = new Date();
+    if (this._cache.has(resource) && (now - this._cache.get(resource).ts) < 60*3600*1000) {
       return Promise.resolve(this._cache.get(resource).data)
     }
     let url = this.getUrl(resource);
     return this.http.fetch(url)
       .then(response => response.json())
       .then(data => {
-        this._cache.set(resource, {ts: new Date, data});
+        this._cache.set(resource, {ts: new Date(), data});
         return data
       });
   }
@@ -59,10 +61,7 @@ export class ApiClient {
   getManyUnpaged(resource) {
     let url = this.getUrl(resource);
     return this.http.fetch(url)
-      .then(response => response.json())
-      .then(data => {
-        return data
-      });
+      .then(response => response.json());
   }
 
   getMany(resource, page=1, pageSize=25, sort, extra) {
@@ -86,10 +85,22 @@ export class ApiClient {
     return this.getMany('ebooks/author/'+id, page, pageSize, sort, filter?{filter:encodeURIComponent(filter)}:null);
   }
 
-  getOne(resource, id) {
+  getOne(resource, id, fresh) {
+    if (!fresh) {
+      let cached = this._cache2.get(resource, id);
+      if (cached) return Promise.resolve(cached);
+    }
     let url=this.getUrl(resource+'/'+ id)
     return this.http.fetch(url)
-      .then(response => response.json());
+      .then(response => response.json())
+      .then(entity => {
+        this._cache2.add(resource, entity);
+        return entity;
+      });
+  }
+
+  clearCache(resource) {
+    this._cache2.clear(resource);
   }
 
   checkUpload(fileInfo) {
@@ -99,17 +110,18 @@ export class ApiClient {
       });
   }
 
-  upload(formData) {
-    return this.http.fetch(this.getUrl('upload'), {method:'post', body: formData})
+  upload(formData, resource='upload') {
+    return this.http.fetch(this.getUrl(resource), {method:'post', body: formData})
       .then( resp => resp.json())
   }
+
 
   addUploadToEbook(ebookId, uploadId, quality) {
     return this.post(`ebooks/${ebookId}/add-upload`, {upload_id:uploadId, quality});
   }
 
-  mergeEbooks(ebookId, otherEbookId) {
-    return this.post(`ebooks/${ebookId}/merge`, {other_ebook: otherEbookId})
+  merge(resource, entityId, otherId) {
+    return this.post(`${resource}/${entityId}/merge`, {other_id: otherId});
   }
 
   getCover(resource, id) {

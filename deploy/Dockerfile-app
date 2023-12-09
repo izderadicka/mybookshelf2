@@ -1,21 +1,15 @@
 FROM mbs2-ubuntu
 
 MAINTAINER ivan
+ARG MBS2_ENVIRONMENT
 
-RUN wget http://nginx.org/keys/nginx_signing.key &&\
-    apt-key add nginx_signing.key &&\
-    echo "deb http://nginx.org/packages/ubuntu/ `lsb_release -cs` nginx" >> /etc/apt/sources.list.d/nginx.list &&\
-    apt-get update &&\
-    apt-get install -y nginx &&\
-    pip3 install uwsgi
+RUN if [ "X$MBS2_ENVIRONMENT" = "Xstage" ]; then pip3 install uwsgi; fi
     
-ADD nginx.conf /etc/nginx/conf.d/default.conf
-RUN mkdir /etc/nginx/ssl
-ADD ssl/server.key.pem /etc/nginx/ssl/
-ADD ssl/server.cert.pem /etc/nginx/ssl/
 ADD uwsgi.ini /etc/
 ADD run_app.sh /
 ADD loop.sh /
-    
+
+EXPOSE 6006
+
 WORKDIR /code
 

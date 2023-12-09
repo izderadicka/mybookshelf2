@@ -4,18 +4,17 @@ var config = {
   "api": {
     "protocol": "",
     "host":"",
-    "port": 6006,
+    "port": null,
     "path": "/api"
   },
-  "wamp": {
+  "backend-ws": {
     "host":"",
-    "port": 8080,
-    "path": "/ws",
-    "realm": "realm1"
+    "port": null
   },
   "maxUploadSize": 104857600,
   "notificationAttentionTimeout": 20,
-  "locale": undefined
+  "locale": undefined,
+  "conversionFormats": ['epub', 'mobi']
 }
 
 var authConfig = {

@@ -1,0 +1,23 @@
+<template>
+  <require from="components/authors"></require>
+  <require from="components/rating/rating"></require>
+  <div class='ebook-detail'>
+      <a route-href="route: ebook; params.bind: {id:ebook.id}"><div class="ebook-cover missing">
+        <img src.bind="getThumbSource(ebook)" if.bind="ebook.cover"
+        error.trigger="handleImgError($event)" load.trigger="handleImgLoad($event)"></div></a>
+    <div class="right-side">
+    <div class="ebook-info">
+    <authors authors.one-time="ebook.authors" compact.bind="true"></authors>
+    <div class="ebook-title"><a route-href="route: ebook; params.bind: {id:ebook.id}">${ebook.title}</a></div>
+    <div if.bind="ebook.rating"><rating rating.bind="ebook.rating" read-only="1"></rating><span class="rating-count-ebook-detail">(${ebook.rating_count})</span></div>
+    <div class="ebook-series" if.bind="ebook.series">
+      <a route-href="route: series; params.bind: {id:ebook.series.id}">${ebook.series.title}</a> #${ebook.series_index}</div>
+  </div>
+  <div class="ebook-card-description" if.bind={description}>${description}</div>
+  </div>
+  <div class="ebook-card-actions">
+    <a href="#" if.bind="editAction" click.delegate="edit($event)"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
+    <a href="#" if.bind="deleteAction" click.delegate="delete($event)"><i class="fa fa-minus-circle"></i></a>
+  </div>
+</div>
+</template>

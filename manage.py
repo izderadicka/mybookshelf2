@@ -14,6 +14,9 @@ import os.path
 import settings
 from datetime import datetime, timedelta
 from traceback import print_exc
+from version import __db_version as db_version
+import re
+from sqlalchemy.exc import ProgrammingError
 
 
 SQL_DIR = os.path.join(os.path.dirname(__file__), 'sql')
@@ -77,6 +80,41 @@ def test_database():
     issue = database_issue()
     if issue:
         print('database is not properly initialized: %s'%issue)
+        
+@manager.command
+def check_data():
+    no_cover = model.Ebook.query.filter(model.Ebook.cover == None).count()
+    print ('%d Ebooks has no cover' % no_cover)
+    
+    missing_cover = 0
+    for b in model.Ebook.query.filter(model.Ebook.cover != None):
+        cover_file = os.path.join(settings.BOOKS_BASE_DIR, b.cover)
+        if not os.access(cover_file, os.R_OK) or os.stat(cover_file).st_size ==0:
+            missing_cover+=1
+    print('%d Ebooks has cover missing' % missing_cover) 
+    
+    missing_thumb = 0
+    for b in model.Ebook.query.filter(model.Ebook.cover != None):
+        thumb_file = os.path.join(settings.THUMBS_DIR, '%d.jpg'%b.id)
+        if not os.access(thumb_file, os.R_OK) or os.stat(thumb_file).st_size ==0:
+            missing_thumb+=1
+    print('%d Ebooks has thumbnail missing' % missing_thumb) 
+    
+    missing_source = 0
+    duplicate_source = 0
+    sources = set()
+    for s in model.Source.query:
+        source_file =  os.path.join(settings.BOOKS_BASE_DIR, s.location)
+        if source_file in sources:
+            duplicate_source += 1
+        sources.add(source_file)
+        if not os.access(source_file, os.R_OK) or os.stat(source_file).st_size ==0:
+            missing_source+=1
+            
+    print('%d Sources is missing file' % missing_source )
+    print('%d Sources points to same file' % duplicate_source)
+        
+    
 
 @manager.command
 def create_tables(add_data=False, create_directories=False):
@@ -89,6 +127,8 @@ def create_tables(add_data=False, create_directories=False):
     connection = db.engine.raw_connection()  # @UndefinedVariable
     try:
         c = connection.cursor()
+        #insert current db version
+        c.execute('insert into version (version, version_id) values (%s, %s)', (db_version,1))
         for fname in ('create_ts.sql', 'create_functions.sql'):
             script = open(os.path.join(SQL_DIR, fname), 'rt', encoding='utf-8-sig').read()
             # print(script)
@@ -107,7 +147,48 @@ def create_tables(add_data=False, create_directories=False):
             os.makedirs(d, exist_ok=True)
         print('Created directories')
 
-
+@manager.command
+def migrate_tables():
+    import psycopg2
+    print('This will migrate database to latest schema, you are advised to backup database before running this command')
+    if prompt_bool('Do you want to continue?'):
+        mdir = os.path.join(SQL_DIR, 'migration')
+        version_obj=model.Version.query.one_or_none()
+           
+        if not version_obj:
+                version_obj=model.Version(version=0, version_id=1)
+                db.session.add(version_obj)
+        old_version = version_obj.version
+        if old_version == db_version:
+            print('DB is at correct version %d'% old_version)
+        scripts = []
+        for script in os.listdir(mdir):
+            m=re.match(r'v(\d+)\.sql', script)
+            if m:
+                version = int(m.group(1))
+                if version <= db_version and version > old_version:
+                    scripts.append((version, os.path.join(mdir,script)))
+                    
+        scripts.sort()
+        connection = psycopg2.connect(database=settings.DB_NAME,
+                                      user = settings.DB_USER,
+                                      password = settings.DB_PASSWORD,
+                                      host = settings.DB_HOST,
+                                      port = settings.DB_PORT)
+        connection.autocommit = True
+        #connection = db.engine.raw_connection()  # @UndefinedVariable
+        try:
+            c = connection.cursor()
+            for v,fname in scripts:
+                script = open(fname, 'rt', encoding='utf-8-sig').read()
+                print('Upgrading database to version %d'% v)
+                res = c.execute(script)
+                version_obj.version = v
+                db.session.commit()
+                #connection.commit()
+        finally:
+            connection.close()
+                
 @manager.command
 def update_fulltext():
 
@@ -129,20 +210,23 @@ def drop_tables():
 
 
 @manager.command
-def cleanup(uploads_older_then=24, conversions_older_then=24 * 7):
+def cleanup(uploads_older_then=24, conversions_older_then=24 * 7, purge_empty_ebooks_dirs=False):
     since = datetime.now() - timedelta(hours=float(uploads_older_then))
     for upload in model.Upload.query.filter(model.Upload.created < since):
         logic.delete_upload(upload)
     db.session.commit()
     purge_empty_dirs(settings.UPLOAD_DIR, delete_root=False)
     since = datetime.now() - timedelta(hours=float(conversions_older_then))
+    for batch in model.ConversionBatch.query.filter(model.ConversionBatch.created < since):
+        logic.delete_conversion_batch(batch);
     for conversion in model.Conversion.query.filter(model.Conversion.created < since):
         logic.delete_conversion(conversion)
 
     db.session.commit()
     purge_empty_dirs(settings.BOOKS_CONVERTED_DIR, delete_root=False)
-
-    purge_empty_dirs(settings.BOOKS_BASE_DIR, delete_root=False)
+    
+    if purge_empty_ebooks_dirs:
+        purge_empty_dirs(settings.BOOKS_BASE_DIR, delete_root=False)
 
 
 if __name__ == "__main__":

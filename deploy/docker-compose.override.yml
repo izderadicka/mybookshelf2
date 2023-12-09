@@ -1,0 +1,22 @@
+version: '2'
+services:
+  backend:
+    ports:
+      - 8080:8080
+  app:
+    ports:
+      - 6006:6006
+  client:
+    build:
+      context: .
+      dockerfile: Dockerfile-build-client
+    volumes:
+      - ${CODE_VOLUME}:/code
+    ports:
+      - 9000:9000
+      - 3001:3001
+    user: $MBS2_USER
+    command: /watch_client_cmd.sh
+volumes:
+  code:
+    external: false
