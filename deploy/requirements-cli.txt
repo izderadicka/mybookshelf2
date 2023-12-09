@@ -1,0 +1,5 @@
+requests>=2.11.1
+git+https://github.com/izderadicka/asexor.git
+bcrypt==3.1.1
+PyJWT==1.4.2
+
