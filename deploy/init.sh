@@ -65,15 +65,15 @@ else
 fi
 export $(cat .env | xargs)
 docker build -t mbs2-ubuntu --build-arg MBS2_ENVIRONMENT=$MBS2_ENVIRONMENT .
-docker-compose $compose_files up -d db
+docker compose $compose_files up -d db
 sleep 3
-docker-compose $compose_files run --user $MBS2_USER --rm  app python3 manage.py create_tables -a -c
-docker-compose $compose_files run --rm  app python3 manage.py change_password admin -p "$MBS2_ADMIN_PASSWORD"
+docker compose $compose_files run --user $MBS2_USER --rm  app python3 manage.py create_tables -a -c
+docker compose $compose_files run --rm  app python3 manage.py change_password admin -p "$MBS2_ADMIN_PASSWORD"
 
 if [[ "$1" = "development" ]]; then
     #create test database
-    cat ../sql/create_test_db.sql |  docker-compose $compose_files run --rm -e PGPASSWORD="$MBS2_DB_PASSWORD" db psql -h db postgres postgres
-    cat init_test_db.sql |  docker-compose $compose_files run --rm -e PGPASSWORD="$MBS2_DB_PASSWORD" db psql -h db ebooks_test postgres
+    cat ../sql/create_test_db.sql |  docker compose $compose_files run --rm -e PGPASSWORD="$MBS2_DB_PASSWORD" db psql -h db postgres postgres
+    cat init_test_db.sql |  docker compose $compose_files run --rm -e PGPASSWORD="$MBS2_DB_PASSWORD" db psql -h db ebooks_test postgres
     cat <<EOF
 #####################################################
 Now MyBookself2 is running in developement mode
@@ -85,15 +85,15 @@ Both client code and server code (apart of backend)
 are in watch mode - so any changes are applied immediatelly
 
 To run tests:
-docker-compose run --rm app py.test app common
-docker-compose run --rm  backend py.test engine
+docker compose run --rm app py.test app common
+docker compose run --rm  backend py.test engine
 ######################################################
 EOF
-    docker-compose up
+    docker compose up
     echo
-    echo You can restart application with running docker-compose up from this directory
+    echo You can restart application with running docker compose up from this directory
 elif [[ "$1" = "stage" ]]; then
-    docker-compose $compose_files  up -d
+    docker compose $compose_files  up -d
     cat << EOF
 Now stage deployment is running in background.
 You can access full client on https://localhost:4443/client/

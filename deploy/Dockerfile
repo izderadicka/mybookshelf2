@@ -3,7 +3,7 @@ FROM ubuntu:18.04
 MAINTAINER ivan
 
 ARG MBS2_ENVIRONMENT
-ENV LANG C.UTF-8
+ENV LANG=C.UTF-8
 
 # additional 12.04 depedencies
 #   add-apt-repository -y  ppa:fkrull/deadsnakes &&\

@@ -1,6 +1,6 @@
-FROM node:8
+FROM node:20
 
-RUN apt-get update && apt-get install -y chromium xvfb
+RUN ( apt-get update || true ) && apt-get install -y chromium xvfb
 RUN npm install jspm gulp -g
 
 ADD build_client_cmd.sh /
