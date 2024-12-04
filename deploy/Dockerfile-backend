@@ -9,7 +9,7 @@ MAINTAINER ivan
 RUN apt-get update &&\
     apt-get install -y imagemagick libreoffice libgl1-mesa-glx
     
-RUN wget -nv -O- https://raw.githubusercontent.com/kovidgoyal/calibre/master/setup/linux-installer.py | python3 -c "import sys; main=lambda:sys.stderr.write('Download failed\n'); exec(sys.stdin.read()); main()"
+RUN wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sh /dev/stdin version=5.44.0
 
 EXPOSE 8080 9080
 		
