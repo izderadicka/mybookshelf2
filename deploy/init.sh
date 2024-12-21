@@ -72,8 +72,8 @@ docker compose $compose_files run --rm  app python3 manage.py change_password ad
 
 if [[ "$1" = "development" ]]; then
     #create test database
-    cat ../sql/create_test_db.sql |  docker compose $compose_files run --rm -e PGPASSWORD="$MBS2_DB_PASSWORD" db psql -h db postgres postgres
-    cat init_test_db.sql |  docker compose $compose_files run --rm -e PGPASSWORD="$MBS2_DB_PASSWORD" db psql -h db ebooks_test postgres
+    cat ../sql/create_test_db.sql |  docker compose $compose_files run --rm -T -e PGPASSWORD="$MBS2_DB_PASSWORD" db psql -h db postgres postgres
+    cat init_test_db.sql |  docker compose $compose_files run --rm -T -e PGPASSWORD="$MBS2_DB_PASSWORD" db psql -h db ebooks_test postgres
     cat <<EOF
 #####################################################
 Now MyBookself2 is running in developement mode

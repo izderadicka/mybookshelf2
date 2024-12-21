@@ -1,23 +1,45 @@
+aiohttp==2.3.1
+aiohttp-cors==0.5.3
+aiopg==0.12.0
+aniso8601==1.1.0
+async-timeout==2.0.0
 bcrypt==3.1.1
 blinker==1.4
+cbor==1.0.0
+cffi==1.8.3
+chardet==3.0.4
+click==6.6
+coverage==4.2
+# cryptography==1.5.2
+filelock==2.0.6
 Flask==0.11.1
 Flask-Login==0.3.2
 flask-marshmallow==0.7.0
 Flask-RESTful==0.3.5
 Flask-Script==2.0.5
 Flask-SQLAlchemy==2.1
+Flask-Testing==0.6.1
+itsdangerous==0.24
+Jinja2==2.8
+MarkupSafe==0.23
 marshmallow==2.10.3
 marshmallow-sqlalchemy==0.12.0
-psycopg2==2.7.5
+multidict==3.3.0
+psycopg2==2.7.5 #updated
+py==1.4.31
+pycparser==2.14
+PyJWT==1.4.2
+pytest==3.0.3
 requests==2.11.1
+simplejson==3.10.0
+six==1.10.0
 SQLAlchemy==1.1.1
 SQLAlchemy-Utils==0.32.9
-PyJWT==1.4.2
-aiopg==0.12.0
-filelock==2.0.6
-simplejson==3.10.0
-git+https://github.com/izderadicka/asexor.git
-
-#indirect dependencies that must be pinned
+typing==3.6.2
+ujson==1.35
+unattended-upgrades==0.1
 Werkzeug==0.11.11
+yarl==0.13.0
 
+
+git+https://github.com/izderadicka/asexor.git

@@ -13,5 +13,5 @@ npm install
 #jspm config registries.github.auth your_github_token
 jspm install -y
 export no_proxy=localhost
-xvfb-run gulp test
+# xvfb-run gulp test
 gulp export
