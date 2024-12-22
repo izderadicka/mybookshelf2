@@ -88,7 +88,7 @@
       "bootstrap": "github:twbs/bootstrap@^3.3.6",
       "bootstrap-drawer": "npm:bootstrap-drawer@^1.0.6",
       "diacritic": "npm:diacritic@^0.0.2",
-      "fetch": "github:github/fetch@^1.0.0",
+      "fetch": "github:JakeChampion/fetch@^1.0.0",
       "font-awesome": "npm:font-awesome@^4.6.3",
       "izderadicka/asexor_js_client": "github:izderadicka/asexor_js_client@master",
       "jquery": "npm:jquery@^2.2.4",
