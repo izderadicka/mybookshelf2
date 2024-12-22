@@ -53,11 +53,11 @@ elif [[ "$1" = "stage" ]]; then
 POSTGRES_PASSWORD="$MBS2_DB_PASSWORD"
 MBS2_ENVIRONMENT=stage
 MBS2_DEBUG=false
-CODE_VOLUME=code
+CODE_VOLUME=..
 MBS2_USER=10000:0
 MBS2_USER_NAME=usak
 EOF
-    docker run --env-file .env --rm  -it -v code:/code $CLIENT_IMAGE /build_client_cmd.sh 
+    docker run --env-file .env --rm  -it -v $(pwd)/..:/tmp/code -v ./client:/dist --user $CURRENT_USER $CLIENT_IMAGE /build_client_cmd.sh 
     compose_files="-f docker-compose.yml -f docker-compose-stage.yml"
 else
     echo Uknown environment

@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile-nginx
     volumes:
-      - ${CODE_VOLUME}:/code
+      - ./client:/code
       - mbs2_data:/data 
     ports:
       - 4443:443
