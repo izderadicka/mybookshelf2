@@ -21,7 +21,7 @@ fi
 
 export $(cat .env | xargs)
 
-if [[ $MBS2_ENVIRONMENT == developement ]]; then
+if [[ $MBS2_ENVIRONMENT == development ]]; then
     compose_files=""
 elif [[ $MBS2_ENVIRONMENT == stage ]]; then
     compose_files="-f docker-compose.yml -f docker-compose-stage.yml"
@@ -32,7 +32,7 @@ fi
 
 echo Starting cleanup of $MBS2_ENVIRONMENT environment
 
-docker-compose $compose_files down --rmi all -v
+docker compose $compose_files down --rmi all -v
 docker rmi `docker images -f "reference=mbs2*" -q`
 
 if [[ $MBS2_ENVIRONMENT == stage ]]; then
