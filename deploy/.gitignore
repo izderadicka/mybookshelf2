@@ -1,3 +1,4 @@
 
 ssl/*.pem
-/client
+/client/*
+!/client/.placeholder

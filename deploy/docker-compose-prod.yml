@@ -4,6 +4,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile-db
+    restart: unless-stopped
+    volumes:
+      - ${DB_VOLUME}:/var/lib/postgresql/data
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
             
@@ -13,7 +16,7 @@ services:
       dockerfile: Dockerfile-backend
     volumes:
       - ${CODE_VOLUME}:/code
-      - mbs2_data:/data
+      - ${DATA_VOLUME}:/data
     depends_on:
       - db
     environment:
@@ -33,7 +36,7 @@ services:
     command: /run_app.sh
     volumes:
       - ${CODE_VOLUME}:/code
-      - mbs2_data:/data
+      - ${DATA_VOLUME}:/data
     depends_on:
       - db
       - backend
@@ -45,8 +48,26 @@ services:
       USER: ${MBS2_USER_NAME}
       LOGNAME: ${MBS2_USER_NAME}
       MBS2_ENVIRONMENT:
+
+  proxy:
+    build:
+      context: .
+      dockerfile: Dockerfile-nginx
+    volumes:
+      - ./client:/code
+      - ${DATA_VOLUME}:/data 
+    ports:
+      - 4443:443
+      - 8888:80
+    networks:
+      - proxy
+      - default
+    depends_on:
+      - app
+
+networks:
+  proxy:
+    external: true
       
       
-volumes:
-  mbs2_data:
-    external: false
+

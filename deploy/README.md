@@ -64,3 +64,33 @@ docker-compose run --rm  backend py.test engine
  ```
  head -c 64 /dev/urandom | base64 -w 0 | tr -d =; echo
  ```
+
+ My semi-production
+ ==================
+
+ These instructions are relevant for my environment mostly other readers can ignore them.
+
+ Copy data with `rsync -ac`  to /data/ebooks
+
+ First try stage deployment with init.sh as described above. 
+ 
+ Then edit and amend .env as needed per template below (keep environment stage):
+
+ ```
+POSTGRES_PASSWORD="xxxxx"
+MBS2_ENVIRONMENT=stage
+MBS2_DEBUG=false
+CODE_VOLUME=..
+MBS2_USER=1000:1000
+MBS2_USER_NAME=ivan
+DB_VOLUME=/data/ebooks/db
+DATA_VOLUME=/data/ebooks/mbs2
+ ```
+
+ Run enviroment with `docker compose -f docker-compose-prod.yml up -d`.
+
+ Restore DB with :
+
+ ```
+ gunzip -c /data/ebooks/mbs2/books/mbs2_db_backup.slql.gz | docker compose -f docker-compose-prod.yml run --rm -T -e PGPASSWORD=xxxxxx db psql -h db postgres postgres
+ ```
