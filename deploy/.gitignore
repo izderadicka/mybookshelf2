@@ -2,4 +2,4 @@
 ssl/*.pem
 /client/*
 !/client/.placeholder
-/deploy/docker-compose-prod.*
+docker-compose-prod.*
