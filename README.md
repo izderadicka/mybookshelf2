@@ -1,6 +1,11 @@
 MyBookshelf2
 ============
 
+**THIS PROJECT IS BEING DECOMMISSIONED**
+**Works only with quite old dependecies and no updates are planned**
+**Completely new project [mbs4](https://github.com/izderadicka/mbs4) is intended to replace it, but it's still in early stages**
+ 
+
 Web platform for managing ebooks. 
 
 Features:
