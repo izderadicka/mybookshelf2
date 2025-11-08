@@ -153,3 +153,5 @@ jspm_packages
 Untitled*.ipynb
 /deploy.stage/
 /data/
+
+.settings.py
